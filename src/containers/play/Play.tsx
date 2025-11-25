@@ -25,9 +25,13 @@ interface RoleAssignment {
 
 interface PlayContainerProps {
   roomId?: string;
+  onPlayEnd: () => void;
 }
 
-export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
+export const PlayContainer: React.FC<PlayContainerProps> = ({
+  roomId,
+  onPlayEnd,
+}) => {
   console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
   const [isCardFlipped, setIsCardFlipped] = useState(false);
@@ -36,7 +40,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
-  const [timeRemaining, setTimeRemaining] = useState(30); // 10 นาที = 600 วินาที
+  const [timeRemaining, setTimeRemaining] = useState(5); // 10 นาที = 600 วินาที
   const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 
   // Mock: จำนวนผู้เล่นทั้งหมดและผู้เล่นที่เปิดการ์ดแล้ว
@@ -218,6 +222,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
     console.log("Navigate to endgame summary");
     setShowBoardTotalScore(true);
     setGameEnded(false);
+    onPlayEnd();
   };
 
   if (isLoading) {
@@ -237,7 +242,68 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
       <ScoreBoardContainer
         roomId={roomId}
         onBackToRooms={function () {
+          // Reset ทุก state เพื่อเริ่มเกมใหม่
           setShowBoardTotalScore(false);
+          setGameEnded(false);
+          setGameStarted(false);
+          setIsCardFlipped(false);
+          setFlippedPlayers(0);
+          setAllPlayersFlipped(false);
+          setTimeRemaining(600); // Reset เวลากลับเป็น 10 นาที
+          setIsLoading(true);
+
+          // เรียก API เพื่อเริ่มเกมใหม่และแจกบทบาทใหม่
+          setTimeout(() => {
+            // TODO: เรียก API เพื่อดึงบทบาทใหม่
+            // ตอนนี้ใช้ mock แบบเดิม
+            const roles: RolePlay[] = [
+              RolePlay.PLAYER,
+              RolePlay.MASTER,
+              RolePlay.INSIDER,
+            ];
+            const answerTypes: AnswerType[] = [
+              AnswerType.PLACE,
+              AnswerType.THING,
+            ];
+            const randomRole = roles[Math.floor(Math.random() * roles.length)];
+            const randomAnswerType =
+              answerTypes[Math.floor(Math.random() * answerTypes.length)];
+
+            const placeAnswers = [
+              "สนามบิน",
+              "โรงพยาบาล",
+              "ห้างสรรพสินค้า",
+              "โรงเรียน",
+              "สวนสาธารณะ",
+            ];
+            const thingAnswers = [
+              "มือถือ",
+              "แว่นตา",
+              "กระเป๋า",
+              "รองเท้า",
+              "หนังสือ",
+            ];
+
+            const randomAnswer =
+              randomAnswerType === AnswerType.PLACE
+                ? placeAnswers[Math.floor(Math.random() * placeAnswers.length)]
+                : thingAnswers[Math.floor(Math.random() * thingAnswers.length)];
+
+            const assignment: RoleAssignment = {
+              role: randomRole,
+            };
+
+            if (randomRole === RolePlay.MASTER) {
+              assignment.answerType = randomAnswerType;
+              assignment.answer = randomAnswer;
+            } else if (randomRole === RolePlay.INSIDER) {
+              assignment.answerType = randomAnswerType;
+              assignment.answer = randomAnswer;
+            }
+
+            setMyRole(assignment);
+            setIsLoading(false);
+          }, 1000);
         }}
       />
     );

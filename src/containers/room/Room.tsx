@@ -7,6 +7,7 @@ import { Tag } from "primereact/tag";
 import { CountdownPlayModal } from "./CountdownPlay";
 import { EditRoomModal, EditRoomFormData } from "./EditRoom";
 import { PlayContainer } from "../play/Play";
+import { set } from "react-hook-form";
 
 interface Player {
   id: string;
@@ -187,6 +188,17 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
     );
   };
 
+  const onResetRoom = () => {
+    // รีเซ็ตสถานะห้องและผู้เล่น
+    setRoomStatus("waiting");
+    setPlayers(
+      players.map((p) => ({
+        ...p,
+        isReady: false,
+      }))
+    );
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       {/* Room Header */}
@@ -263,7 +275,12 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
       </div>
 
       {roomStatus === "playing" ? (
-        <PlayContainer roomId={roomId || "1"} />
+        <PlayContainer
+          roomId={roomId || "1"}
+          onPlayEnd={function () {
+            onResetRoom();
+          }}
+        />
       ) : (
         <>
           {/* Players Grid */}
