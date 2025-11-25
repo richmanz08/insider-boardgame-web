@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card } from "primereact/card";
 import { GamePlay } from "./GamePlay";
+import { VotePlayer } from "./VotePlayer";
 
 export enum RolePlay {
   INSIDER = "INSIDER",
@@ -32,12 +33,14 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
   const [myRole, setMyRole] = useState<RoleAssignment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
   const [timeRemaining, setTimeRemaining] = useState(600); // 10 นาที = 600 วินาที
   const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 
   // Mock: จำนวนผู้เล่นทั้งหมดและผู้เล่นที่เปิดการ์ดแล้ว
   const [totalPlayers] = useState(4); // TODO: ดึงจาก API
   const [flippedPlayers, setFlippedPlayers] = useState(0);
+  const [currentUserId] = useState("2"); // Mock current user ID
 
   // Mock function: สุ่มบทบาทและคำตอบ
   useEffect(() => {
@@ -53,7 +56,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
 
       // สุ่มบทบาท
       //   const randomRole = roles[Math.floor(Math.random() * roles.length)];
-      const randomRole = roles[2];
+      const randomRole = roles[1];
       const randomAnswerType =
         answerTypes[Math.floor(Math.random() * answerTypes.length)];
 
@@ -196,7 +199,17 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
 
   const handleTimeUp = () => {
     console.log("Time's up! Game ended.");
-    // TODO: Navigate to voting/result page
+    setGameEnded(true);
+  };
+
+  const handleEndGame = () => {
+    console.log("Master ended game early.");
+    setGameEnded(true);
+  };
+
+  const handleVoteComplete = (votedPlayerId: string) => {
+    console.log("Voted for:", votedPlayerId);
+    // TODO: Send vote to API/WebSocket
   };
 
   if (isLoading) {
@@ -210,6 +223,18 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
     );
   }
 
+  // ถ้าเกมจบแล้ว แสดงหน้าโหวต
+  if (gameEnded && myRole) {
+    return (
+      <VotePlayer
+        roomId={roomId}
+        myPlayerId={currentUserId}
+        myRole={myRole.role}
+        onVoteComplete={handleVoteComplete}
+      />
+    );
+  }
+
   // ถ้าเกมเริ่มแล้ว แสดงหน้าเล่นเกม
   if (gameStarted && myRole) {
     return (
@@ -217,6 +242,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
         myRole={myRole}
         timeRemaining={timeRemaining}
         onTimeUp={handleTimeUp}
+        onEndGame={handleEndGame}
       />
     );
   }
@@ -304,7 +330,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
               }`}
               style={{
                 transformStyle: "preserve-3d",
-                minHeight: "400px",
+                minHeight: isCardFlipped ? "auto" : "400px",
               }}
             >
               {/* Card Back (ด้านหลัง) */}
@@ -331,7 +357,9 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
 
               {/* Card Front (ด้านหน้า - เปิดแล้ว) */}
               <div
-                className="absolute inset-0 backface-hidden rotate-y-180"
+                className={`backface-hidden rotate-y-180 ${
+                  isCardFlipped ? "relative" : "absolute inset-0"
+                }`}
                 style={{ transform: "rotateY(180deg)" }}
               >
                 {myRole && (

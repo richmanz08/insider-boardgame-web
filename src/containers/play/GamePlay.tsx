@@ -16,14 +16,17 @@ interface GamePlayProps {
   myRole: RoleAssignment;
   timeRemaining: number;
   onTimeUp: () => void;
+  onEndGame?: () => void; // Master สามารถจบเกมได้ก่อนเวลาหมด
 }
 
 export const GamePlay: React.FC<GamePlayProps> = ({
   myRole,
   timeRemaining,
   onTimeUp,
+  onEndGame,
 }) => {
   const [showRole, setShowRole] = useState(true);
+  const [showEndGameConfirm, setShowEndGameConfirm] = useState(false);
 
   useEffect(() => {
     if (timeRemaining <= 0) {
@@ -140,8 +143,64 @@ export const GamePlay: React.FC<GamePlayProps> = ({
               </p>
             </div>
           )}
+
+          {/* Master End Game Button */}
+          {myRole.role === RolePlay.MASTER && onEndGame && (
+            <div className="mt-3 text-center">
+              <Button
+                label="จบเกม (มีคนตอบถูกแล้ว)"
+                icon="pi pi-check-circle"
+                severity="success"
+                size="small"
+                onClick={() => setShowEndGameConfirm(true)}
+              />
+            </div>
+          )}
         </div>
       </div>
+
+      {/* End Game Confirmation Modal */}
+      {showEndGameConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowEndGameConfirm(false)}
+          />
+          <Card className="relative z-[201] max-w-md mx-4 bg-gray-800 border-2 border-gray-600">
+            <div className="p-6 text-center">
+              <i className="pi pi-question-circle text-yellow-400 text-5xl mb-4" />
+              <h3 className="text-2xl font-bold text-white mb-3">
+                ยืนยันจบเกม?
+              </h3>
+              <p className="text-gray-300 mb-6">
+                แน่ใจหรือไม่ว่ามีผู้เล่นตอบถูกแล้ว?
+                <br />
+                เกมจะไปสู่ขั้นตอนการโหวตหา Insider
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  label="ยกเลิก"
+                  icon="pi pi-times"
+                  severity="secondary"
+                  outlined
+                  onClick={() => setShowEndGameConfirm(false)}
+                  className="flex-1"
+                />
+                <Button
+                  label="จบเกม"
+                  icon="pi pi-check"
+                  severity="success"
+                  onClick={() => {
+                    setShowEndGameConfirm(false);
+                    onEndGame?.();
+                  }}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-32 max-w-6xl">
