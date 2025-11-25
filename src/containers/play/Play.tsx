@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Card } from "primereact/card";
 import { GamePlay } from "./GamePlay";
 import { VotePlayer } from "./VotePlayer";
+import { ScoreBoardContainer } from "./ScoreBoard";
 
 export enum RolePlay {
   INSIDER = "INSIDER",
@@ -34,7 +35,8 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
-  const [timeRemaining, setTimeRemaining] = useState(600); // 10 นาที = 600 วินาที
+  const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
+  const [timeRemaining, setTimeRemaining] = useState(30); // 10 นาที = 600 วินาที
   const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 
   // Mock: จำนวนผู้เล่นทั้งหมดและผู้เล่นที่เปิดการ์ดแล้ว
@@ -56,7 +58,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
 
       // สุ่มบทบาท
       //   const randomRole = roles[Math.floor(Math.random() * roles.length)];
-      const randomRole = roles[1];
+      const randomRole = roles[0];
       const randomAnswerType =
         answerTypes[Math.floor(Math.random() * answerTypes.length)];
 
@@ -212,6 +214,12 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
     // TODO: Send vote to API/WebSocket
   };
 
+  const handleScoreBoard = () => {
+    console.log("Navigate to endgame summary");
+    setShowBoardTotalScore(true);
+    setGameEnded(false);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -223,6 +231,18 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
     );
   }
 
+  // ถ้าแสดงหน้าสรุปผลแล้ว
+  if (showBoardTotalScore) {
+    return (
+      <ScoreBoardContainer
+        roomId={roomId}
+        onBackToRooms={function () {
+          setShowBoardTotalScore(false);
+        }}
+      />
+    );
+  }
+
   // ถ้าเกมจบแล้ว แสดงหน้าโหวต
   if (gameEnded && myRole) {
     return (
@@ -231,6 +251,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({ roomId }) => {
         myPlayerId={currentUserId}
         myRole={myRole.role}
         onVoteComplete={handleVoteComplete}
+        onNavigateToEndgame={handleScoreBoard}
       />
     );
   }

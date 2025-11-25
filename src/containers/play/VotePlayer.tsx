@@ -18,6 +18,7 @@ interface VotePlayerProps {
   myPlayerId: string;
   myRole: RolePlay;
   onVoteComplete: (votedPlayerId: string) => void;
+  onNavigateToEndgame?: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
 }
 
 export const VotePlayer: React.FC<VotePlayerProps> = ({
@@ -25,6 +26,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   myPlayerId,
   myRole,
   onVoteComplete,
+  onNavigateToEndgame,
 }) => {
   console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลจาก API
 
@@ -35,11 +37,11 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     { id: "3", name: "GameMaster", isHost: false, votes: 0 },
     { id: "4", name: "Newbie", isHost: false, votes: 0 },
   ]);
-
   const [myVote, setMyVote] = useState<string | null>(null);
   const [allVoted, setAllVoted] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [revealedPlayers, setRevealedPlayers] = useState<string[]>([]);
+  const [autoNavigateIn, setAutoNavigateIn] = useState<number | null>(null);
 
   // Mock: จำลองการโหวตของผู้เล่นคนอื่น
   useEffect(() => {
@@ -89,6 +91,50 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
       return () => clearTimeout(mainTimer);
     }
   }, [allVoted, players, showResults]);
+
+  // Auto-navigate หลังจากเปิดการ์ดครบทั้งหมดแล้ว 7 วินาที
+  useEffect(() => {
+    if (
+      showResults &&
+      revealedPlayers.length === players.length &&
+      autoNavigateIn === null
+    ) {
+      // เริ่มนับถอยหลัง และ navigate
+      let countdown = 7;
+
+      const countdownInterval = setInterval(() => {
+        countdown -= 1;
+        setAutoNavigateIn(countdown);
+
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+
+      // Callback ไปหน้าสรุปผลหลัง 7 วินาที
+      const navigateTimer = setTimeout(() => {
+        if (onNavigateToEndgame) {
+          onNavigateToEndgame();
+        }
+      }, 7000);
+
+      // ตั้งค่าเริ่มต้น
+      setTimeout(() => {
+        setAutoNavigateIn(7);
+      }, 0);
+
+      return () => {
+        clearInterval(countdownInterval);
+        clearTimeout(navigateTimer);
+      };
+    }
+  }, [
+    showResults,
+    revealedPlayers.length,
+    players.length,
+    autoNavigateIn,
+    onNavigateToEndgame,
+  ]);
 
   const handleVote = (playerId: string) => {
     if (myRole === RolePlay.MASTER) {
@@ -316,13 +362,29 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                     </p>
                   </div>
                 )}
+
+                {/* Auto-navigate countdown */}
+                {autoNavigateIn !== null && autoNavigateIn > 0 && (
+                  <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-3 mb-4">
+                    <p className="text-blue-300 text-sm">
+                      <i className="pi pi-clock mr-2" />
+                      จะไปหน้าสรุปผลอัตโนมัติใน{" "}
+                      <span className="font-bold text-lg">
+                        {autoNavigateIn}
+                      </span>{" "}
+                      วินาที
+                    </p>
+                  </div>
+                )}
+
                 <Button
-                  label="ไปหน้าสรุปผล"
+                  label="ไปหน้าสรุปผลทันที"
                   icon="pi pi-arrow-right"
                   size="large"
                   onClick={() => {
-                    console.log("Go to result page");
-                    // TODO: Navigate to result page
+                    if (onNavigateToEndgame) {
+                      onNavigateToEndgame();
+                    }
                   }}
                 />
               </div>
