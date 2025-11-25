@@ -1,10 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { CountdownPlayModal } from "./CountdownPlay";
 import { EditRoomModal, EditRoomFormData } from "./EditRoom";
+import { PlayContainer } from "../play/Play";
 
 interface Player {
   id: string;
@@ -210,7 +212,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
                 <i className="pi pi-users mr-2" />
                 {players.length}/{maxPlayers} ผู้เล่น
               </span>
-              {allPlayersReady && (
+              {allPlayersReady && roomStatus === "ready" && (
                 <Tag
                   value="ทุกคนพร้อมแล้ว!"
                   severity="success"
@@ -220,25 +222,27 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
-            {isHost && (
+          {roomStatus !== "playing" && (
+            <div className="flex gap-2">
+              {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
+              {isHost && (
+                <Button
+                  label="แก้ไขห้อง"
+                  icon="pi pi-cog"
+                  severity="secondary"
+                  outlined
+                  onClick={() => setShowEditModal(true)}
+                />
+              )}
               <Button
-                label="แก้ไขห้อง"
-                icon="pi pi-cog"
-                severity="secondary"
+                label="ออกจากห้อง"
+                icon="pi pi-sign-out"
+                severity="danger"
                 outlined
-                onClick={() => setShowEditModal(true)}
+                onClick={() => console.log("Leave room")}
               />
-            )}
-            <Button
-              label="ออกจากห้อง"
-              icon="pi pi-sign-out"
-              severity="danger"
-              outlined
-              onClick={() => console.log("Leave room")}
-            />
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Progress Info */}
@@ -258,64 +262,73 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
         )}
       </div>
 
-      {/* Players Grid */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-4">ผู้เล่นในห้อง</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {players.map(renderPlayerCard)}
+      {roomStatus === "playing" ? (
+        <PlayContainer roomId={roomId || "1"} />
+      ) : (
+        <>
+          {/* Players Grid */}
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-4">ผู้เล่นในห้อง</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {players.map(renderPlayerCard)}
 
-          {/* Empty Slots */}
-          {Array.from({ length: maxPlayers - players.length }).map(
-            (_, index) => (
-              <Card key={`empty-${index}`} className="opacity-50 border-dashed">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-gray-500">
-                    <i className="pi pi-user text-2xl" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-500">
-                      รอผู้เล่น...
-                    </h3>
-                    <p className="text-sm text-gray-600">ช่องว่าง</p>
-                  </div>
-                </div>
-              </Card>
-            )
+              {/* Empty Slots */}
+              {Array.from({ length: maxPlayers - players.length }).map(
+                (_, index) => (
+                  <Card
+                    key={`empty-${index}`}
+                    className="opacity-50 border-dashed"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-gray-500">
+                        <i className="pi pi-user text-2xl" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-500">
+                          รอผู้เล่น...
+                        </h3>
+                        <p className="text-sm text-gray-600">ช่องว่าง</p>
+                      </div>
+                    </div>
+                  </Card>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons - Fixed at Bottom */}
+          <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-gray-800 p-4 z-30">
+            <div className="container mx-auto max-w-6xl flex gap-4 justify-center">
+              <Button
+                label={currentPlayer?.isReady ? "ยกเลิกพร้อม" : "พร้อม"}
+                icon={currentPlayer?.isReady ? "pi pi-times" : "pi pi-check"}
+                severity={currentPlayer?.isReady ? "secondary" : "success"}
+                size="large"
+                onClick={handleToggleReady}
+                className="w-full md:w-auto min-w-[200px]"
+              />
+            </div>
+          </div>
+
+          {/* Spacer for fixed button */}
+          <div className="h-24" />
+
+          {/* Host Info */}
+          {isHost && (
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-400">
+                <i className="pi pi-crown mr-1" />
+                คุณเป็นหัวห้อง เกมจะเริ่มอัตโนมัติเมื่อทุกคนพร้อม
+              </p>
+              {!allPlayersReady && (
+                <p className="text-sm text-yellow-500 mt-2">
+                  <i className="pi pi-exclamation-triangle mr-1" />
+                  รอผู้เล่น {players.filter((p) => !p.isReady).length} คนกดพร้อม
+                </p>
+              )}
+            </div>
           )}
-        </div>
-      </div>
-
-      {/* Action Buttons - Fixed at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-gray-800 p-4 z-30">
-        <div className="container mx-auto max-w-6xl flex gap-4 justify-center">
-          <Button
-            label={currentPlayer?.isReady ? "ยกเลิกพร้อม" : "พร้อม"}
-            icon={currentPlayer?.isReady ? "pi pi-times" : "pi pi-check"}
-            severity={currentPlayer?.isReady ? "secondary" : "success"}
-            size="large"
-            onClick={handleToggleReady}
-            className="w-full md:w-auto min-w-[200px]"
-          />
-        </div>
-      </div>
-
-      {/* Spacer for fixed button */}
-      <div className="h-24" />
-
-      {/* Host Info */}
-      {isHost && (
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-400">
-            <i className="pi pi-crown mr-1" />
-            คุณเป็นหัวห้อง เกมจะเริ่มอัตโนมัติเมื่อทุกคนพร้อม
-          </p>
-          {!allPlayersReady && (
-            <p className="text-sm text-yellow-500 mt-2">
-              <i className="pi pi-exclamation-triangle mr-1" />
-              รอผู้เล่น {players.filter((p) => !p.isReady).length} คนกดพร้อม
-            </p>
-          )}
-        </div>
+        </>
       )}
 
       {/* Countdown Modal */}
