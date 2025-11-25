@@ -25,6 +25,7 @@ type RoomStatus = "waiting" | "ready" | "playing" | "finished";
 export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
   // Mock data - ในอนาคตจะดึงจาก API/WebSocket
   console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลห้องจาก API
+  const router = useRouter();
   const [roomName, setRoomName] = useState("ห้องของนักสืบ");
   const [roomStatus, setRoomStatus] = useState<RoomStatus>("waiting");
   const [maxPlayers, setMaxPlayers] = useState(8);
@@ -199,6 +200,11 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
     );
   };
 
+  const onExitRoom = () => {
+    console.log("Leave room");
+    router.push("/room/list");
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       {/* Room Header */}
@@ -251,7 +257,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
                 icon="pi pi-sign-out"
                 severity="danger"
                 outlined
-                onClick={() => console.log("Leave room")}
+                onClick={() => onExitRoom()}
               />
             </div>
           )}

@@ -18,7 +18,7 @@ interface VotePlayerProps {
   myPlayerId: string;
   myRole: RolePlay;
   onVoteComplete: (votedPlayerId: string) => void;
-  onNavigateToEndgame?: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
+  onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
 }
 
 export const VotePlayer: React.FC<VotePlayerProps> = ({

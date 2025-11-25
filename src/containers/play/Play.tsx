@@ -222,7 +222,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     console.log("Navigate to endgame summary");
     setShowBoardTotalScore(true);
     setGameEnded(false);
-    onPlayEnd();
   };
 
   if (isLoading) {
@@ -242,68 +241,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
       <ScoreBoardContainer
         roomId={roomId}
         onBackToRooms={function () {
-          // Reset ทุก state เพื่อเริ่มเกมใหม่
-          setShowBoardTotalScore(false);
-          setGameEnded(false);
-          setGameStarted(false);
-          setIsCardFlipped(false);
-          setFlippedPlayers(0);
-          setAllPlayersFlipped(false);
-          setTimeRemaining(600); // Reset เวลากลับเป็น 10 นาที
-          setIsLoading(true);
-
-          // เรียก API เพื่อเริ่มเกมใหม่และแจกบทบาทใหม่
-          setTimeout(() => {
-            // TODO: เรียก API เพื่อดึงบทบาทใหม่
-            // ตอนนี้ใช้ mock แบบเดิม
-            const roles: RolePlay[] = [
-              RolePlay.PLAYER,
-              RolePlay.MASTER,
-              RolePlay.INSIDER,
-            ];
-            const answerTypes: AnswerType[] = [
-              AnswerType.PLACE,
-              AnswerType.THING,
-            ];
-            const randomRole = roles[Math.floor(Math.random() * roles.length)];
-            const randomAnswerType =
-              answerTypes[Math.floor(Math.random() * answerTypes.length)];
-
-            const placeAnswers = [
-              "สนามบิน",
-              "โรงพยาบาล",
-              "ห้างสรรพสินค้า",
-              "โรงเรียน",
-              "สวนสาธารณะ",
-            ];
-            const thingAnswers = [
-              "มือถือ",
-              "แว่นตา",
-              "กระเป๋า",
-              "รองเท้า",
-              "หนังสือ",
-            ];
-
-            const randomAnswer =
-              randomAnswerType === AnswerType.PLACE
-                ? placeAnswers[Math.floor(Math.random() * placeAnswers.length)]
-                : thingAnswers[Math.floor(Math.random() * thingAnswers.length)];
-
-            const assignment: RoleAssignment = {
-              role: randomRole,
-            };
-
-            if (randomRole === RolePlay.MASTER) {
-              assignment.answerType = randomAnswerType;
-              assignment.answer = randomAnswer;
-            } else if (randomRole === RolePlay.INSIDER) {
-              assignment.answerType = randomAnswerType;
-              assignment.answer = randomAnswer;
-            }
-
-            setMyRole(assignment);
-            setIsLoading(false);
-          }, 1000);
+          onPlayEnd();
         }}
       />
     );
