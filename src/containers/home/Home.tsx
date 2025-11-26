@@ -1,15 +1,20 @@
+/* eslint-disable react-hooks/incompatible-library */
 import React from "react";
 import { useForm } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
-
+import { playerRegisterService } from "@/app/api/player/PlayerService";
+import { useDispatch } from "react-redux";
+import { updateMe } from "@/src/redux/slice/meSlice";
+import { get } from "lodash";
 interface PlayerFormData {
   playerName: string;
 }
 
 export const HomeContainer: React.FC = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const {
     register,
     handleSubmit,
@@ -19,14 +24,23 @@ export const HomeContainer: React.FC = () => {
     defaultValues: {
       playerName: "",
     },
+    mode: "onChange",
   });
 
-  const playerName = watch("playerName");
+  const name = watch("playerName");
 
-  const onSubmit = (data: PlayerFormData) => {
-    console.log("Form submitted:", data);
-    // ที่นี่สามารถทำอะไรต่อกับข้อมูลได้ เช่น navigate ไปหน้าอื่น
-    router.push("/room/list");
+  const onSubmit = async (data: PlayerFormData) => {
+    try {
+      const response = await playerRegisterService({
+        playerName: data.playerName,
+      });
+      if (get(response, "success")) {
+        router.push("/room/list");
+        dispatch(updateMe(response));
+      }
+    } catch (error) {
+      console.error("Error during player registration:", error);
+    }
   };
 
   return (
@@ -69,13 +83,13 @@ export const HomeContainer: React.FC = () => {
             type="submit"
             label="เริ่มเกม"
             className="w-full"
-            disabled={!playerName}
+            disabled={!name}
           />
         </form>
 
-        {playerName && (
+        {name && (
           <p className="text-center mt-4">
-            สวัสดี, <strong>{playerName}</strong>!
+            สวัสดี, <strong>{name}</strong>!
           </p>
         )}
       </div>

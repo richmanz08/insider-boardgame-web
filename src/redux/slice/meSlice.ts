@@ -1,22 +1,23 @@
+import { PlayerData } from "@/app/api/player/PlayerInterface";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface IMeAction {
-  name: string;
+  me: PlayerData | null;
 }
 
 const initStateMenu: IMeAction = {
-  name: "",
+  me: null,
 };
 
 const meSlice = createSlice({
   name: "meRedux",
   initialState: initStateMenu,
   reducers: {
-    updateMe: (state, action: PayloadAction<string>) => {
-      state.name = action.payload;
+    updateMe: (state, action: PayloadAction<PlayerData | null>) => {
+      state.me = action.payload;
     },
     clearMe: (state) => {
-      state.name = "";
+      state.me = null;
     },
   },
 });

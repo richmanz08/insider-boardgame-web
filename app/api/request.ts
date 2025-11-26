@@ -12,7 +12,7 @@ export async function apiReq<TRequest, TResponse>(
   options: RequestOptions<TRequest> = {}
 ): Promise<TResponse> {
   const { method = "GET", body, token, isFormData = false } = options;
-  const url = `${process.env.NEXT_PUBLIC_BASE_URL_API_SALE}${routeURL}`;
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}${routeURL}`;
 
   const headers: HeadersInit = {};
 
