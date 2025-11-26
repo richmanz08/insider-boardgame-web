@@ -7,11 +7,12 @@ import { useForm, Controller } from "react-hook-form";
 import { useAppSelector } from "@/src/redux/hook";
 import { RootState } from "@/src/redux/store";
 import { createRoomService } from "@/app/api/room/RoomService";
+import { RoomData } from "@/app/api/room/RoomInterface";
 
 interface CreateRoomProps {
   open: boolean;
   onClose: () => void;
-  onCreateRoom?: (data: CreateRoomFormData) => void;
+  onCreateRoom?: (data: RoomData, password?: string) => void;
 }
 
 interface CreateRoomFormData {
@@ -46,20 +47,18 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
     console.log("Creating room:", data);
 
     try {
-      await createRoomService({
+      const res = await createRoomService({
         roomName: data.roomName,
         maxPlayers: data.maxPlayers,
         hostUuid: me?.uuid || "",
         hostName: me?.playerName || "",
         password: data.password,
       });
+      if (res && onCreateRoom) {
+        onCreateRoom(res.data, data.password);
+      }
     } catch (error) {
       console.log("Error creating room:", error);
-    }
-
-    // เรียก callback ถ้ามี
-    if (onCreateRoom) {
-      onCreateRoom(data);
     }
 
     // รีเซ็ตฟอร์มและปิด modal

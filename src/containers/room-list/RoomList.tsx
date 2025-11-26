@@ -7,16 +7,13 @@ import { Password } from "primereact/password";
 import { CreateRoomContainer } from "./CreateRoom";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { getRoomListService } from "@/app/api/room/RoomService";
+import {
+  getRoomListService,
+  joinRoomService,
+} from "@/app/api/room/RoomService";
 import { RoomData } from "@/app/api/room/RoomInterface";
 import { map } from "lodash";
 import { RoomCard } from "@/src/components/card/RoomCard";
-
-interface CreateRoomFormData {
-  roomName: string;
-  maxPlayers: number;
-  password?: string;
-}
 
 export const RoomListContainer: React.FC = () => {
   const router = useRouter();
@@ -39,8 +36,22 @@ export const RoomListContainer: React.FC = () => {
     refetch();
   };
 
-  const handleCreateRoom = (data: CreateRoomFormData) => {
+  const handleCreateRoom = async (data: RoomData, password?: string) => {
     console.log("Room created:", data);
+    try {
+      const res = await joinRoomService({
+        roomCode: data.roomCode,
+        playerUuid: data.hostUuid,
+        playerName: data.hostName,
+        password: password,
+      });
+
+      if (res?.success) {
+        joinRoom(data.roomCode);
+      }
+    } catch (error) {
+      console.log("Error creating room:", error);
+    }
   };
 
   const handleJoinRoom = (room: RoomData) => {
@@ -67,10 +78,10 @@ export const RoomListContainer: React.FC = () => {
     }
   };
 
-  const joinRoom = (roomId: string) => {
-    console.log("Joining room:", roomId);
+  const joinRoom = (roomCode: string) => {
+    console.log("Joining room:", roomCode);
     // TODO: เรียก API เข้าร่วมห้อง และ navigate ไปหน้าห้อง
-    router.push(`/room/${roomId}`);
+    router.push(`/room/${roomCode}`);
   };
 
   return (
