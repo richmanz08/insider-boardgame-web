@@ -2,6 +2,7 @@ import { ApiResponseCommon } from "@/src/common/interface";
 import {
   CreateRoomRequest,
   JoinRoomRequest,
+  LeaveRoomRequest,
   RoomData,
 } from "../room/RoomInterface";
 
@@ -71,6 +72,30 @@ export const joinRoomService = async (
     return data;
   } catch (error) {
     console.log("Error Fetching joinRoomService:", error);
+    return null;
+  }
+};
+
+export const leaveRoomService = async (
+  body: LeaveRoomRequest,
+  signal?: AbortSignal
+): Promise<ApiResponseCommon<null> | null> => {
+  try {
+    const res = await fetch(`/api/room/leave`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      signal,
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    return data;
+  } catch (error) {
+    console.log("Error Fetching leaveRoomService:", error);
     return null;
   }
 };

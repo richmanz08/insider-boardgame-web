@@ -30,3 +30,8 @@ export interface JoinRoomRequest {
   playerUuid: string;
   playerName: string;
 }
+
+export interface LeaveRoomRequest {
+  roomCode: string;
+  playerUuid: string;
+}

@@ -7,7 +7,10 @@ import { Tag } from "primereact/tag";
 import { CountdownPlayModal } from "./CountdownPlay";
 import { EditRoomModal, EditRoomFormData } from "./EditRoom";
 import { PlayContainer } from "../play/Play";
-import { set } from "react-hook-form";
+import { leaveRoomService } from "@/app/api/room/RoomService";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/redux/store";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Player {
   id: string;
@@ -17,15 +20,15 @@ interface Player {
 }
 
 interface RoomContainerProps {
-  roomId?: string;
+  roomCode?: string;
 }
 
 type RoomStatus = "waiting" | "ready" | "playing" | "finished";
 
-export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
-  // Mock data - ในอนาคตจะดึงจาก API/WebSocket
-  console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลห้องจาก API
+export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const me = useSelector((state: RootState) => state.me.me);
   const [roomName, setRoomName] = useState("ห้องของนักสืบ");
   const [roomStatus, setRoomStatus] = useState<RoomStatus>("waiting");
   const [maxPlayers, setMaxPlayers] = useState(8);
@@ -200,7 +203,20 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
     );
   };
 
-  const onExitRoom = () => {
+  const onExitRoom = async () => {
+    if (!roomCode || !me) return;
+    try {
+      const resp = await leaveRoomService({
+        roomCode: roomCode,
+        playerUuid: me.uuid,
+      });
+      if (resp?.success) {
+        queryClient.removeQueries({ queryKey: ["room"] });
+        // TODO: Handle successful leave room
+      }
+    } catch (error) {
+      console.log("Error leaving room:", error);
+    }
     console.log("Leave room");
     router.push("/");
   };
@@ -282,7 +298,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
 
       {roomStatus === "playing" ? (
         <PlayContainer
-          roomId={roomId || "1"}
+          roomId={roomCode || "1"}
           onPlayEnd={function () {
             onResetRoom();
           }}
