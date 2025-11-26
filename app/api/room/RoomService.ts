@@ -99,3 +99,26 @@ export const leaveRoomService = async (
     return null;
   }
 };
+
+export const getRoomByCodeService = async (
+  roomCode: string,
+  signal?: AbortSignal
+): Promise<ApiResponseCommon<RoomData> | null> => {
+  try {
+    const res = await fetch(`/api/room/${roomCode}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      signal,
+    });
+
+    const data = await res.json();
+
+    return data;
+  } catch (error) {
+    console.log("Error Fetching getRoomByCodeService:", error);
+    return null;
+  }
+};
