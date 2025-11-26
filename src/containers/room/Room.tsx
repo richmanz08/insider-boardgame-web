@@ -13,6 +13,7 @@ import { RootState } from "@/src/redux/store";
 import { useQueryClient } from "@tanstack/react-query";
 import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
 import { PlayerData } from "@/src/hooks/interface";
+import { useRoomWebSocket } from "@/src/hooks/useRoomWebSocket";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -22,16 +23,20 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const me = useSelector((state: RootState) => state.me.me);
+
+  const { players, isConnected, lastUpdate, toggleReady } = useRoomWebSocket(
+    roomData.roomCode,
+    me ? me.uuid : ""
+  );
+
+  console.log("WebSocket players data:", players, isConnected, lastUpdate);
+
   const [roomName, setRoomName] = useState(roomData.roomName);
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
   const [maxPlayers, setMaxPlayers] = useState(roomData.maxPlayers);
-
   const [hasPassword, setHasPassword] = useState(false);
   const [currentUserId] = useState("2"); // Mock current user ID
   const [showEditModal, setShowEditModal] = useState(false);
-
-  const [players, setPlayers] = useState<PlayerData[]>([]);
-
   const [showCountdown, setShowCountdown] = useState(false);
 
   const currentPlayer = players.find((p) => p.uuid === currentUserId);
@@ -65,11 +70,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   }, [allPlayersReady, isHost, roomData, showCountdown]);
 
   const handleToggleReady = () => {
-    setPlayers(
-      players.map((p) =>
-        p.uuid === currentUserId ? { ...p, isReady: !p.isReady } : p
-      )
-    );
+    toggleReady();
   };
 
   const handleCountdownComplete = () => {
@@ -184,12 +185,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const onResetRoom = () => {
     // รีเซ็ตสถานะห้องและผู้เล่น
     setRoomStatus(RoomStatus.WAITING);
-    setPlayers(
-      players.map((p) => ({
-        ...p,
-        isReady: false,
-      }))
-    );
   };
 
   const onExitRoom = async () => {
