@@ -2,14 +2,15 @@
 import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { Password } from "primereact/password";
 import { CreateRoomContainer } from "./CreateRoom";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getRoomListService } from "@/app/api/room/RoomService";
-import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
+import { RoomData } from "@/app/api/room/RoomInterface";
+import { map } from "lodash";
+import { RoomCard } from "@/src/components/card/RoomCard";
 
 interface CreateRoomFormData {
   roomName: string;
@@ -33,32 +34,6 @@ export const RoomListContainer: React.FC = () => {
     },
   });
   console.log("Fetched rooms data:", data);
-
-  const getStatusSeverity = (status: RoomData["status"]) => {
-    switch (status) {
-      case RoomStatus.WAITING:
-        return "success";
-      case RoomStatus.PLAYING:
-        return "warning";
-      case RoomStatus.FINISHED:
-        return "info";
-      default:
-        return "info";
-    }
-  };
-
-  const getStatusLabel = (status: RoomData["status"]) => {
-    switch (status) {
-      case RoomStatus.WAITING:
-        return "รอผู้เล่น";
-      case RoomStatus.PLAYING:
-        return "กำลังเล่น";
-      case RoomStatus.FINISHED:
-        return "จบเกม";
-      default:
-        return status;
-    }
-  };
 
   const handleCreateRoom = (data: CreateRoomFormData) => {
     console.log("Room created:", data);
@@ -93,67 +68,6 @@ export const RoomListContainer: React.FC = () => {
     // TODO: เรียก API เข้าร่วมห้อง และ navigate ไปหน้าห้อง
     router.push(`/room/${roomId}`);
   };
-
-  const renderRoomCard = (room: RoomData) => {
-    const isJoinable =
-      room.status === RoomStatus.WAITING &&
-      room.currentPlayers < room.maxPlayers;
-
-    return (
-      <Card key={room.roomCode} className="mb-4">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-xl font-bold">{room.roomName}</h3>
-              {room.hasPassword && <i className="pi pi-lock text-yellow-500" />}
-            </div>
-
-            <div className="flex items-center gap-4 mb-2">
-              <div className="flex items-center gap-2">
-                <i className="pi pi-users" />
-                <span>
-                  {room.currentPlayers}/{room.maxPlayers} ผู้เล่น
-                </span>
-              </div>
-
-              <Tag
-                value={getStatusLabel(room.status)}
-                severity={getStatusSeverity(room.status)}
-              />
-            </div>
-
-            <p className="text-sm text-gray-400">
-              <i className="pi pi-user mr-1" />
-              Host: {room.hostName}
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            {isJoinable ? (
-              <Button
-                label="เข้าร่วม"
-                icon="pi pi-sign-in"
-                onClick={() => handleJoinRoom(room)}
-                severity="success"
-              />
-            ) : (
-              <Button
-                label={
-                  room.status === RoomStatus.PLAYING ? "กำลังเล่น" : "เต็ม"
-                }
-                disabled
-                severity="secondary"
-              />
-            )}
-          </div>
-        </div>
-      </Card>
-    );
-  };
-
-  // useEffect(() => {
-  //   if (data && data.data ) setRooms(data.data ?? []);
-  // }, [data]);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -190,7 +104,11 @@ export const RoomListContainer: React.FC = () => {
           </div>
         </Card>
       ) : (
-        <div>{data?.data.map(renderRoomCard)}</div>
+        <div>
+          {map(data?.data, (room) => (
+            <RoomCard key={room.roomCode} room={room} onJoin={handleJoinRoom} />
+          ))}
+        </div>
       )}
 
       {/* Create Room Modal */}

@@ -39,6 +39,7 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
       maxPlayers: 8,
       password: "",
     },
+    mode: "onChange",
   });
 
   const handleFormSubmit = async (data: CreateRoomFormData) => {
@@ -50,7 +51,7 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
         maxPlayers: data.maxPlayers,
         hostUuid: me?.uuid || "",
         hostName: me?.playerName || "",
-        ...(!isEmpty(data.password) && { password: data.password }),
+        password: data.password,
       });
     } catch (error) {
       console.log("Error creating room:", error);
