@@ -9,11 +9,12 @@ import { useDispatch } from "react-redux";
 import { updateMe } from "@/src/redux/slice/meSlice";
 import { get } from "lodash";
 import { setCookie } from "cookies-next";
+import { TOKEN_NAME } from "@/src/config/system";
 interface PlayerFormData {
   playerName: string;
 }
 
-export const HomeContainer: React.FC = () => {
+export const RegisterContainer: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const {
@@ -39,7 +40,7 @@ export const HomeContainer: React.FC = () => {
 
       if (get(response, "success") && response) {
         router.push("/");
-        setCookie("playerToken", response.data.token);
+        setCookie(TOKEN_NAME, response.data.token);
         dispatch(updateMe(response.data));
       }
     } catch (error) {

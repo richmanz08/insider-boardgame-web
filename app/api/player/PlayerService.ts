@@ -24,3 +24,25 @@ export const playerRegisterService = async (
     return null;
   }
 };
+
+export const playerValidateService = async (
+  signal?: AbortSignal
+): Promise<ApiResponseCommon<PlayerData> | null> => {
+  try {
+    const res = await fetch(`/api/player/validate`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      signal,
+    });
+
+    const data = await res.json();
+
+    return data;
+  } catch (error) {
+    console.log("Error Fetching playerValidateService:", error);
+    return null;
+  }
+};

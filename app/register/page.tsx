@@ -1,6 +1,6 @@
 "use client";
-import { HomeContainer } from "@/src/containers/home/Home";
+import { RegisterContainer } from "@/src/containers/register/Register";
 
 export default function Register() {
-  return <HomeContainer />;
+  return <RegisterContainer />;
 }
