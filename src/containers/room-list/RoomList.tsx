@@ -26,7 +26,7 @@ export const RoomListContainer: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
   const [roomPassword, setRoomPassword] = useState("");
 
-  const { data } = useQuery({
+  const { data, refetch, isRefetching } = useQuery({
     queryKey: ["rooms"],
     queryFn: async () => {
       const response = await getRoomListService();
@@ -34,6 +34,10 @@ export const RoomListContainer: React.FC = () => {
     },
   });
   console.log("Fetched rooms data:", data);
+
+  const handleRefresh = () => {
+    refetch();
+  };
 
   const handleCreateRoom = (data: CreateRoomFormData) => {
     console.log("Room created:", data);
@@ -79,13 +83,25 @@ export const RoomListContainer: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          label="สร้างห้อง"
-          icon="pi pi-plus"
-          onClick={() => setShowCreateDialog(true)}
-          severity="info"
-          size="large"
-        />
+        <div className="flex gap-2">
+          <Button
+            icon={isRefetching ? "pi pi-spin pi-spinner" : "pi pi-refresh"}
+            onClick={handleRefresh}
+            severity="secondary"
+            outlined
+            size="large"
+            tooltip="รีเฟรชรายการห้อง"
+            tooltipOptions={{ position: "bottom" }}
+            disabled={isRefetching}
+          />
+          <Button
+            label="สร้างห้อง"
+            icon="pi pi-plus"
+            onClick={() => setShowCreateDialog(true)}
+            severity="info"
+            size="large"
+          />
+        </div>
       </div>
 
       <div className="mb-4 flex items-center gap-2 text-sm text-gray-400">
