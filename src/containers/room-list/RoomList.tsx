@@ -14,9 +14,12 @@ import {
 import { RoomData } from "@/app/api/room/RoomInterface";
 import { map } from "lodash";
 import { RoomCard } from "@/src/components/card/RoomCard";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/redux/store";
 
 export const RoomListContainer: React.FC = () => {
   const router = useRouter();
+  const me = useSelector((state: RootState) => state.me.me);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -36,22 +39,10 @@ export const RoomListContainer: React.FC = () => {
     refetch();
   };
 
-  const handleCreateRoom = async (data: RoomData, password?: string) => {
+  const handleCreateRoom = async (data: RoomData) => {
     console.log("Room created:", data);
-    try {
-      const res = await joinRoomService({
-        roomCode: data.roomCode,
-        playerUuid: data.hostUuid,
-        playerName: data.hostName,
-        password: password,
-      });
-
-      if (res?.success) {
-        joinRoom(data.roomCode);
-      }
-    } catch (error) {
-      console.log("Error creating room:", error);
-    }
+    router.push(`/room/${data.roomCode}`);
+    // เมื่อสร้างห้องสำเร็จ host ควรเข้าห้องอัตโนมัติ
   };
 
   const handleJoinRoom = (room: RoomData) => {
@@ -59,29 +50,57 @@ export const RoomListContainer: React.FC = () => {
       setSelectedRoom(room);
       setShowPasswordDialog(true);
     } else {
-      joinRoom(room.roomCode);
+      joinRoom(room.roomCode, undefined);
     }
   };
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     if (selectedRoom && roomPassword) {
-      // TODO: ตรวจสอบ password กับ API
       console.log(
         "Joining room with password:",
         selectedRoom.roomCode,
         roomPassword
       );
-      joinRoom(selectedRoom.roomCode);
+      await joinRoom(selectedRoom.roomCode, roomPassword);
       setShowPasswordDialog(false);
       setRoomPassword("");
       setSelectedRoom(null);
     }
   };
 
-  const joinRoom = (roomCode: string) => {
-    console.log("Joining room:", roomCode);
-    // TODO: เรียก API เข้าร่วมห้อง และ navigate ไปหน้าห้อง
-    router.push(`/room/${roomCode}`);
+  const joinRoom = async (roomCode: string, password?: string) => {
+    if (!me) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    console.log("Calling joinRoomService:", {
+      roomCode,
+      playerUuid: me.uuid,
+      playerName: me.playerName,
+      hasPassword: !!password,
+    });
+
+    try {
+      const response = await joinRoomService({
+        roomCode,
+        playerUuid: me.uuid,
+        playerName: me.playerName,
+        password,
+      });
+
+      if (response?.success) {
+        console.log("Successfully joined room:", response.data);
+        // Navigate to room page
+        router.push(`/room/${roomCode}`);
+      } else {
+        console.error("Failed to join room:", response?.message);
+        alert(response?.message || "ไม่สามารถเข้าร่วมห้องได้");
+      }
+    } catch (error) {
+      console.error("Error joining room:", error);
+      alert("เกิดข้อผิดพลาดในการเข้าร่วมห้อง");
+    }
   };
 
   return (
