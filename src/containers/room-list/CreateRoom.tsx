@@ -4,6 +4,10 @@ import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { useForm } from "react-hook-form";
+import { useAppSelector } from "@/src/redux/hook";
+import { RootState } from "@/src/redux/store";
+import { createRoomService } from "@/app/api/room/RoomService";
+import { isEmpty } from "lodash";
 
 interface CreateRoomProps {
   open: boolean;
@@ -22,6 +26,8 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
   onClose,
   onCreateRoom,
 }) => {
+  const me = useAppSelector((state: RootState) => state.me.me);
+
   const {
     register,
     handleSubmit,
@@ -35,8 +41,20 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
     },
   });
 
-  const handleFormSubmit = (data: CreateRoomFormData) => {
+  const handleFormSubmit = async (data: CreateRoomFormData) => {
     console.log("Creating room:", data);
+
+    try {
+      await createRoomService({
+        roomName: data.roomName,
+        maxPlayers: data.maxPlayers,
+        hostUuid: me?.uuid || "",
+        hostName: me?.playerName || "",
+        ...(!isEmpty(data.password) && { password: data.password }),
+      });
+    } catch (error) {
+      console.log("Error creating room:", error);
+    }
 
     // เรียก callback ถ้ามี
     if (onCreateRoom) {

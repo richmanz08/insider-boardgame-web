@@ -24,3 +24,25 @@ export const createRoomService = async (
     return null;
   }
 };
+
+export const getRoomListService = async (
+  signal?: AbortSignal
+): Promise<ApiResponseCommon<RoomData[]> | null> => {
+  try {
+    const res = await fetch(`/api/room/available`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      signal,
+    });
+
+    const data = await res.json();
+
+    return data;
+  } catch (error) {
+    console.log("Error Fetching getRoomListService:", error);
+    return null;
+  }
+};
