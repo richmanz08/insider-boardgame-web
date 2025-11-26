@@ -4,9 +4,5 @@ import { useParams } from "next/navigation";
 
 export default function RoomPage() {
   const { id } = useParams<{ id: string }>();
-  return (
-    <div>
-      <RoomContainer roomId={id} />
-    </div>
-  );
+  return <RoomContainer roomId={id} />;
 }
