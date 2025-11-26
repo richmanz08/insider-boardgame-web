@@ -21,6 +21,7 @@ export interface RoomData {
 export enum RoomStatus {
   WAITING = "WAITING",
   PLAYING = "PLAYING",
+  READY = "READY",
   FINISHED = "FINISHED",
 }
 

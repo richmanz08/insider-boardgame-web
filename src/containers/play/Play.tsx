@@ -24,15 +24,15 @@ interface RoleAssignment {
 }
 
 interface PlayContainerProps {
-  roomId?: string;
+  roomCode: string;
   onPlayEnd: () => void;
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
-  roomId,
+  roomCode,
   onPlayEnd,
 }) => {
-  console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลเกมจาก API
+  console.log("Room Code:", roomCode); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const [myRole, setMyRole] = useState<RoleAssignment | null>(null);
@@ -239,7 +239,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   if (showBoardTotalScore) {
     return (
       <ScoreBoardContainer
-        roomId={roomId}
+        roomId={roomCode}
         onBackToRooms={function () {
           onPlayEnd();
         }}
@@ -251,7 +251,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   if (gameEnded && myRole) {
     return (
       <VotePlayer
-        roomId={roomId}
+        roomId={roomCode}
         myPlayerId={currentUserId}
         myRole={myRole.role}
         onVoteComplete={handleVoteComplete}

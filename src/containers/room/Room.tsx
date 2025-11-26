@@ -11,41 +11,30 @@ import { leaveRoomService } from "@/app/api/room/RoomService";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface Player {
-  id: string;
-  name: string;
-  isHost: boolean;
-  isReady: boolean;
-}
+import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
+import { PlayerData } from "@/src/hooks/interface";
 
 interface RoomContainerProps {
-  roomCode?: string;
+  roomData: RoomData;
 }
 
-type RoomStatus = "waiting" | "ready" | "playing" | "finished";
-
-export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
+export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const me = useSelector((state: RootState) => state.me.me);
-  const [roomName, setRoomName] = useState("ห้องของนักสืบ");
-  const [roomStatus, setRoomStatus] = useState<RoomStatus>("waiting");
-  const [maxPlayers, setMaxPlayers] = useState(8);
+  const [roomName, setRoomName] = useState(roomData.roomName);
+  const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
+  const [maxPlayers, setMaxPlayers] = useState(roomData.maxPlayers);
+
   const [hasPassword, setHasPassword] = useState(false);
   const [currentUserId] = useState("2"); // Mock current user ID
   const [showEditModal, setShowEditModal] = useState(false);
 
-  const [players, setPlayers] = useState<Player[]>([
-    { id: "1", name: "PlayerOne", isHost: false, isReady: true },
-    { id: "2", name: "You", isHost: true, isReady: false },
-    { id: "3", name: "GameMaster", isHost: false, isReady: true },
-    { id: "4", name: "Newbie", isHost: false, isReady: true },
-  ]);
+  const [players, setPlayers] = useState<PlayerData[]>([]);
 
   const [showCountdown, setShowCountdown] = useState(false);
 
-  const currentPlayer = players.find((p) => p.id === currentUserId);
+  const currentPlayer = players.find((p) => p.uuid === currentUserId);
   const allPlayersReady = players.every((p) => p.isReady);
   const isHost = currentPlayer?.isHost || false;
 
@@ -54,14 +43,14 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
     console.log("Check countdown conditions:", {
       allPlayersReady,
       isHost,
-      roomStatus,
+      roomData,
       showCountdown,
     });
 
     if (
       allPlayersReady &&
       isHost &&
-      roomStatus === "waiting" &&
+      roomData.status === RoomStatus.WAITING &&
       !showCountdown
     ) {
       console.log("Starting countdown timer...");
@@ -73,19 +62,19 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [allPlayersReady, isHost, roomStatus, showCountdown]);
+  }, [allPlayersReady, isHost, roomData, showCountdown]);
 
   const handleToggleReady = () => {
     setPlayers(
       players.map((p) =>
-        p.id === currentUserId ? { ...p, isReady: !p.isReady } : p
+        p.uuid === currentUserId ? { ...p, isReady: !p.isReady } : p
       )
     );
   };
 
   const handleCountdownComplete = () => {
     setShowCountdown(false);
-    setRoomStatus("playing");
+    setRoomStatus(RoomStatus.PLAYING);
     console.log("Game started!");
     // TODO: เรียก API เริ่มเกม และ navigate ไปหน้าเกม
   };
@@ -113,13 +102,13 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
 
   const getStatusLabel = (status: RoomStatus) => {
     switch (status) {
-      case "waiting":
+      case RoomStatus.WAITING:
         return "รอผู้เล่น";
-      case "ready":
+      case RoomStatus.READY:
         return "พร้อมเริ่ม";
-      case "playing":
+      case RoomStatus.PLAYING:
         return "กำลังเล่น";
-      case "finished":
+      case RoomStatus.FINISHED:
         return "จบเกม";
       default:
         return status;
@@ -128,22 +117,22 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
 
   const getStatusSeverity = (status: RoomStatus) => {
     switch (status) {
-      case "waiting":
+      case RoomStatus.WAITING:
         return "info";
-      case "ready":
+      case RoomStatus.READY:
         return "success";
-      case "playing":
+      case RoomStatus.PLAYING:
         return "warning";
-      case "finished":
+      case RoomStatus.FINISHED:
         return "secondary";
       default:
         return "info";
     }
   };
 
-  const renderPlayerCard = (player: Player) => {
+  const renderPlayerCard = (player: PlayerData) => {
     return (
-      <Card key={player.id} className="relative overflow-hidden">
+      <Card key={player.uuid} className="relative overflow-hidden">
         {/* Host Badge */}
         {player.isHost && (
           <div className="absolute top-2 right-2">
@@ -160,7 +149,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
           {/* Avatar */}
           <div className="relative">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-              {player.name.charAt(0).toUpperCase()}
+              {player.playerName.charAt(0).toUpperCase()}
             </div>
             {/* Ready Indicator */}
             {player.isReady && (
@@ -172,7 +161,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
 
           {/* Player Info */}
           <div className="flex-1">
-            <h3 className="text-lg font-bold mb-1">{player.name}</h3>
+            <h3 className="text-lg font-bold mb-1">{player.playerName}</h3>
             <div className="flex items-center gap-2">
               {player.isReady ? (
                 <span className="text-green-500 text-sm flex items-center gap-1">
@@ -194,7 +183,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
 
   const onResetRoom = () => {
     // รีเซ็ตสถานะห้องและผู้เล่น
-    setRoomStatus("waiting");
+    setRoomStatus(RoomStatus.WAITING);
     setPlayers(
       players.map((p) => ({
         ...p,
@@ -204,10 +193,10 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
   };
 
   const onExitRoom = async () => {
-    if (!roomCode || !me) return;
+    if (!me) return;
     try {
       const resp = await leaveRoomService({
-        roomCode: roomCode,
+        roomCode: roomData.roomCode,
         playerUuid: me.uuid,
       });
       if (resp?.success) {
@@ -246,7 +235,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
                 <i className="pi pi-users mr-2" />
                 {players.length}/{maxPlayers} ผู้เล่น
               </span>
-              {allPlayersReady && roomStatus === "ready" && (
+              {allPlayersReady && roomStatus === RoomStatus.READY && (
                 <Tag
                   value="ทุกคนพร้อมแล้ว!"
                   severity="success"
@@ -256,7 +245,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
             </div>
           </div>
 
-          {roomStatus !== "playing" && (
+          {roomStatus !== RoomStatus.PLAYING && (
             <div className="flex gap-2">
               {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
               {isHost && (
@@ -280,7 +269,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
         </div>
 
         {/* Progress Info */}
-        {roomStatus === "waiting" && (
+        {roomStatus === RoomStatus.WAITING && (
           <Card className="bg-blue-900/20 border-blue-500/30">
             <div className="flex items-center gap-3">
               <i className="pi pi-info-circle text-blue-400 text-xl" />
@@ -296,9 +285,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomCode }) => {
         )}
       </div>
 
-      {roomStatus === "playing" ? (
+      {roomStatus === RoomStatus.PLAYING ? (
         <PlayContainer
-          roomId={roomCode || "1"}
+          roomCode={roomData.roomCode}
           onPlayEnd={function () {
             onResetRoom();
           }}
