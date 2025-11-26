@@ -3,11 +3,10 @@ import React, { useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useAppSelector } from "@/src/redux/hook";
 import { RootState } from "@/src/redux/store";
 import { createRoomService } from "@/app/api/room/RoomService";
-import { isEmpty } from "lodash";
 
 interface CreateRoomProps {
   open: boolean;
@@ -32,6 +31,7 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<CreateRoomFormData>({
     defaultValues: {
@@ -182,18 +182,26 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
               <label htmlFor="password" className="font-semibold">
                 รหัสผ่าน <span className="text-gray-400">(ไม่จำเป็น)</span>
               </label>
-              <Password
-                id="password"
-                {...register("password", {
+              <Controller
+                name="password"
+                control={control}
+                rules={{
                   minLength: {
                     value: 4,
                     message: "รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร",
                   },
-                })}
-                placeholder="ไม่ต้องกรอกถ้าไม่ต้องการตั้งรหัส"
-                toggleMask
-                feedback={false}
-                className={errors.password ? "p-invalid w-full" : "w-full"}
+                }}
+                render={({ field }) => (
+                  <Password
+                    id="password"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    placeholder="ไม่ต้องกรอกถ้าไม่ต้องการตั้งรหัส"
+                    toggleMask
+                    feedback={false}
+                    className={errors.password ? "p-invalid w-full" : "w-full"}
+                  />
+                )}
               />
               {errors.password && (
                 <small className="text-red-500">
