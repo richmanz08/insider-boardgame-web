@@ -23,3 +23,10 @@ export enum RoomStatus {
   PLAYING = "PLAYING",
   FINISHED = "FINISHED",
 }
+
+export interface JoinRoomRequest {
+  roomCode: string;
+  password?: string;
+  playerUuid: string;
+  playerName: string;
+}
