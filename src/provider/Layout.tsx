@@ -17,7 +17,7 @@ export default function LayoutProvider({ children }: Props) {
   return (
     <LayoutContext.Provider value={{}}>
       <div className={`py-6 px-6`}>
-        <Header />
+        {me.me && <Header />}
         {children}
         <FooterLayout />
       </div>
