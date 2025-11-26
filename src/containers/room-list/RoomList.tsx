@@ -7,16 +7,9 @@ import { Dialog } from "primereact/dialog";
 import { Password } from "primereact/password";
 import { CreateRoomContainer } from "./CreateRoom";
 import { useRouter } from "next/navigation";
-
-interface Room {
-  id: string;
-  name: string;
-  currentPlayers: number;
-  maxPlayers: number;
-  status: "waiting" | "playing" | "finished";
-  hasPassword: boolean;
-  hostName: string;
-}
+import { useQuery } from "@tanstack/react-query";
+import { getRoomListService } from "@/app/api/room/RoomService";
+import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
 
 interface CreateRoomFormData {
   roomName: string;
@@ -26,62 +19,41 @@ interface CreateRoomFormData {
 
 export const RoomListContainer: React.FC = () => {
   const router = useRouter();
-  // Mock data - ในอนาคตจะดึงจาก API
-  const [rooms, setRooms] = useState<Room[]>([
-    {
-      id: "1",
-      name: "ห้องของนักสืบ",
-      currentPlayers: 3,
-      maxPlayers: 8,
-      status: "waiting",
-      hasPassword: false,
-      hostName: "PlayerOne",
-    },
-    {
-      id: "2",
-      name: "Insider Masters",
-      currentPlayers: 5,
-      maxPlayers: 6,
-      status: "playing",
-      hasPassword: true,
-      hostName: "GameMaster",
-    },
-    {
-      id: "3",
-      name: "Beginner's Room",
-      currentPlayers: 2,
-      maxPlayers: 5,
-      status: "waiting",
-      hasPassword: false,
-      hostName: "Newbie",
-    },
-  ]);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
   const [roomPassword, setRoomPassword] = useState("");
 
-  const getStatusSeverity = (status: Room["status"]) => {
+  const { data } = useQuery({
+    queryKey: ["rooms"],
+    queryFn: async () => {
+      const response = await getRoomListService();
+      return response;
+    },
+  });
+  console.log("Fetched rooms data:", data);
+
+  const getStatusSeverity = (status: RoomData["status"]) => {
     switch (status) {
-      case "waiting":
+      case RoomStatus.WAITING:
         return "success";
-      case "playing":
+      case RoomStatus.PLAYING:
         return "warning";
-      case "finished":
+      case RoomStatus.FINISHED:
         return "info";
       default:
         return "info";
     }
   };
 
-  const getStatusLabel = (status: Room["status"]) => {
+  const getStatusLabel = (status: RoomData["status"]) => {
     switch (status) {
-      case "waiting":
+      case RoomStatus.WAITING:
         return "รอผู้เล่น";
-      case "playing":
+      case RoomStatus.PLAYING:
         return "กำลังเล่น";
-      case "finished":
+      case RoomStatus.FINISHED:
         return "จบเกม";
       default:
         return status;
@@ -89,34 +61,27 @@ export const RoomListContainer: React.FC = () => {
   };
 
   const handleCreateRoom = (data: CreateRoomFormData) => {
-    console.log("Creating room:", data);
-    // TODO: เรียก API สร้างห้อง
-    const newRoom: Room = {
-      id: String(rooms.length + 1),
-      name: data.roomName,
-      currentPlayers: 1,
-      maxPlayers: data.maxPlayers,
-      status: "waiting",
-      hasPassword: !!data.password,
-      hostName: "You", // จะเอาจาก user context
-    };
-    setRooms([...rooms, newRoom]);
+    console.log("Room created:", data);
   };
 
-  const handleJoinRoom = (room: Room) => {
+  const handleJoinRoom = (room: RoomData) => {
     if (room.hasPassword) {
       setSelectedRoom(room);
       setShowPasswordDialog(true);
     } else {
-      joinRoom(room.id);
+      joinRoom(room.roomCode);
     }
   };
 
   const handlePasswordSubmit = () => {
     if (selectedRoom && roomPassword) {
       // TODO: ตรวจสอบ password กับ API
-      console.log("Joining room with password:", selectedRoom.id, roomPassword);
-      joinRoom(selectedRoom.id);
+      console.log(
+        "Joining room with password:",
+        selectedRoom.roomCode,
+        roomPassword
+      );
+      joinRoom(selectedRoom.roomCode);
       setShowPasswordDialog(false);
       setRoomPassword("");
       setSelectedRoom(null);
@@ -129,16 +94,17 @@ export const RoomListContainer: React.FC = () => {
     router.push(`/room/${roomId}`);
   };
 
-  const renderRoomCard = (room: Room) => {
+  const renderRoomCard = (room: RoomData) => {
     const isJoinable =
-      room.status === "waiting" && room.currentPlayers < room.maxPlayers;
+      room.status === RoomStatus.WAITING &&
+      room.currentPlayers < room.maxPlayers;
 
     return (
-      <Card key={room.id} className="mb-4">
+      <Card key={room.roomCode} className="mb-4">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-xl font-bold">{room.name}</h3>
+              <h3 className="text-xl font-bold">{room.roomName}</h3>
               {room.hasPassword && <i className="pi pi-lock text-yellow-500" />}
             </div>
 
@@ -172,7 +138,9 @@ export const RoomListContainer: React.FC = () => {
               />
             ) : (
               <Button
-                label={room.status === "playing" ? "กำลังเล่น" : "เต็ม"}
+                label={
+                  room.status === RoomStatus.PLAYING ? "กำลังเล่น" : "เต็ม"
+                }
                 disabled
                 severity="secondary"
               />
@@ -182,6 +150,10 @@ export const RoomListContainer: React.FC = () => {
       </Card>
     );
   };
+
+  // useEffect(() => {
+  //   if (data && data.data ) setRooms(data.data ?? []);
+  // }, [data]);
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -204,10 +176,10 @@ export const RoomListContainer: React.FC = () => {
 
       <div className="mb-4 flex items-center gap-2 text-sm text-gray-400">
         <i className="pi pi-info-circle" />
-        <span>พบ {rooms.length} ห้อง</span>
+        <span>พบ {data?.data.length} ห้อง</span>
       </div>
 
-      {rooms.length === 0 ? (
+      {data?.data.length === 0 ? (
         <Card>
           <div className="text-center py-8">
             <i className="pi pi-inbox text-4xl text-gray-400 mb-4" />
@@ -218,7 +190,7 @@ export const RoomListContainer: React.FC = () => {
           </div>
         </Card>
       ) : (
-        <div>{rooms.map(renderRoomCard)}</div>
+        <div>{data?.data.map(renderRoomCard)}</div>
       )}
 
       {/* Create Room Modal */}
@@ -241,7 +213,8 @@ export const RoomListContainer: React.FC = () => {
       >
         <div className="flex flex-col gap-4">
           <p className="text-gray-400">
-            ห้อง &quot;{selectedRoom?.name}&quot; ต้องการรหัสผ่านในการเข้าร่วม
+            ห้อง &quot;{selectedRoom?.roomName}&quot;
+            ต้องการรหัสผ่านในการเข้าร่วม
           </p>
 
           <div className="flex flex-col gap-2">

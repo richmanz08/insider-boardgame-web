@@ -7,14 +7,19 @@ export interface CreateRoomRequest {
 }
 
 export interface RoomData {
-  id: number;
   roomCode: string;
   roomName: string;
   maxPlayers: number;
   currentPlayers: number;
   hasPassword: boolean;
-  status: string;
+  status: RoomStatus;
   hostUuid: string;
   hostName: string;
   createdAt: string;
+}
+
+export enum RoomStatus {
+  WAITING = "WAITING",
+  PLAYING = "PLAYING",
+  FINISHED = "FINISHED",
 }
