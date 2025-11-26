@@ -15,7 +15,11 @@ export default function LayoutProvider({ children }: Props) {
   const me = useSelector((state: RootState) => state.me);
   return (
     <LayoutContext.Provider value={{}}>
-      <div className={`${me.name ? "py-[100px]" : "pb-[50px]"}  mb-16 px-6`}>
+      <div
+        className={`${
+          me.me?.playerName ? "py-[100px]" : "pb-[50px]"
+        }  mb-16 px-6`}
+      >
         {children}
         <FooterLayout />
       </div>

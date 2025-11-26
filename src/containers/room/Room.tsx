@@ -202,7 +202,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomId }) => {
 
   const onExitRoom = () => {
     console.log("Leave room");
-    router.push("/room/list");
+    router.push("/");
   };
 
   return (

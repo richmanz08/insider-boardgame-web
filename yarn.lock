@@ -1203,6 +1203,18 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
+cookie@^1.0.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/cookie/-/cookie-1.1.0.tgz#080b3b9a5e7d0970caf9414ac953d24a0e7840a3"
+  integrity sha512-vXiThu1/rlos7EGu8TuNZQEg2e9TvhH9dmS4T4ZVzB7Ao1agEZ6EG3sn5n+hZRYUgduISd1HpngFzAZiDGm5vQ==
+
+cookies-next@^6.1.1:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/cookies-next/-/cookies-next-6.1.1.tgz#241c5de1b90540e61ec080ecf78311178bf0d462"
+  integrity sha512-8JZBc4IN2m8xqOXyG7uicth6yH3SvynAUGSeV/FQ5lcEclzNGoR0+YCjySdn8r6keZdRyGQr4YJ8qy8F+Jq5uw==
+  dependencies:
+    cookie "^1.0.1"
+
 cross-spawn@^7.0.6:
   version "7.0.6"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.6.tgz#8a58fe78f00dcd70c370451759dfbfaf03e8ee9f"

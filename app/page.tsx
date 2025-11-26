@@ -1,6 +1,5 @@
 "use client";
-import { HomeContainer } from "@/src/containers/home/Home";
-
+import { RoomListContainer } from "@/src/containers/room-list/RoomList";
 export default function Home() {
-  return <HomeContainer />;
+  return <RoomListContainer />;
 }

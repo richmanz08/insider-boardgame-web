@@ -8,6 +8,7 @@ import { playerRegisterService } from "@/app/api/player/PlayerService";
 import { useDispatch } from "react-redux";
 import { updateMe } from "@/src/redux/slice/meSlice";
 import { get } from "lodash";
+import { setCookie } from "cookies-next";
 interface PlayerFormData {
   playerName: string;
 }
@@ -34,9 +35,12 @@ export const HomeContainer: React.FC = () => {
       const response = await playerRegisterService({
         playerName: data.playerName,
       });
-      if (get(response, "success")) {
-        router.push("/room/list");
-        dispatch(updateMe(response));
+      console.log("Player registration response:", response);
+
+      if (get(response, "success") && response) {
+        router.push("/");
+        setCookie("playerToken", response.data.token);
+        dispatch(updateMe(response.data));
       }
     } catch (error) {
       console.error("Error during player registration:", error);

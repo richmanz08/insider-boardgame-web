@@ -1,9 +1,10 @@
+import { ApiResponseCommon } from "@/src/common/interface";
 import { PlayerData, RegisterBody } from "./PlayerInterface";
 
 export const playerRegisterService = async (
   body: RegisterBody,
   signal?: AbortSignal
-): Promise<PlayerData | null> => {
+): Promise<ApiResponseCommon<PlayerData> | null> => {
   try {
     const res = await fetch(`/api/player/register`, {
       method: "POST",
