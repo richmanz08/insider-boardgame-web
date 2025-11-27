@@ -19,7 +19,7 @@ export enum RoomUpdateMessageType {
 export interface PlayerData {
   uuid: string;
   playerName: string;
-  isHost: boolean;
-  isReady: boolean;
+  host: boolean;
+  ready: boolean;
   joinedAt: string;
 }

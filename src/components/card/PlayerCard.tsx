@@ -11,7 +11,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
   return (
     <Card key={player.uuid} className="relative overflow-hidden">
       {/* Host Badge */}
-      {player.isHost && (
+      {player.host && (
         <div className="absolute top-2 right-2">
           <Tag
             icon="pi pi-crown"
@@ -29,7 +29,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
             {player.playerName.charAt(0).toUpperCase()}
           </div>
           {/* Ready Indicator */}
-          {player.isReady && (
+          {player.ready && (
             <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
               <i className="pi pi-check text-white text-xs" />
             </div>
@@ -40,7 +40,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
         <div className="flex-1">
           <h3 className="text-lg font-bold mb-1">{player.playerName}</h3>
           <div className="flex items-center gap-2">
-            {player.isReady ? (
+            {player.ready ? (
               <span className="text-green-500 text-sm flex items-center gap-1">
                 <i className="pi pi-check-circle" />
                 พร้อม

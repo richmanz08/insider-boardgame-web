@@ -41,23 +41,33 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
 
-  const currentPlayer = players.find((p) => p.uuid === me?.uuid);
-  console.log("Current player found:", currentPlayer);
-  const allPlayersReady = players.every((p) => p.isReady);
-  const isHost = currentPlayer?.isHost || false;
+  const allPlayersReady = players.every((p) => p.ready);
+
+  const currentPlayerMemorize = React.useMemo(() => {
+    return players.find((p) => p.uuid === me?.uuid);
+  }, [players, me]);
+
+  const isHostMemorize = React.useMemo(() => {
+    return currentPlayerMemorize?.host || false;
+  }, [currentPlayerMemorize]);
+
+  console.log(
+    "Current player found currentPlayerMemorize:",
+    currentPlayerMemorize
+  );
 
   // แสดง countdown อัตโนมัติเมื่อทุกคนพร้อมและเป็น host
   useEffect(() => {
     console.log("Check countdown conditions:", {
       allPlayersReady,
-      isHost,
+      isHostMemorize,
       roomData,
       showCountdown,
     });
 
     if (
       allPlayersReady &&
-      isHost &&
+      isHostMemorize &&
       roomData.status === RoomStatus.WAITING &&
       !showCountdown
     ) {
@@ -70,7 +80,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [allPlayersReady, isHost, roomData, showCountdown]);
+  }, [allPlayersReady, isHostMemorize, roomData, showCountdown]);
 
   const handleToggleReady = () => {
     toggleReady();
@@ -195,7 +205,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           {roomStatus !== RoomStatus.PLAYING && (
             <div className="flex gap-2">
               {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
-              {isHost && (
+              {isHostMemorize && (
                 <Button
                   label="แก้ไขห้อง"
                   icon="pi pi-cog"
@@ -262,9 +272,13 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-gray-800 p-4 z-30">
             <div className="container mx-auto max-w-6xl flex gap-4 justify-center">
               <Button
-                label={currentPlayer?.isReady ? "ยกเลิกพร้อม" : "พร้อม"}
-                icon={currentPlayer?.isReady ? "pi pi-times" : "pi pi-check"}
-                severity={currentPlayer?.isReady ? "secondary" : "success"}
+                label={currentPlayerMemorize?.ready ? "ยกเลิกพร้อม" : "พร้อม"}
+                icon={
+                  currentPlayerMemorize?.ready ? "pi pi-times" : "pi pi-check"
+                }
+                severity={
+                  currentPlayerMemorize?.ready ? "secondary" : "success"
+                }
                 size="large"
                 onClick={handleToggleReady}
                 className="w-full md:w-auto min-w-[200px]"
@@ -276,7 +290,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           <div className="h-24" />
 
           {/* Host Info */}
-          {isHost && (
+          {isHostMemorize && (
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-400">
                 <i className="pi pi-crown mr-1" />
@@ -285,7 +299,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
               {!allPlayersReady && (
                 <p className="text-sm text-yellow-500 mt-2">
                   <i className="pi pi-exclamation-triangle mr-1" />
-                  รอผู้เล่น {players.filter((p) => !p.isReady).length} คนกดพร้อม
+                  รอผู้เล่น {players.filter((p) => !p.ready).length} คนกดพร้อม
                 </p>
               )}
             </div>
