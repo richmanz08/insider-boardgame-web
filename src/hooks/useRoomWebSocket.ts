@@ -58,11 +58,42 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     client.activate();
     clientRef.current = client;
 
+    // ⭐ ส่ง leave message เมื่อ unmount (ปิด tab, refresh, navigate)
+    const handleBeforeUnload = () => {
+      if (clientRef.current?.connected && playerUuid) {
+        // ใช้ sendBeacon สำหรับส่ง request ตอนปิดหน้า
+        navigator.sendBeacon(
+          `/api/room/${roomCode}/leave`,
+          JSON.stringify({ playerUuid })
+        );
+      }
+    };
+
+    // ฟัง event ต่างๆ ที่ user อาจออกจากหน้า
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("pagehide", handleBeforeUnload);
+
     // Cleanup on unmount
     return () => {
-      if (clientRef.current) {
-        clientRef.current.deactivate();
+      console.log("Cleaning up WebSocket...");
+
+      // ลบ event listeners
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("pagehide", handleBeforeUnload);
+
+      // ส่ง leave message ผ่าน WebSocket
+      if (clientRef.current?.connected && playerUuid) {
+        try {
+          clientRef.current.publish({
+            destination: `/app/room/${roomCode}/leave`,
+            body: JSON.stringify({ playerUuid }),
+          });
+        } catch (error) {
+          console.error("Error sending leave message:", error);
+        }
       }
+
+      clientRef.current?.deactivate();
     };
   }, [roomCode, playerUuid]);
 
