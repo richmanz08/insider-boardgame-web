@@ -67,14 +67,31 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
 
       // ⭐ ส่ง join message เพื่อขอข้อมูล players จาก backend
       console.log("Sending join message for playerUuid:", playerUuid);
-      const isVisible = document.visibilityState === "visible";
+
       client.publish({
         destination: `/app/room/${roomCode}/join`,
         body: JSON.stringify({
           playerUuid,
-          active: isVisible, // ส่ง active status ตั้งแต่ join
+          active: true, // ⭐ ส่ง true เสมอเมื่อ join (ถ้า join ได้ = หน้าต้อง active)
         }),
       });
+
+      // ส่ง status update หลัง join เสร็จ เพื่อซิงค์ visibility state
+      setTimeout(() => {
+        const isVisible = document.visibilityState === "visible";
+        console.log("Post-join visibility check:", isVisible);
+
+        if (!isVisible && clientRef.current?.connected) {
+          // ถ้าหน้าไม่ visible จริงๆ (เช่น switch tab ระหว่างโหลด) ให้ส่ง update
+          clientRef.current.publish({
+            destination: `/app/room/${roomCode}/status`,
+            body: JSON.stringify({
+              playerUuid,
+              active: false,
+            }),
+          });
+        }
+      }, 500); // รอ 500ms หลัง join
     };
 
     client.onDisconnect = () => {
