@@ -69,6 +69,8 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   // Toggle ready status
   const toggleReady = useCallback(() => {
     if (clientRef.current && isConnected) {
+      console.log("Sending ready toggle for playerUuid:", playerUuid);
+
       clientRef.current.publish({
         destination: `/app/room/${roomCode}/ready`,
         body: JSON.stringify({ playerUuid }),

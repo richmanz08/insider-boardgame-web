@@ -12,8 +12,9 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
 import { useQueryClient } from "@tanstack/react-query";
 import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
-import { PlayerData } from "@/src/hooks/interface";
 import { useRoomWebSocket } from "@/src/hooks/useRoomWebSocket";
+import { map } from "lodash";
+import { PlayerCard } from "@/src/components/card/PlayerCard";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -30,16 +31,17 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   );
 
   console.log("WebSocket players data:", players, isConnected, lastUpdate);
+  console.log("Current user (me):", me);
 
   const [roomName, setRoomName] = useState(roomData.roomName);
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
   const [maxPlayers, setMaxPlayers] = useState(roomData.maxPlayers);
   const [hasPassword, setHasPassword] = useState(false);
-  const [currentUserId] = useState("2"); // Mock current user ID
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
 
-  const currentPlayer = players.find((p) => p.uuid === currentUserId);
+  const currentPlayer = players.find((p) => p.uuid === me?.uuid);
+  console.log("Current player found:", currentPlayer);
   const allPlayersReady = players.every((p) => p.isReady);
   const isHost = currentPlayer?.isHost || false;
 
@@ -129,57 +131,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       default:
         return "info";
     }
-  };
-
-  const renderPlayerCard = (player: PlayerData) => {
-    return (
-      <Card key={player.uuid} className="relative overflow-hidden">
-        {/* Host Badge */}
-        {player.isHost && (
-          <div className="absolute top-2 right-2">
-            <Tag
-              icon="pi pi-crown"
-              severity="warning"
-              value="หัวห้อง"
-              className="text-xs"
-            />
-          </div>
-        )}
-
-        <div className="flex items-center gap-4">
-          {/* Avatar */}
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-              {player.playerName.charAt(0).toUpperCase()}
-            </div>
-            {/* Ready Indicator */}
-            {player.isReady && (
-              <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
-                <i className="pi pi-check text-white text-xs" />
-              </div>
-            )}
-          </div>
-
-          {/* Player Info */}
-          <div className="flex-1">
-            <h3 className="text-lg font-bold mb-1">{player.playerName}</h3>
-            <div className="flex items-center gap-2">
-              {player.isReady ? (
-                <span className="text-green-500 text-sm flex items-center gap-1">
-                  <i className="pi pi-check-circle" />
-                  พร้อม
-                </span>
-              ) : (
-                <span className="text-gray-400 text-sm flex items-center gap-1">
-                  <i className="pi pi-clock" />
-                  รอ...
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-    );
   };
 
   const onResetRoom = () => {
@@ -293,7 +244,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           <div className="mb-6">
             <h2 className="text-xl font-bold mb-4">ผู้เล่นในห้อง</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {players.map(renderPlayerCard)}
+              {map(players, (player) => (
+                <PlayerCard key={player.uuid} player={player} />
+              ))}
 
               {/* Empty Slots */}
               {Array.from({ length: maxPlayers - players.length }).map(
