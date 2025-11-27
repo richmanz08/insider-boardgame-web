@@ -1,3 +1,4 @@
+import { RoomStatus } from "@/app/api/room/RoomInterface";
 import { PlayerData } from "@/src/hooks/interface";
 
 export const useRoomHook = () => {
@@ -8,7 +9,39 @@ export const useRoomHook = () => {
     return allPlayersReady;
   }
 
+  function getStatusLabel(status: RoomStatus) {
+    switch (status) {
+      case RoomStatus.WAITING:
+        return "รอผู้เล่น";
+      case RoomStatus.READY:
+        return "พร้อมเริ่ม";
+      case RoomStatus.PLAYING:
+        return "กำลังเล่น";
+      case RoomStatus.FINISHED:
+        return "จบเกม";
+      default:
+        return status;
+    }
+  }
+
+  function getStatusSeverity(status: RoomStatus) {
+    switch (status) {
+      case RoomStatus.WAITING:
+        return "info";
+      case RoomStatus.READY:
+        return "success";
+      case RoomStatus.PLAYING:
+        return "warning";
+      case RoomStatus.FINISHED:
+        return "secondary";
+      default:
+        return "info";
+    }
+  }
+
   return {
     checkShowModalCountdownStart,
+    getStatusLabel,
+    getStatusSeverity,
   };
 };

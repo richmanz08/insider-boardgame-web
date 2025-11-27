@@ -26,7 +26,8 @@ interface RoomContainerProps {
 export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { checkShowModalCountdownStart } = useRoomHook();
+  const { checkShowModalCountdownStart, getStatusLabel, getStatusSeverity } =
+    useRoomHook();
   const me = useSelector((state: RootState) => state.me.me);
 
   const { players, isConnected, lastUpdate, toggleReady } = useRoomWebSocket(
@@ -70,10 +71,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     }
   }, [players]);
 
-  const handleToggleReady = () => {
-    toggleReady();
-  };
-
   const handleCountdownComplete = () => {
     setShowCountdown(false);
     setRoomStatus(RoomStatus.PLAYING);
@@ -100,36 +97,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     }
 
     // TODO: เรียก API อัพเดทข้อมูลห้อง
-  };
-
-  const getStatusLabel = (status: RoomStatus) => {
-    switch (status) {
-      case RoomStatus.WAITING:
-        return "รอผู้เล่น";
-      case RoomStatus.READY:
-        return "พร้อมเริ่ม";
-      case RoomStatus.PLAYING:
-        return "กำลังเล่น";
-      case RoomStatus.FINISHED:
-        return "จบเกม";
-      default:
-        return status;
-    }
-  };
-
-  const getStatusSeverity = (status: RoomStatus) => {
-    switch (status) {
-      case RoomStatus.WAITING:
-        return "info";
-      case RoomStatus.READY:
-        return "success";
-      case RoomStatus.PLAYING:
-        return "warning";
-      case RoomStatus.FINISHED:
-        return "secondary";
-      default:
-        return "info";
-    }
   };
 
   const onResetRoom = () => {
@@ -268,7 +235,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
                   currentPlayerMemorize?.ready ? "secondary" : "success"
                 }
                 size="large"
-                onClick={handleToggleReady}
+                onClick={function () {
+                  toggleReady();
+                }}
                 className="w-full md:w-auto min-w-[200px]"
               />
             </div>
