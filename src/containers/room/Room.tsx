@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ import { map } from "lodash";
 import { PlayerCard } from "@/src/components/card/PlayerCard";
 import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
 import { useRoomHook } from "./hook";
+import { MINIMUM_PLAYERS } from "@/src/config/system";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -35,8 +37,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     me ? me.uuid : ""
   );
 
-  console.log("WebSocket players data:", players, isConnected, lastUpdate);
-  console.log("Current user (me):", me);
+  // console.log("WebSocket players data:", players, isConnected, lastUpdate);
+  // console.log("Current user (me):", me);
 
   const [roomName, setRoomName] = useState(roomData.roomName);
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
@@ -189,7 +191,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
                 <p className="font-semibold mb-1">รอผู้เล่นพร้อม</p>
                 <p className="text-sm text-gray-400">
                   ทุกคนต้องกดปุ่ม &quot;พร้อม&quot; ก่อนเริ่มเกม
-                  (ต้องมีอย่างน้อย 4 คน)
+                  (ต้องมีอย่างน้อย {MINIMUM_PLAYERS} คน)
                 </p>
               </div>
             </div>

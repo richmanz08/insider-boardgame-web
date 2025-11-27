@@ -1,4 +1,5 @@
 import { RoomStatus } from "@/app/api/room/RoomInterface";
+import { MINIMUM_PLAYERS } from "@/src/config/system";
 import { PlayerData } from "@/src/hooks/interface";
 
 export const useRoomHook = () => {
@@ -6,7 +7,7 @@ export const useRoomHook = () => {
 
   function checkShowModalCountdownStart(players: PlayerData[]) {
     const allPlayersReady = players.every((p) => p.ready);
-    return allPlayersReady;
+    return allPlayersReady && players.length >= MINIMUM_PLAYERS;
   }
 
   function getStatusLabel(status: RoomStatus) {
