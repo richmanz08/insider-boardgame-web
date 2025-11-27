@@ -9,4 +9,5 @@ export interface GameData {
   endsAt: string;
   durationSeconds: number;
   finished: boolean;
+  // cardOpened: boolean;
 }

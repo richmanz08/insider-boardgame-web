@@ -41,6 +41,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     toggleReady,
     startGame,
     gamePrivateInfo,
+    handleCardOpened,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
   // const { data: gameData } = useQuery({
@@ -234,6 +235,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           gameSetting={activeGame}
           myJob={gamePrivateInfo}
           roomCode={roomData.roomCode}
+          onOpenCard={function () {
+            handleCardOpened();
+          }}
           onPlayEnd={function () {
             onResetRoom();
           }}

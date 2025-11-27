@@ -19,9 +19,9 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   useEffect(() => {
     const client = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
-      debug: (str) => {
-        console.log("STOMP: " + str);
-      },
+      // debug: (str) => {
+      //   console.log("STOMP: " + str);
+      // },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -48,7 +48,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
       });
 
       // ⭐ ส่ง join message เพื่อขอข้อมูล players จาก backend
-      console.log("Sending join message for playerUuid:", playerUuid);
+      // console.log("Sending join message for playerUuid:", playerUuid);
 
       client.publish({
         destination: `/app/room/${roomCode}/join`,
@@ -92,10 +92,10 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     const handleVisibilityChange = () => {
       const isVisible = document.visibilityState === "visible";
 
-      console.log(
-        "@@@@@Page visibility changed:",
-        isVisible ? "visible" : "hidden"
-      );
+      // console.log(
+      //   "@@@@@Page visibility changed:",
+      //   isVisible ? "visible" : "hidden"
+      // );
 
       // ส่ง status update ไปยัง backend
       if (clientRef.current?.connected && playerUuid) {
@@ -112,13 +112,13 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     // ฟัง visibility change event
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    console.log(
-      "Note: Not sending leave on refresh - Backend will handle via disconnect event"
-    );
+    // console.log(
+    //   "Note: Not sending leave on refresh - Backend will handle via disconnect event"
+    // );
 
     // Cleanup on unmount
     return () => {
-      console.log("Cleaning up WebSocket...");
+      // console.log("Cleaning up WebSocket...");
 
       // ลบ visibility event listener
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -139,7 +139,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     };
   }, [roomCode, playerUuid]);
 
-  // Toggle ready status
+  // ⭐ Toggle ready status
   const toggleReady = useCallback(() => {
     if (clientRef.current && isConnected) {
       console.log("Sending ready toggle for playerUuid:", playerUuid);
@@ -163,6 +163,18 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
+  // ⭐ Handle card opened event
+  const handleCardOpened = useCallback(() => {
+    if (clientRef.current && isConnected) {
+      console.log("@@@@Card opened by:", playerUuid);
+
+      clientRef.current.publish({
+        destination: `/app/room/${roomCode}/open_card`,
+        body: JSON.stringify({ playerUuid }),
+      });
+    }
+  }, [roomCode, playerUuid, isConnected]);
+
   return {
     players,
     isConnected,
@@ -170,5 +182,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     gamePrivateInfo,
     toggleReady,
     startGame,
+    handleCardOpened,
   };
 }

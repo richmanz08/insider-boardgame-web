@@ -25,6 +25,7 @@ interface PlayContainerProps {
   roomCode: string;
   gameSetting: GameSummaryDto;
   onPlayEnd: () => void;
+  onOpenCard: () => void;
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
@@ -33,6 +34,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   myJob,
   gameSetting,
   onPlayEnd,
+  onOpenCard,
 }) => {
   console.log("Room PlayContainer:", roomCode, myJob, gameSetting); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
@@ -110,6 +112,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
   const handleFlipCard = () => {
     setIsCardFlipped(true);
+    onOpenCard();
   };
 
   const formatTime = (seconds: number) => {
