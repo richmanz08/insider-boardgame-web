@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import { useRoomWebSocket } from "@/src/hooks/useRoomWebSocket";
 import { map } from "lodash";
 import { PlayerCard } from "@/src/components/card/PlayerCard";
 import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
+import { useRoomHook } from "./hook";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -24,6 +26,7 @@ interface RoomContainerProps {
 export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { checkShowModalCountdownStart } = useRoomHook();
   const me = useSelector((state: RootState) => state.me.me);
 
   const { players, isConnected, lastUpdate, toggleReady } = useRoomWebSocket(
@@ -56,31 +59,16 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     currentPlayerMemorize
   );
 
-  // แสดง countdown อัตโนมัติเมื่อทุกคนพร้อมและเป็น host
+  // Display countdown automatically when all players are ready and user is host
   useEffect(() => {
-    console.log("Check countdown conditions:", {
-      allPlayersReady,
-      isHostMemorize,
-      roomData,
-      showCountdown,
-    });
-
-    if (
-      allPlayersReady &&
-      isHostMemorize &&
-      roomData.status === RoomStatus.WAITING &&
-      !showCountdown
-    ) {
-      console.log("Starting countdown timer...");
-      // รอ 1 วินาทีก่อนแสดง countdown เพื่อให้ player เห็นว่าทุกคนพร้อมแล้ว
+    const isReadyToStart = checkShowModalCountdownStart(players);
+    if (isReadyToStart && !showCountdown) {
       const timer = setTimeout(() => {
-        console.log("Setting showCountdown to true");
         setShowCountdown(true);
       }, 1000);
-
       return () => clearTimeout(timer);
     }
-  }, [allPlayersReady, isHostMemorize, roomData, showCountdown]);
+  }, [players]);
 
   const handleToggleReady = () => {
     toggleReady();
