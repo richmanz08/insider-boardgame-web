@@ -14,6 +14,8 @@ export enum RoomUpdateMessageType {
   PLAYER_LEFT = "PLAYER_LEFT",
   PLAYER_READY = "PLAYER_READY",
   ROOM_UPDATE = "ROOM_UPDATE",
+  GAME_STARTED = "GAME_STARTED",
+  GAME_FINISHED = "GAME_FINISHED",
 }
 
 export interface PlayerData {
@@ -24,4 +26,19 @@ export interface PlayerData {
   joinedAt: string;
   active: boolean;
   lastActiveAt: string;
+}
+
+export interface GamePrivateMessage {
+  playerUuid: string;
+  role: RoleGame;
+  word: string | null; // null for CITIZEN
+}
+export enum RoleGame {
+  MASTER = "MASTER",
+  INSIDER = "INSIDER",
+  CITIZEN = "CITIZEN",
+}
+
+export interface StartGameRequest {
+  triggerByUuid: string;
 }

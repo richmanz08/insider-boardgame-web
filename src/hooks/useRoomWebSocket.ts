@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
-import { PlayerData, RoomUpdateMessage } from "./interface";
+import { PlayerData, RoomUpdateMessage, GamePrivateMessage } from "./interface";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080/ws";
 
@@ -12,6 +12,8 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   const [players, setPlayers] = useState<PlayerData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<RoomUpdateMessage | null>(null);
+  const [gamePrivateInfo, setGamePrivateInfo] =
+    useState<GamePrivateMessage | null>(null);
 
   // Connect to WebSocket และ Setup Visibility Detection
   useEffect(() => {
@@ -36,6 +38,13 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
 
         setLastUpdate(update);
         setPlayers(update.players);
+      });
+
+      // ⭐ Subscribe to game private messages (role & word for MASTER/INSIDER)
+      client.subscribe(`/user/queue/game_private`, (message: IMessage) => {
+        const privateInfo: GamePrivateMessage = JSON.parse(message.body);
+        console.log("Game private info received:", privateInfo);
+        setGamePrivateInfo(privateInfo);
       });
 
       // ⭐ ส่ง join message เพื่อขอข้อมูล players จาก backend
@@ -139,10 +148,24 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
+  // ⭐ Start game (only host can call)
+  const startGame = useCallback(() => {
+    if (clientRef.current && isConnected) {
+      console.log("Starting game triggered by:", playerUuid);
+
+      clientRef.current.publish({
+        destination: `/app/room/${roomCode}/start`,
+        body: JSON.stringify({ triggerByUuid: playerUuid }),
+      });
+    }
+  }, [roomCode, playerUuid, isConnected]);
+
   return {
     players,
     isConnected,
     lastUpdate,
+    gamePrivateInfo,
     toggleReady,
+    startGame,
   };
 }

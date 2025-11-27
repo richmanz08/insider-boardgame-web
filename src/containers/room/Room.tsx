@@ -32,13 +32,21 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     useRoomHook();
   const me = useSelector((state: RootState) => state.me.me);
 
-  const { players, isConnected, lastUpdate, toggleReady } = useRoomWebSocket(
-    roomData.roomCode,
-    me ? me.uuid : ""
-  );
+  const {
+    players,
+    isConnected,
+    lastUpdate,
+    toggleReady,
+    startGame,
+    gamePrivateInfo,
+  } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
-  // console.log("WebSocket players data:", players, isConnected, lastUpdate);
-  // console.log("Current user (me):", me);
+  console.log("WebSocket players data:", {
+    players,
+    isConnected,
+    lastUpdate,
+    gamePrivateInfo,
+  });
 
   const [roomName, setRoomName] = useState(roomData.roomName);
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
@@ -53,9 +61,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     return players.find((p) => p.uuid === me?.uuid);
   }, [players, me]);
 
-  const isHostMemorize = React.useMemo(() => {
-    return currentPlayerMemorize?.host || false;
-  }, [currentPlayerMemorize]);
+  const isHost = currentPlayerMemorize?.host || false;
 
   console.log(
     "Current player found currentPlayerMemorize:",
@@ -67,15 +73,16 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     const isReadyToStart = checkShowModalCountdownStart(players);
     if (isReadyToStart && !showCountdown) {
       const timer = setTimeout(() => {
-        setShowCountdown(true);
+        // setShowCountdown(true);
+        if (isHost) startGame();
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [players]);
+  }, [players, startGame]);
 
   const handleCountdownComplete = () => {
-    setShowCountdown(false);
-    setRoomStatus(RoomStatus.PLAYING);
+    // setShowCountdown(false);
+    // setRoomStatus(RoomStatus.PLAYING);
     console.log("Game started!");
     // TODO: เรียก API เริ่มเกม และ navigate ไปหน้าเกม
   };
@@ -162,7 +169,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           {roomStatus !== RoomStatus.PLAYING && (
             <div className="flex gap-2">
               {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
-              {isHostMemorize && (
+              {isHost && (
                 <Button
                   label="แก้ไขห้อง"
                   icon="pi pi-cog"
@@ -249,7 +256,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           <div className="h-24" />
 
           {/* Host Info */}
-          {isHostMemorize && (
+          {isHost && (
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-400">
                 <i className="pi pi-crown mr-1" />
