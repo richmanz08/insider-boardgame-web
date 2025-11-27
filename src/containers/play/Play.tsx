@@ -127,16 +127,16 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     setGameEnded(false);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <i className="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4" />
-          <p className="text-xl text-gray-400">กำลังแจกบทบาท...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <div className="text-center">
+  //         <i className="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4" />
+  //         <p className="text-xl text-gray-400">กำลังแจกบทบาท...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // ถ้าแสดงหน้าสรุปผลแล้ว
   if (showBoardTotalScore) {
