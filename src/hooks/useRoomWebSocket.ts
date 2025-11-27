@@ -37,6 +37,13 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
         setLastUpdate(update);
         setPlayers(update.players);
       });
+
+      // ⭐ ส่ง join message เพื่อขอข้อมูล players จาก backend
+      console.log("Sending join message for playerUuid:", playerUuid);
+      client.publish({
+        destination: `/app/room/${roomCode}/join`,
+        body: JSON.stringify({ playerUuid }),
+      });
     };
 
     client.onDisconnect = () => {
@@ -57,7 +64,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
         clientRef.current.deactivate();
       }
     };
-  }, [roomCode]);
+  }, [roomCode, playerUuid]);
 
   // Toggle ready status
   const toggleReady = useCallback(() => {
