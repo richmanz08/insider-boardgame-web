@@ -22,4 +22,6 @@ export interface PlayerData {
   host: boolean;
   ready: boolean;
   joinedAt: string;
+  active: boolean;
+  lastActiveAt: string;
 }

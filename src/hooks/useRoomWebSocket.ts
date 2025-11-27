@@ -58,42 +58,19 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     client.activate();
     clientRef.current = client;
 
-    // ⭐ ส่ง leave message เมื่อ unmount (ปิด tab, refresh, navigate)
-    const handleBeforeUnload = () => {
-      if (playerUuid && roomCode) {
-        console.log("beforeunload: Sending leave request via sendBeacon");
-
-        // สร้าง Blob สำหรับ sendBeacon (รองรับ Content-Type)
-        const blob = new Blob([JSON.stringify({ playerUuid, roomCode })], {
-          type: "application/json",
-        });
-
-        // ส่ง request แบบ synchronous ที่ browser จะรอให้ส่งเสร็จก่อนปิด
-        const sent = navigator.sendBeacon(`/api/room/leave`, blob);
-        console.log("sendBeacon result:", sent);
-      }
-    };
-
-    // ฟัง event ต่างๆ ที่ user อาจออกจากหน้า
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("pagehide", handleBeforeUnload);
-
-    // เพิ่ม visibilitychange สำหรับ mobile browser
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        handleBeforeUnload();
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    // ⭐ ไม่ส่ง leave message เมื่อ refresh/reload
+    // ให้ Backend จัดการผ่าน WebSocket disconnect event และ timeout แทน
+    console.log(
+      "Note: Not sending leave on refresh - Backend will handle via disconnect event"
+    );
 
     // Cleanup on unmount
     return () => {
       console.log("Cleaning up WebSocket...");
 
-      // ลบ event listeners
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("pagehide", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // ลบ event listeners (ถ้ามี)
+      // window.removeEventListener("beforeunload", handleBeforeUnload);
+      // window.removeEventListener("pagehide", handleBeforeUnload);
 
       // ส่ง leave message ผ่าน WebSocket
       if (clientRef.current?.connected && playerUuid) {

@@ -28,6 +28,14 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
             {player.playerName.charAt(0).toUpperCase()}
           </div>
+
+          {/* Active Status Indicator - จุดเขียว/เทา */}
+          <div
+            className="absolute top-0 right-0 w-4 h-4 rounded-full border-2 border-white"
+            style={{ backgroundColor: player.active ? "#10b981" : "#6b7280" }}
+            title={player.active ? "ออนไลน์" : "ออฟไลน์"}
+          />
+
           {/* Ready Indicator */}
           {player.ready && (
             <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
@@ -38,7 +46,27 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
 
         {/* Player Info */}
         <div className="flex-1">
-          <h3 className="text-lg font-bold mb-1">{player.playerName}</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg font-bold">{player.playerName}</h3>
+            {/* Active Badge */}
+            {player.active ? (
+              <span className="text-green-500 text-xs flex items-center gap-1">
+                <i
+                  className="pi pi-circle-fill"
+                  style={{ fontSize: "0.5rem" }}
+                />
+                ออนไลน์
+              </span>
+            ) : (
+              <span className="text-gray-500 text-xs flex items-center gap-1">
+                <i
+                  className="pi pi-circle-fill"
+                  style={{ fontSize: "0.5rem" }}
+                />
+                ออฟไลน์
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             {player.ready ? (
               <span className="text-green-500 text-sm flex items-center gap-1">
