@@ -12,7 +12,7 @@ import { PlayContainer } from "../play/Play";
 import { leaveRoomService } from "@/app/api/room/RoomService";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
 import { useRoomWebSocket } from "@/src/hooks/useRoomWebSocket";
 import { map } from "lodash";
@@ -20,6 +20,7 @@ import { PlayerCard } from "@/src/components/card/PlayerCard";
 import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
 import { useRoomHook } from "./hook";
 import { MINIMUM_PLAYERS } from "@/src/config/system";
+import { getActiveGameService } from "@/app/api/game/GameService";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -41,11 +42,20 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     gamePrivateInfo,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
+  // const { data: gameData } = useQuery({
+  //   queryKey: ["game", roomData.roomCode],
+  //   queryFn: async () => {
+  //     const gameRes = await getActiveGameService(roomData.roomCode);
+  //     return gameRes;
+  //   },
+  // });
+
   console.log("WebSocket players data:", {
     players,
     isConnected,
     lastUpdate,
     gamePrivateInfo,
+    // gameData,
   });
 
   const [roomName, setRoomName] = useState(roomData.roomName);
@@ -62,11 +72,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   }, [players, me]);
 
   const isHost = currentPlayerMemorize?.host || false;
-
-  console.log(
-    "Current player found currentPlayerMemorize:",
-    currentPlayerMemorize
-  );
 
   // Display countdown automatically when all players are ready and user is host
   useEffect(() => {
