@@ -13,6 +13,33 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<RoomUpdateMessage | null>(null);
 
+  // ⭐ ตรวจจับ Page Visibility (เมื่อ user สลับแท็บ/แอพ)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const isVisible = document.visibilityState === "visible";
+
+      console.log("Page visibility changed:", isVisible ? "visible" : "hidden");
+
+      // ส่ง status update ไปยัง backend
+      if (clientRef.current?.connected && playerUuid) {
+        clientRef.current.publish({
+          destination: `/app/room/${roomCode}/status`,
+          body: JSON.stringify({
+            playerUuid,
+            active: isVisible, // true = active, false = inactive
+          }),
+        });
+      }
+    };
+
+    // ฟัง visibility change event
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [roomCode, playerUuid]);
+
   // Connect to WebSocket
   useEffect(() => {
     const client = new Client({
@@ -40,9 +67,13 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
 
       // ⭐ ส่ง join message เพื่อขอข้อมูล players จาก backend
       console.log("Sending join message for playerUuid:", playerUuid);
+      const isVisible = document.visibilityState === "visible";
       client.publish({
         destination: `/app/room/${roomCode}/join`,
-        body: JSON.stringify({ playerUuid }),
+        body: JSON.stringify({
+          playerUuid,
+          active: isVisible, // ส่ง active status ตั้งแต่ join
+        }),
       });
     };
 
