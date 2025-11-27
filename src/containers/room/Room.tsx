@@ -21,6 +21,7 @@ import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
 import { useRoomHook } from "./hook";
 import { MINIMUM_PLAYERS } from "@/src/config/system";
 import { getActiveGameService } from "@/app/api/game/GameService";
+import { GameSummaryDto } from "@/src/hooks/interface";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -50,13 +51,14 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   //   },
   // });
 
-  console.log("WebSocket players data:", {
-    players,
-    isConnected,
-    lastUpdate,
-    gamePrivateInfo,
+  console.log(
+    "RoomContainer log data:",
+    { players },
+    { isConnected },
+    { lastUpdate },
+    { gamePrivateInfo }
     // gameData,
-  });
+  );
 
   const [roomName, setRoomName] = useState(roomData.roomName);
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
@@ -64,6 +66,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [hasPassword, setHasPassword] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
+  const [activeGame, setActiveGame] = useState<GameSummaryDto | null>(null);
 
   const allPlayersReady = players.every((p) => p.ready);
 
@@ -76,18 +79,29 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   // Display countdown automatically when all players are ready and user is host
   useEffect(() => {
     const isReadyToStart = checkShowModalCountdownStart(players);
-    if (isReadyToStart && !showCountdown) {
+    if (isReadyToStart) {
       const timer = setTimeout(() => {
-        // setShowCountdown(true);
         if (isHost) startGame();
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [players, startGame]);
 
+  useEffect(() => {
+    if (
+      lastUpdate &&
+      lastUpdate.activeGame &&
+      !showCountdown &&
+      roomStatus === RoomStatus.WAITING
+    ) {
+      setShowCountdown(true);
+      setActiveGame(lastUpdate.activeGame);
+    }
+  }, [lastUpdate]);
+
   const handleCountdownComplete = () => {
-    // setShowCountdown(false);
-    // setRoomStatus(RoomStatus.PLAYING);
+    setShowCountdown(false);
+    setRoomStatus(RoomStatus.PLAYING);
     console.log("Game started!");
     // TODO: เรียก API เริ่มเกม และ navigate ไปหน้าเกม
   };
@@ -211,8 +225,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         )}
       </div>
 
-      {roomStatus === RoomStatus.PLAYING ? (
+      {roomStatus === RoomStatus.PLAYING && gamePrivateInfo ? (
         <PlayContainer
+          myJob={gamePrivateInfo}
           roomCode={roomData.roomCode}
           onPlayEnd={function () {
             onResetRoom();

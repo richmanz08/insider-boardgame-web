@@ -7,6 +7,15 @@ export interface RoomUpdateMessage {
   status: string;
   players: PlayerData[];
   message: string;
+  activeGame: GameSummaryDto | null;
+}
+export interface GameSummaryDto {
+  id: string;
+  word: string; // usually not included in broadcast, but can be null
+  startedAt: string; // ISO string
+  endsAt: string; // ISO string
+  durationSeconds: number;
+  finished: boolean;
 }
 
 export enum RoomUpdateMessageType {

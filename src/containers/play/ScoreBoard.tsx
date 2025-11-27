@@ -2,8 +2,7 @@
 import React, { useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
-import { RolePlay } from "./Play";
-import { useRouter } from "next/navigation";
+import { RoleGame } from "@/src/hooks/interface";
 
 interface GameHistory {
   gameNumber: number;
@@ -12,7 +11,7 @@ interface GameHistory {
   answerFound: boolean; // ตอบถูกหรือไม่ (ภายในเวลา)
   timeUp: boolean; // เวลาหมดหรือไม่
   playerRoles: {
-    [playerId: string]: RolePlay;
+    [playerId: string]: RoleGame;
   };
   scores: {
     [playerId: string]: number; // คะแนนที่ได้ในเกมนี้
@@ -48,10 +47,10 @@ export const ScoreBoardContainer: React.FC<ScoreBoardConProps> = ({
       answerFound: true,
       timeUp: false,
       playerRoles: {
-        "1": RolePlay.PLAYER,
-        "2": RolePlay.MASTER,
-        "3": RolePlay.INSIDER,
-        "4": RolePlay.PLAYER,
+        "1": RoleGame.CITIZEN,
+        "2": RoleGame.MASTER,
+        "3": RoleGame.INSIDER,
+        "4": RoleGame.CITIZEN,
       },
       scores: {
         "1": 1, // Player ได้คะแนน (จับ insider ได้)
@@ -67,10 +66,10 @@ export const ScoreBoardContainer: React.FC<ScoreBoardConProps> = ({
       answerFound: true,
       timeUp: false,
       playerRoles: {
-        "1": RolePlay.INSIDER,
-        "2": RolePlay.PLAYER,
-        "3": RolePlay.MASTER,
-        "4": RolePlay.PLAYER,
+        "1": RoleGame.INSIDER,
+        "2": RoleGame.CITIZEN,
+        "3": RoleGame.MASTER,
+        "4": RoleGame.CITIZEN,
       },
       scores: {
         "1": 2, // Insider ได้ 2 คะแนน (ตอบถูก + ไม่ถูกจับ)
@@ -86,10 +85,10 @@ export const ScoreBoardContainer: React.FC<ScoreBoardConProps> = ({
       answerFound: false,
       timeUp: true,
       playerRoles: {
-        "1": RolePlay.PLAYER,
-        "2": RolePlay.INSIDER,
-        "3": RolePlay.PLAYER,
-        "4": RolePlay.MASTER,
+        "1": RoleGame.CITIZEN,
+        "2": RoleGame.INSIDER,
+        "3": RoleGame.CITIZEN,
+        "4": RoleGame.MASTER,
       },
       scores: {
         "1": 0, // Player ไม่ได้ (ตอบไม่ถูก)
@@ -122,9 +121,9 @@ export const ScoreBoardContainer: React.FC<ScoreBoardConProps> = ({
 
         totalScore += score;
 
-        if (role === RolePlay.INSIDER) gamesAsInsider++;
-        else if (role === RolePlay.MASTER) gamesAsMaster++;
-        else if (role === RolePlay.PLAYER) gamesAsPlayer++;
+        if (role === RoleGame.INSIDER) gamesAsInsider++;
+        else if (role === RoleGame.MASTER) gamesAsMaster++;
+        else if (role === RoleGame.CITIZEN) gamesAsPlayer++;
       });
 
       return {
@@ -142,24 +141,24 @@ export const ScoreBoardContainer: React.FC<ScoreBoardConProps> = ({
     (a, b) => b.totalScore - a.totalScore
   );
 
-  const getRoleIcon = (role: RolePlay) => {
+  const getRoleIcon = (role: RoleGame) => {
     switch (role) {
-      case RolePlay.INSIDER:
+      case RoleGame.INSIDER:
         return "pi-eye";
-      case RolePlay.MASTER:
+      case RoleGame.MASTER:
         return "pi-crown";
-      case RolePlay.PLAYER:
+      case RoleGame.CITIZEN:
         return "pi-user";
     }
   };
 
-  const getRoleColor = (role: RolePlay) => {
+  const getRoleColor = (role: RoleGame) => {
     switch (role) {
-      case RolePlay.INSIDER:
+      case RoleGame.INSIDER:
         return "text-red-500";
-      case RolePlay.MASTER:
+      case RoleGame.MASTER:
         return "text-purple-500";
-      case RolePlay.PLAYER:
+      case RoleGame.CITIZEN:
         return "text-blue-500";
     }
   };

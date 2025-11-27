@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
-import { RolePlay } from "./Play";
+import { RoleGame } from "@/src/hooks/interface";
+import { usePlayHook } from "./hook";
 
 interface Player {
   id: string;
@@ -10,13 +11,13 @@ interface Player {
   isHost: boolean;
   avatar?: string;
   votes: number; // จำนวนโหวตที่ได้รับ
-  role?: RolePlay; // จะถูกเปิดเผยในตอนท้าย
+  role?: RoleGame; // จะถูกเปิดเผยในตอนท้าย
 }
 
 interface VotePlayerProps {
   roomId?: string;
   myPlayerId: string;
-  myRole: RolePlay;
+  myRole: RoleGame;
   onVoteComplete: (votedPlayerId: string) => void;
   onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
 }
@@ -29,7 +30,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   onNavigateToEndgame,
 }) => {
   console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลจาก API
-
+  const { getRoleDisplay } = usePlayHook();
   // Mock players data
   const [players, setPlayers] = useState<Player[]>([
     { id: "1", name: "PlayerOne", isHost: false, votes: 0 },
@@ -57,10 +58,10 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
           votes: Math.floor(Math.random() * 3), // Random 0-2 votes
           role:
             p.id === "1"
-              ? RolePlay.INSIDER
+              ? RoleGame.INSIDER
               : p.id === "2"
-              ? RolePlay.MASTER
-              : RolePlay.PLAYER,
+              ? RoleGame.MASTER
+              : RoleGame.CITIZEN,
         }));
         setPlayers(updatedPlayers);
         setAllVoted(true);
@@ -137,7 +138,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   ]);
 
   const handleVote = (playerId: string) => {
-    if (myRole === RolePlay.MASTER) {
+    if (myRole === RoleGame.MASTER) {
       return; // Master ไม่สามารถโหวตได้
     }
 
@@ -149,34 +150,8 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     onVoteComplete(playerId);
   };
 
-  const isMaster = myRole === RolePlay.MASTER;
+  const isMaster = myRole === RoleGame.MASTER;
   const canVote = !isMaster && !myVote;
-
-  const getRoleDisplay = (role: RolePlay) => {
-    switch (role) {
-      case RolePlay.INSIDER:
-        return {
-          name: "Insider",
-          color: "text-red-500",
-          bgColor: "from-red-600 to-red-800",
-          icon: "pi-eye",
-        };
-      case RolePlay.MASTER:
-        return {
-          name: "Master",
-          color: "text-purple-500",
-          bgColor: "from-purple-600 to-purple-800",
-          icon: "pi-crown",
-        };
-      case RolePlay.PLAYER:
-        return {
-          name: "Player",
-          color: "text-blue-500",
-          bgColor: "from-blue-600 to-blue-800",
-          icon: "pi-user",
-        };
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
@@ -353,12 +328,12 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                 <h2 className="text-2xl font-bold text-white mb-4">
                   ผลการโหวต
                 </h2>
-                {players.find((p) => p.role === RolePlay.INSIDER) && (
+                {players.find((p) => p.role === RoleGame.INSIDER) && (
                   <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 mb-4">
                     <p className="text-red-300 text-lg font-semibold">
                       <i className="pi pi-eye mr-2" />
                       Insider คือ:{" "}
-                      {players.find((p) => p.role === RolePlay.INSIDER)?.name}
+                      {players.find((p) => p.role === RoleGame.INSIDER)?.name}
                     </p>
                   </div>
                 )}

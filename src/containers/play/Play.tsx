@@ -5,37 +5,34 @@ import { Card } from "primereact/card";
 import { GamePlay } from "./GamePlay";
 import { VotePlayer } from "./VotePlayer";
 import { ScoreBoardContainer } from "./ScoreBoard";
+import { GamePrivateMessage, RoleGame } from "@/src/hooks/interface";
+import { usePlayHook } from "./hook";
 
-export enum RolePlay {
-  INSIDER = "INSIDER",
-  MASTER = "MASTER",
-  PLAYER = "PLAYER",
-}
-
-export enum AnswerType {
-  PLACE = "PLACE", // สถานที่
-  THING = "THING", // สิ่งของ
-}
-
-interface RoleAssignment {
-  role: RolePlay;
-  answerType?: AnswerType; // MASTER และ INSIDER จะรู้ว่าเป็นสถานที่หรือสิ่งของ
+export interface RoleAssignment {
+  role: RoleGame;
   answer?: string; // MASTER จะรู้คำตอบที่แท้จริง
 }
 
 interface PlayContainerProps {
+  myJob: GamePrivateMessage;
   roomCode: string;
   onPlayEnd: () => void;
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
   roomCode,
+  myJob,
   onPlayEnd,
 }) => {
-  console.log("Room Code:", roomCode); // TODO: ใช้ดึงข้อมูลเกมจาก API
+  console.log("Room PlayContainer:", roomCode, myJob); // TODO: ใช้ดึงข้อมูลเกมจาก API
+
+  const { getRoleDisplay } = usePlayHook();
 
   const [isCardFlipped, setIsCardFlipped] = useState(false);
-  const [myRole, setMyRole] = useState<RoleAssignment | null>(null);
+  const myRole: RoleAssignment = {
+    role: myJob.role,
+    ...(myJob.word && { answer: myJob.word }),
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
@@ -47,70 +44,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   const [totalPlayers] = useState(4); // TODO: ดึงจาก API
   const [flippedPlayers, setFlippedPlayers] = useState(0);
   const [currentUserId] = useState("2"); // Mock current user ID
-
-  // Mock function: สุ่มบทบาทและคำตอบ
-  useEffect(() => {
-    const assignRole = () => {
-      // TODO: เรียก API เพื่อดึงบทบาทที่ระบบแจกให้
-      // ตอนนี้ใช้ mock data
-      const roles: RolePlay[] = [
-        RolePlay.PLAYER,
-        RolePlay.MASTER,
-        RolePlay.INSIDER,
-      ];
-      const answerTypes: AnswerType[] = [AnswerType.PLACE, AnswerType.THING];
-
-      // สุ่มบทบาท
-      //   const randomRole = roles[Math.floor(Math.random() * roles.length)];
-      const randomRole = roles[0];
-      const randomAnswerType =
-        answerTypes[Math.floor(Math.random() * answerTypes.length)];
-
-      // ตัวอย่างคำตอบ
-      const placeAnswers = [
-        "สนามบิน",
-        "โรงพยาบาล",
-        "ห้างสรรพสินค้า",
-        "โรงเรียน",
-        "สวนสาธารณะ",
-      ];
-      const thingAnswers = [
-        "มือถือ",
-        "แว่นตา",
-        "กระเป๋า",
-        "รองเท้า",
-        "หนังสือ",
-      ];
-
-      const randomAnswer =
-        randomAnswerType === AnswerType.PLACE
-          ? placeAnswers[Math.floor(Math.random() * placeAnswers.length)]
-          : thingAnswers[Math.floor(Math.random() * thingAnswers.length)];
-
-      const assignment: RoleAssignment = {
-        role: randomRole,
-      };
-
-      // MASTER รู้ทั้งประเภทและคำตอบ
-      if (randomRole === RolePlay.MASTER) {
-        assignment.answerType = randomAnswerType;
-        assignment.answer = randomAnswer;
-      }
-      // INSIDER รู้เฉพาะประเภทและคำตอบ (เหมือน MASTER)
-      else if (randomRole === RolePlay.INSIDER) {
-        assignment.answerType = randomAnswerType;
-        assignment.answer = randomAnswer;
-      }
-      // PLAYER ไม่รู้อะไรเลย
-
-      setMyRole(assignment);
-      setIsLoading(false);
-    };
-
-    // Simulate API delay
-    const timer = setTimeout(assignRole, 1000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // จำลองการที่ผู้เล่นคนอื่นเปิดการ์ด (ใน production จะใช้ WebSocket)
   useEffect(() => {
@@ -171,36 +104,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
-  const getAnswerTypeDisplay = (type: AnswerType) => {
-    return type === AnswerType.PLACE ? "สถานที่" : "สิ่งของ";
-  };
-
-  const getRoleDisplay = (role: RolePlay) => {
-    switch (role) {
-      case RolePlay.INSIDER:
-        return {
-          name: "Insider",
-          color: "text-red-500",
-          bgColor: "from-red-600 to-red-800",
-          icon: "pi-eye",
-        };
-      case RolePlay.MASTER:
-        return {
-          name: "Master",
-          color: "text-purple-500",
-          bgColor: "from-purple-600 to-purple-800",
-          icon: "pi-crown",
-        };
-      case RolePlay.PLAYER:
-        return {
-          name: "Player",
-          color: "text-blue-500",
-          bgColor: "from-blue-600 to-blue-800",
-          icon: "pi-user",
-        };
-    }
   };
 
   const handleTimeUp = () => {
@@ -410,7 +313,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
                       {/* Role Information */}
                       <div className="w-full space-y-4">
-                        {myRole.role === RolePlay.PLAYER && (
+                        {myRole.role === RoleGame.CITIZEN && (
                           <>
                             <i className="pi pi-question-circle text-white text-3xl mb-3" />
                             <p className="text-white text-lg">
@@ -422,7 +325,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
                           </>
                         )}
 
-                        {myRole.role === RolePlay.MASTER && (
+                        {myRole.role === RoleGame.MASTER && (
                           <div className="space-y-3">
                             {/* Image Display */}
                             {myRole.answer && (
@@ -439,17 +342,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
                                 </div>
                               </div>
                             )}
-
-                            {/* Answer Type */}
-                            <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700">
-                              <p className="text-gray-300 text-xs mb-1">
-                                ประเภท:
-                              </p>
-                              <p className="text-white text-lg font-bold">
-                                {myRole.answerType &&
-                                  getAnswerTypeDisplay(myRole.answerType)}
-                              </p>
-                            </div>
 
                             {/* Answer */}
                             <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">
@@ -471,7 +363,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
                           </div>
                         )}
 
-                        {myRole.role === RolePlay.INSIDER && (
+                        {myRole.role === RoleGame.INSIDER && (
                           <div className="space-y-3">
                             {/* Image Display */}
                             {myRole.answer && (
@@ -488,17 +380,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
                                 </div>
                               </div>
                             )}
-
-                            {/* Answer Type */}
-                            <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700">
-                              <p className="text-gray-300 text-xs mb-1">
-                                ประเภท:
-                              </p>
-                              <p className="text-white text-lg font-bold">
-                                {myRole.answerType &&
-                                  getAnswerTypeDisplay(myRole.answerType)}
-                              </p>
-                            </div>
 
                             {/* Answer */}
                             <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">

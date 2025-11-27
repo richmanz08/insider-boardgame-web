@@ -3,14 +3,10 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
-import { RolePlay, AnswerType } from "./Play";
 import { Tip } from "./Tip";
-
-interface RoleAssignment {
-  role: RolePlay;
-  answerType?: AnswerType;
-  answer?: string;
-}
+import { RoleAssignment } from "./Play";
+import { RoleGame } from "@/src/hooks/interface";
+import { usePlayHook } from "./hook";
 
 interface GamePlayProps {
   myRole: RoleAssignment;
@@ -25,6 +21,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
   onTimeUp,
   onEndGame,
 }) => {
+  const { getRoleDisplay } = usePlayHook();
   const [showRole, setShowRole] = useState(true);
   const [showEndGameConfirm, setShowEndGameConfirm] = useState(false);
 
@@ -38,39 +35,6 @@ export const GamePlay: React.FC<GamePlayProps> = ({
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
-  const getRoleDisplay = (role: RolePlay) => {
-    switch (role) {
-      case RolePlay.INSIDER:
-        return {
-          name: "Insider",
-          color: "text-red-500",
-          bgColor: "from-red-600 to-red-800",
-          icon: "pi-eye",
-          description: "บงการผู้เล่นไปสู่คำตอบโดยไม่ให้ถูกจับได้",
-        };
-      case RolePlay.MASTER:
-        return {
-          name: "Master",
-          color: "text-purple-500",
-          bgColor: "from-purple-600 to-purple-800",
-          icon: "pi-crown",
-          description: "ให้คำใบ้โดยไม่เปิดเผยคำตอบโดยตรง",
-        };
-      case RolePlay.PLAYER:
-        return {
-          name: "Player",
-          color: "text-blue-500",
-          bgColor: "from-blue-600 to-blue-800",
-          icon: "pi-user",
-          description: "ถามคำถามเพื่อหาคำตอบ",
-        };
-    }
-  };
-
-  const getAnswerTypeDisplay = (type: AnswerType) => {
-    return type === AnswerType.PLACE ? "สถานที่" : "สิ่งของ";
   };
 
   const roleDisplay = getRoleDisplay(myRole.role);
@@ -145,7 +109,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
           )}
 
           {/* Master End Game Button */}
-          {myRole.role === RolePlay.MASTER && onEndGame && (
+          {myRole.role === RoleGame.MASTER && onEndGame && (
             <div className="mt-3 text-center">
               <Button
                 label="จบเกม (มีคนตอบถูกแล้ว)"
@@ -254,10 +218,10 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                 </div>
 
                 {/* Role Information */}
-                {myRole.role !== RolePlay.PLAYER && (
+                {myRole.role !== RoleGame.CITIZEN && (
                   <div className="space-y-4">
                     {/* Image Display - Only for Master */}
-                    {myRole.role === RolePlay.MASTER && myRole.answer && (
+                    {myRole.role === RoleGame.MASTER && myRole.answer && (
                       <div className="bg-gray-800 bg-opacity-60 rounded-lg p-4 overflow-hidden border border-gray-700">
                         <p className="text-gray-200 text-sm mb-3">รูปภาพ:</p>
                         <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900">
@@ -273,15 +237,6 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                       </div>
                     )}
 
-                    {/* Type Information */}
-                    <div className="bg-gray-800 bg-opacity-60 rounded-lg p-4 border border-gray-700">
-                      <p className="text-gray-200 text-sm mb-2">ประเภท:</p>
-                      <p className="text-white text-xl font-bold">
-                        {myRole.answerType &&
-                          getAnswerTypeDisplay(myRole.answerType)}
-                      </p>
-                    </div>
-
                     {/* Answer Information */}
                     <div className="bg-gray-700 bg-opacity-70 rounded-lg p-4 border border-gray-600">
                       <p className="text-gray-200 text-sm mb-2">คำตอบ:</p>
@@ -291,7 +246,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                     </div>
 
                     {/* Role specific instructions */}
-                    {myRole.role === RolePlay.MASTER && (
+                    {myRole.role === RoleGame.MASTER && (
                       <div className="bg-yellow-500 bg-opacity-20 rounded-lg p-4">
                         <p className="text-yellow-200 text-sm">
                           <i className="pi pi-info-circle mr-2" />
@@ -300,7 +255,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                       </div>
                     )}
 
-                    {myRole.role === RolePlay.INSIDER && (
+                    {myRole.role === RoleGame.INSIDER && (
                       <div className="bg-red-500 bg-opacity-20 rounded-lg p-4">
                         <p className="text-red-200 text-sm">
                           <i className="pi pi-eye mr-2" />
@@ -311,7 +266,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                   </div>
                 )}
 
-                {myRole.role === RolePlay.PLAYER && (
+                {myRole.role === RoleGame.CITIZEN && (
                   <div className="bg-gray-800 bg-opacity-60 rounded-lg p-6 text-center border border-gray-700">
                     <i className="pi pi-question-circle text-white text-4xl mb-3" />
                     <p className="text-white text-xl font-semibold">
