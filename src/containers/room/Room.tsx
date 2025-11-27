@@ -228,8 +228,10 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         )}
       </div>
 
-      {roomStatus === RoomStatus.PLAYING && gamePrivateInfo ? (
+      {roomStatus === RoomStatus.PLAYING && gamePrivateInfo && activeGame ? (
         <PlayContainer
+          players={players}
+          gameSetting={activeGame}
           myJob={gamePrivateInfo}
           roomCode={roomData.roomCode}
           onPlayEnd={function () {

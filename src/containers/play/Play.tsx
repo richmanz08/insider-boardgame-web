@@ -5,8 +5,14 @@ import { Card } from "primereact/card";
 import { GamePlay } from "./GamePlay";
 import { VotePlayer } from "./VotePlayer";
 import { ScoreBoardContainer } from "./ScoreBoard";
-import { GamePrivateMessage, RoleGame } from "@/src/hooks/interface";
+import {
+  GamePrivateMessage,
+  GameSummaryDto,
+  PlayerData,
+  RoleGame,
+} from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
+import { WaitingOpenCardBox } from "./WaitingOpenCardBox";
 
 export interface RoleAssignment {
   role: RoleGame;
@@ -14,17 +20,21 @@ export interface RoleAssignment {
 }
 
 interface PlayContainerProps {
+  players: PlayerData[];
   myJob: GamePrivateMessage;
   roomCode: string;
+  gameSetting: GameSummaryDto;
   onPlayEnd: () => void;
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
+  players,
   roomCode,
   myJob,
+  gameSetting,
   onPlayEnd,
 }) => {
-  console.log("Room PlayContainer:", roomCode, myJob); // TODO: ใช้ดึงข้อมูลเกมจาก API
+  console.log("Room PlayContainer:", roomCode, myJob, gameSetting); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
   const { getRoleDisplay } = usePlayHook();
 
@@ -37,45 +47,47 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
-  const [timeRemaining, setTimeRemaining] = useState(5); // 10 นาที = 600 วินาที
+  const [timeRemaining, setTimeRemaining] = useState(
+    gameSetting.durationSeconds
+  );
   const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 
   // Mock: จำนวนผู้เล่นทั้งหมดและผู้เล่นที่เปิดการ์ดแล้ว
-  const [totalPlayers] = useState(4); // TODO: ดึงจาก API
+
   const [flippedPlayers, setFlippedPlayers] = useState(0);
   const [currentUserId] = useState("2"); // Mock current user ID
 
   // จำลองการที่ผู้เล่นคนอื่นเปิดการ์ด (ใน production จะใช้ WebSocket)
-  useEffect(() => {
-    if (isCardFlipped) {
-      // TODO: ส่งสัญญาณไปยัง WebSocket ว่าผู้เล่นคนนี้เปิดการ์ดแล้ว
-      console.log("Card flipped, notifying other players...");
-      setFlippedPlayers(1); // เริ่มจากตัวเอง
+  // useEffect(() => {
+  //   if (isCardFlipped) {
+  //     // TODO: ส่งสัญญาณไปยัง WebSocket ว่าผู้เล่นคนนี้เปิดการ์ดแล้ว
+  //     console.log("Card flipped, notifying other players...");
+  //     setFlippedPlayers(1); // เริ่มจากตัวเอง
 
-      // Mock: จำลองผู้เล่นคนอื่นเปิดการ์ดทีละคน
-      const intervals: NodeJS.Timeout[] = [];
+  //     // Mock: จำลองผู้เล่นคนอื่นเปิดการ์ดทีละคน
+  //     const intervals: NodeJS.Timeout[] = [];
 
-      for (let i = 2; i <= totalPlayers; i++) {
-        const timer = setTimeout(() => {
-          setFlippedPlayers(i);
-          console.log(`Player ${i} flipped card`);
+  //     for (let i = 2; i <= totalPlayers; i++) {
+  //       const timer = setTimeout(() => {
+  //         setFlippedPlayers(i);
+  //         console.log(`Player ${i} flipped card`);
 
-          // เมื่อทุกคนเปิดการ์ดครบแล้ว
-          if (i === totalPlayers) {
-            setTimeout(() => {
-              setAllPlayersFlipped(true);
-              setGameStarted(true);
-              console.log("All players ready! Game starting...");
-            }, 500);
-          }
-        }, i * 1000); // แต่ละคนห่างกัน 1 วินาที
+  //         // เมื่อทุกคนเปิดการ์ดครบแล้ว
+  //         if (i === totalPlayers) {
+  //           setTimeout(() => {
+  //             setAllPlayersFlipped(true);
+  //             setGameStarted(true);
+  //             console.log("All players ready! Game starting...");
+  //           }, 500);
+  //         }
+  //       }, i * 1000); // แต่ละคนห่างกัน 1 วินาที
 
-        intervals.push(timer);
-      }
+  //       intervals.push(timer);
+  //     }
 
-      return () => intervals.forEach(clearTimeout);
-    }
-  }, [isCardFlipped, totalPlayers]);
+  //     return () => intervals.forEach(clearTimeout);
+  //   }
+  // }, [isCardFlipped, totalPlayers]);
 
   // เริ่มนับเวลาถอยหลังเมื่อทุกคนเปิดการ์ดแล้ว
   useEffect(() => {
@@ -207,7 +219,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
                 </p>
                 {allPlayersFlipped && (
                   <p className="text-xs text-gray-400 mt-1">
-                    ผู้เล่นครบ {totalPlayers} คน
+                    ผู้เล่นครบ {players.length} คน
                   </p>
                 )}
               </div>
@@ -411,44 +423,10 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
           {/* Waiting for other players */}
           {isCardFlipped && !gameStarted && (
-            <div className="text-center mt-8 animate-fade-in">
-              <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-6 inline-block min-w-[300px]">
-                <i className="pi pi-spin pi-spinner text-3xl text-blue-400 mb-3" />
-                <p className="text-lg text-blue-300 font-semibold mb-3">
-                  รอผู้เล่นคนอื่นเปิดการ์ด...
-                </p>
-
-                {/* Player counter */}
-                <div className="bg-blue-800/50 rounded-lg p-3 mb-3">
-                  <div className="flex items-center justify-center gap-2 text-2xl font-bold">
-                    <span className="text-green-400">{flippedPlayers}</span>
-                    <span className="text-gray-400">/</span>
-                    <span className="text-white">{totalPlayers}</span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    ผู้เล่นที่เปิดการ์ดแล้ว
-                  </p>
-                </div>
-
-                {/* Progress indicators */}
-                <div className="flex justify-center gap-2">
-                  {Array.from({ length: totalPlayers }).map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                        index < flippedPlayers
-                          ? "bg-green-500 scale-110"
-                          : "bg-gray-600"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                <p className="text-sm text-gray-400 mt-4">
-                  เกมจะเริ่มอัตโนมัติเมื่อทุกคนพร้อม
-                </p>
-              </div>
-            </div>
+            <WaitingOpenCardBox
+              playersLength={players.length}
+              flippedPlayers={flippedPlayers}
+            />
           )}
 
           {/* Warning */}
