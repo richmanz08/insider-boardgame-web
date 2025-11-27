@@ -67,6 +67,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [activeGame, setActiveGame] = useState<GameSummaryDto | null>(null);
+  const [hostStartGame, setHostStartGame] = useState(false);
 
   const allPlayersReady = players.every((p) => p.ready);
 
@@ -78,11 +79,13 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
   // Display countdown automatically when all players are ready and user is host
   useEffect(() => {
+    if (activeGame || !isHost || hostStartGame) return;
     const isReadyToStart = checkShowModalCountdownStart(players);
     if (isReadyToStart) {
       const timer = setTimeout(() => {
-        if (isHost) startGame();
-      }, 1000);
+        startGame();
+        setHostStartGame(true);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [players, startGame]);

@@ -34,7 +34,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
       // Subscribe to room updates
       client.subscribe(`/topic/room/${roomCode}`, (message: IMessage) => {
         const update: RoomUpdateMessage = JSON.parse(message.body);
-        console.log("Room update received:", update);
+        console.log("@@@@@ Room update received:", update);
 
         setLastUpdate(update);
         setPlayers(update.players);
@@ -43,7 +43,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
       // ⭐ Subscribe to game private messages (role & word for MASTER/INSIDER)
       client.subscribe(`/user/queue/game_private`, (message: IMessage) => {
         const privateInfo: GamePrivateMessage = JSON.parse(message.body);
-        console.log("Game private info received:", privateInfo);
+        console.log("@@@@@Game private info received:", privateInfo);
         setGamePrivateInfo(privateInfo);
       });
 
@@ -92,7 +92,10 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     const handleVisibilityChange = () => {
       const isVisible = document.visibilityState === "visible";
 
-      console.log("Page visibility changed:", isVisible ? "visible" : "hidden");
+      console.log(
+        "@@@@@Page visibility changed:",
+        isVisible ? "visible" : "hidden"
+      );
 
       // ส่ง status update ไปยัง backend
       if (clientRef.current?.connected && playerUuid) {
@@ -151,7 +154,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   // ⭐ Start game (only host can call)
   const startGame = useCallback(() => {
     if (clientRef.current && isConnected) {
-      console.log("Starting game triggered by:", playerUuid);
+      console.log("@@@@@Starting game triggered by:", playerUuid);
 
       clientRef.current.publish({
         destination: `/app/room/${roomCode}/start`,

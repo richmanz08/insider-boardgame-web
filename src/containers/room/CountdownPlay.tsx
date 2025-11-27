@@ -86,10 +86,5 @@ export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
 
   // ใช้ open เป็น key เพื่อ remount component เมื่อเปิด modal ใหม่
   // จะทำให้ countdown รีเซ็ตเป็น 5 อัตโนมัติ
-  return (
-    <CountdownContent
-      key={String(open)}
-      onCountdownComplete={onCountdownComplete}
-    />
-  );
+  return <CountdownContent onCountdownComplete={onCountdownComplete} />;
 };
