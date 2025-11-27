@@ -25,6 +25,7 @@ export enum RoomUpdateMessageType {
   ROOM_UPDATE = "ROOM_UPDATE",
   GAME_STARTED = "GAME_STARTED",
   GAME_FINISHED = "GAME_FINISHED",
+  CARD_OPENED = "CARD_OPENED",
 }
 
 export interface PlayerData {
@@ -50,4 +51,17 @@ export enum RoleGame {
 
 export interface StartGameRequest {
   triggerByUuid: string;
+}
+
+export interface ActiveGame {
+  id?: string | null; // UUID string
+  roomCode: string;
+  word?: string | null; // may be "" or null for non-authorized users
+  roles?: Record<string, RoleGame>; // playerUuid -> role name
+  startedAt?: string | null; // ISO string (server LocalDateTime.toString())
+  endsAt?: string | null; // ISO string
+  durationSeconds?: number;
+  finished?: boolean;
+  // cardOpened: playerUuid -> boolean (true = player has opened their card)
+  cardOpened?: Record<string, boolean>;
 }

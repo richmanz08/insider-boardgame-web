@@ -6,6 +6,7 @@ import { GamePlay } from "./GamePlay";
 import { VotePlayer } from "./VotePlayer";
 import { ScoreBoardContainer } from "./ScoreBoard";
 import {
+  ActiveGame,
   GamePrivateMessage,
   GameSummaryDto,
   PlayerData,
@@ -23,7 +24,7 @@ interface PlayContainerProps {
   players: PlayerData[];
   myJob: GamePrivateMessage;
   roomCode: string;
-  gameSetting: GameSummaryDto;
+  activeGame: GameSummaryDto;
   onPlayEnd: () => void;
   onOpenCard: () => void;
 }
@@ -32,11 +33,11 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   players,
   roomCode,
   myJob,
-  gameSetting,
+  activeGame,
   onPlayEnd,
   onOpenCard,
 }) => {
-  console.log("Room PlayContainer:", roomCode, myJob, gameSetting); // TODO: ใช้ดึงข้อมูลเกมจาก API
+  console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
   const { getRoleDisplay } = usePlayHook();
 
@@ -50,7 +51,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
   const [timeRemaining, setTimeRemaining] = useState(
-    gameSetting.durationSeconds
+    activeGame.durationSeconds ?? 0
   );
   const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 

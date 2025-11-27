@@ -1,9 +1,12 @@
-// hooks/useRoomWebSocket.ts
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
-import { PlayerData, RoomUpdateMessage, GamePrivateMessage } from "./interface";
+import {
+  PlayerData,
+  RoomUpdateMessage,
+  GamePrivateMessage,
+  ActiveGame,
+} from "./interface";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080/ws";
 
@@ -15,56 +18,80 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   const [gamePrivateInfo, setGamePrivateInfo] =
     useState<GamePrivateMessage | null>(null);
 
-  // Connect to WebSocket และ Setup Visibility Detection
+  // NEW: activeGame snapshot (may contain cardOpened map)
+  const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
+
   useEffect(() => {
     const client = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
-      // debug: (str) => {
-      //   console.log("STOMP: " + str);
-      // },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
 
     client.onConnect = () => {
-      console.log("WebSocket Connected!");
       setIsConnected(true);
 
       // Subscribe to room updates
       client.subscribe(`/topic/room/${roomCode}`, (message: IMessage) => {
         const update: RoomUpdateMessage = JSON.parse(message.body);
-        console.log("@@@@@ Room update received:", update);
+        console.log("Room update received:", update);
 
         setLastUpdate(update);
         setPlayers(update.players);
+
+        // QUICK-ON-DEMAND FLOW:
+        // Request per-user active game snapshot when:
+        //  - the server announced CARD_OPENED (someone opened a card),
+        //  - OR the game started (GAME_STARTED) — we need the full game to get roles/cardOpened/endsAt,
+        //  - OR the broadcast included an activeGame summary (safety).
+        if (
+          update.type === "CARD_OPENED" ||
+          update.type === "GAME_STARTED" ||
+          (update.activeGame !== undefined && update.activeGame !== null)
+        ) {
+          if (clientRef.current?.connected && playerUuid) {
+            clientRef.current.publish({
+              destination: `/app/room/${roomCode}/active_game`,
+              body: JSON.stringify({ playerUuid }),
+            });
+          }
+        }
       });
 
-      // ⭐ Subscribe to game private messages (role & word for MASTER/INSIDER)
+      // Subscribe to per-user active_game response (server sends to /user/queue/active_game)
+      client.subscribe("/user/queue/active_game", (message: IMessage) => {
+        try {
+          const payload = JSON.parse(message.body);
+          // server might send either { game: {...} } or direct Game object
+          const game = payload && payload.game ? payload.game : payload;
+          console.log("active_game (user queue) received:", game);
+          setActiveGame(game);
+        } catch (err) {
+          console.error("Failed parse active_game response:", err);
+        }
+      });
+
+      // Subscribe to game private messages (role & word for MASTER/INSIDER)
       client.subscribe(`/user/queue/game_private`, (message: IMessage) => {
         const privateInfo: GamePrivateMessage = JSON.parse(message.body);
-        console.log("@@@@@Game private info received:", privateInfo);
+        console.log("Game private info received:", privateInfo);
         setGamePrivateInfo(privateInfo);
       });
 
-      // ⭐ ส่ง join message เพื่อขอข้อมูล players จาก backend
-      // console.log("Sending join message for playerUuid:", playerUuid);
-
+      // join
       client.publish({
         destination: `/app/room/${roomCode}/join`,
         body: JSON.stringify({
           playerUuid,
-          active: true, // ⭐ ส่ง true เสมอเมื่อ join (ถ้า join ได้ = หน้าต้อง active)
+          active: true,
         }),
       });
 
-      // ส่ง status update หลัง join เสร็จ เพื่อซิงค์ visibility state
+      // sync visibility after join
       setTimeout(() => {
         const isVisible = document.visibilityState === "visible";
-        console.log("Post-join visibility check:", isVisible);
-
         if (!isVisible && clientRef.current?.connected) {
-          // ถ้าหน้าไม่ visible จริงๆ (เช่น switch tab ระหว่างโหลด) ให้ส่ง update
           clientRef.current.publish({
             destination: `/app/room/${roomCode}/status`,
             body: JSON.stringify({
@@ -73,11 +100,10 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
             }),
           });
         }
-      }, 500); // รอ 500ms หลัง join
+      }, 500);
     };
 
     client.onDisconnect = () => {
-      console.log("WebSocket Disconnected");
       setIsConnected(false);
     };
 
@@ -88,42 +114,22 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     client.activate();
     clientRef.current = client;
 
-    // ⭐ Setup Page Visibility Detection (หลัง WebSocket connect)
     const handleVisibilityChange = () => {
       const isVisible = document.visibilityState === "visible";
-
-      // console.log(
-      //   "@@@@@Page visibility changed:",
-      //   isVisible ? "visible" : "hidden"
-      // );
-
-      // ส่ง status update ไปยัง backend
       if (clientRef.current?.connected && playerUuid) {
         clientRef.current.publish({
           destination: `/app/room/${roomCode}/status`,
           body: JSON.stringify({
             playerUuid,
-            active: isVisible, // true = active, false = inactive
+            active: isVisible,
           }),
         });
       }
     };
-
-    // ฟัง visibility change event
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // console.log(
-    //   "Note: Not sending leave on refresh - Backend will handle via disconnect event"
-    // );
-
-    // Cleanup on unmount
     return () => {
-      // console.log("Cleaning up WebSocket...");
-
-      // ลบ visibility event listener
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-
-      // ส่ง leave message ผ่าน WebSocket
       if (clientRef.current?.connected && playerUuid) {
         try {
           clientRef.current.publish({
@@ -134,16 +140,13 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           console.error("Error sending leave message:", error);
         }
       }
-
       clientRef.current?.deactivate();
     };
   }, [roomCode, playerUuid]);
 
-  // ⭐ Toggle ready status
+  // Toggle ready
   const toggleReady = useCallback(() => {
     if (clientRef.current && isConnected) {
-      console.log("Sending ready toggle for playerUuid:", playerUuid);
-
       clientRef.current.publish({
         destination: `/app/room/${roomCode}/ready`,
         body: JSON.stringify({ playerUuid }),
@@ -151,11 +154,9 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
-  // ⭐ Start game (only host can call)
+  // Start game (host)
   const startGame = useCallback(() => {
     if (clientRef.current && isConnected) {
-      console.log("@@@@@Starting game triggered by:", playerUuid);
-
       clientRef.current.publish({
         destination: `/app/room/${roomCode}/start`,
         body: JSON.stringify({ triggerByUuid: playerUuid }),
@@ -163,13 +164,17 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
-  // ⭐ Handle card opened event
+  // Handle card opened (user action)
   const handleCardOpened = useCallback(() => {
     if (clientRef.current && isConnected) {
-      console.log("@@@@Card opened by:", playerUuid);
-
       clientRef.current.publish({
         destination: `/app/room/${roomCode}/open_card`,
+        body: JSON.stringify({ playerUuid }),
+      });
+
+      // Optionally also request snapshot immediately (redundant if server broadcasts CARD_OPENED)
+      clientRef.current.publish({
+        destination: `/app/room/${roomCode}/active_game`,
         body: JSON.stringify({ playerUuid }),
       });
     }
@@ -179,6 +184,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     players,
     isConnected,
     lastUpdate,
+    activeGame, // NEW: the per-user active game snapshot (may contain cardOpened map)
     gamePrivateInfo,
     toggleReady,
     startGame,

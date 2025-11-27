@@ -42,6 +42,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     startGame,
     gamePrivateInfo,
     handleCardOpened,
+    // activeGame,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
   // const { data: gameData } = useQuery({
@@ -58,6 +59,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     { isConnected },
     { lastUpdate },
     { gamePrivateInfo }
+    // { activeGame }
     // gameData,
   );
 
@@ -86,7 +88,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       const timer = setTimeout(() => {
         startGame();
         setHostStartGame(true);
-      }, 3000);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [players, startGame]);
@@ -232,7 +234,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       {roomStatus === RoomStatus.PLAYING && gamePrivateInfo && activeGame ? (
         <PlayContainer
           players={players}
-          gameSetting={activeGame}
+          activeGame={activeGame}
           myJob={gamePrivateInfo}
           roomCode={roomData.roomCode}
           onOpenCard={function () {
