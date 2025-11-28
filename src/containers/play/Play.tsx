@@ -8,12 +8,12 @@ import { ScoreBoardContainer } from "./ScoreBoard";
 import {
   ActiveGame,
   GamePrivateMessage,
-  GameSummaryDto,
   PlayerData,
   RoleGame,
 } from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
 import { WaitingOpenCardBox } from "./WaitingOpenCardBox";
+import { isNull } from "lodash";
 
 export interface RoleAssignment {
   role: RoleGame;
@@ -47,7 +47,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     ...(myJob.word && { answer: myJob.word }),
   };
   const [isLoading, setIsLoading] = useState(true);
-  const [gameStarted, setGameStarted] = useState(false);
+  // const [gameIsStarted, setgameIsStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
   const [timeRemaining, setTimeRemaining] = useState(
@@ -55,60 +55,52 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   );
   const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 
+  const gameIsStarted = !isNull(activeGame.startedAt);
+
   // Mock: จำนวนผู้เล่นทั้งหมดและผู้เล่นที่เปิดการ์ดแล้ว
 
   const [currentUserId] = useState("2"); // Mock current user ID
 
-  // จำลองการที่ผู้เล่นคนอื่นเปิดการ์ด (ใน production จะใช้ WebSocket)
-  // useEffect(() => {
-  //   if (isCardFlipped) {
-  //     // TODO: ส่งสัญญาณไปยัง WebSocket ว่าผู้เล่นคนนี้เปิดการ์ดแล้ว
-  //     console.log("Card flipped, notifying other players...");
-  //     setFlippedPlayers(1); // เริ่มจากตัวเอง
-
-  //     // Mock: จำลองผู้เล่นคนอื่นเปิดการ์ดทีละคน
-  //     const intervals: NodeJS.Timeout[] = [];
-
-  //     for (let i = 2; i <= totalPlayers; i++) {
-  //       const timer = setTimeout(() => {
-  //         setFlippedPlayers(i);
-  //         console.log(`Player ${i} flipped card`);
-
-  //         // เมื่อทุกคนเปิดการ์ดครบแล้ว
-  //         if (i === totalPlayers) {
-  //           setTimeout(() => {
-  //             setAllPlayersFlipped(true);
-  //             setGameStarted(true);
-  //             console.log("All players ready! Game starting...");
-  //           }, 500);
-  //         }
-  //       }, i * 1000); // แต่ละคนห่างกัน 1 วินาที
-
-  //       intervals.push(timer);
-  //     }
-
-  //     return () => intervals.forEach(clearTimeout);
-  //   }
-  // }, [isCardFlipped, totalPlayers]);
-
-  // เริ่มนับเวลาถอยหลังเมื่อทุกคนเปิดการ์ดแล้ว
+  // ⭐ คำนวณเวลาจาก server time แทน client timer
   useEffect(() => {
-    if (gameStarted && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            console.log("Time's up!");
-            // TODO: จบเกม
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (!gameIsStarted || !activeGame.startedAt) return;
 
-      return () => clearInterval(timer);
-    }
-  }, [gameStarted, timeRemaining]);
+    const updateTimeRemaining = () => {
+      const now = Date.now();
+      const gameStartTime = new Date(activeGame.startedAt!).getTime();
+      const elapsed = Math.floor((now - gameStartTime) / 1000);
+      const remaining = Math.max(
+        0,
+        (activeGame.durationSeconds || 0) - elapsed
+      );
+
+      setTimeRemaining(remaining);
+
+      if (remaining <= 0) {
+        console.log("Time's up!");
+        // TODO: จบเกม
+        return;
+      }
+    };
+
+    // อัปเดททันทีและทุก 1 วินาที
+    updateTimeRemaining();
+    const timer = setInterval(updateTimeRemaining, 1000);
+
+    // ⭐ Sync เวลาเมื่อ tab กลับมา active
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        updateTimeRemaining(); // Sync ทันทีเมื่อกลับมา
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [gameIsStarted, activeGame.startedAt, activeGame.durationSeconds]);
 
   const handleFlipCard = () => {
     setIsCardFlipped(true);
@@ -179,7 +171,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   }
 
   // ถ้าเกมเริ่มแล้ว แสดงหน้าเล่นเกม
-  if (gameStarted && myRole) {
+  if (gameIsStarted && myRole) {
     return (
       <GamePlay
         myRole={myRole}
@@ -193,7 +185,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   return (
     <div className="min-h-screen flex flex-col p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Timer Bar - แสดงเมื่อเกมเริ่มแล้ว */}
-      {gameStarted && (
+      {gameIsStarted && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-700 shadow-lg">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between mb-2">
@@ -246,7 +238,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
       <div
         className={`container max-w-4xl mx-auto flex-1 flex items-center justify-center ${
-          gameStarted ? "mt-32" : ""
+          gameIsStarted ? "mt-32" : ""
         }`}
       >
         {/* Header */}
@@ -255,7 +247,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
               บทบาทของคุณ
             </h1>
-            {!gameStarted ? (
+            {!gameIsStarted ? (
               <p className="text-gray-400">คลิกที่การ์ดเพื่อเปิดดู</p>
             ) : (
               <p className="text-green-400 font-semibold animate-pulse">
@@ -425,7 +417,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
           </div>
 
           {/* Waiting for other players */}
-          {!gameStarted && (
+          {!gameIsStarted && (
             <WaitingOpenCardBox
               players={players}
               openedCard={activeGame.cardOpened}
