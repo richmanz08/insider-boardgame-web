@@ -6,6 +6,7 @@ import {
   RoomUpdateMessage,
   GamePrivateMessage,
   ActiveGame,
+  // ActiveGame,
 } from "./interface";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080/ws";
@@ -19,7 +20,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     useState<GamePrivateMessage | null>(null);
 
   // NEW: activeGame snapshot (may contain cardOpened map)
-  const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
+  const [activedGame, setActivedGame] = useState<ActiveGame | null>(null);
 
   useEffect(() => {
     const client = new Client({
@@ -66,7 +67,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           // server might send either { game: {...} } or direct Game object
           const game = payload && payload.game ? payload.game : payload;
           console.log("active_game (user queue) received:", game);
-          setActiveGame(game);
+          setActivedGame(game);
         } catch (err) {
           console.error("Failed parse active_game response:", err);
         }
@@ -184,7 +185,8 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     players,
     isConnected,
     lastUpdate,
-    activeGame, // NEW: the per-user active game snapshot (may contain cardOpened map)
+
+    activedGame, // NEW: the per-user active game snapshot (may contain cardOpened map)
     gamePrivateInfo,
     toggleReady,
     startGame,

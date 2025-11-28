@@ -63,5 +63,5 @@ export interface ActiveGame {
   durationSeconds?: number;
   finished?: boolean;
   // cardOpened: playerUuid -> boolean (true = player has opened their card)
-  cardOpened?: Record<string, boolean>;
+  // cardOpened?: Record<string, boolean>;
 }

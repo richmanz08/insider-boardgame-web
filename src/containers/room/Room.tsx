@@ -43,6 +43,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     gamePrivateInfo,
     handleCardOpened,
     // activeGame,
+    activedGame,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
   // const { data: gameData } = useQuery({
@@ -56,9 +57,10 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   console.log(
     "RoomContainer log data:",
     { players },
-    { isConnected },
+    // { isConnected },
     { lastUpdate },
-    { gamePrivateInfo }
+    { gamePrivateInfo },
+    { activedGame }
     // { activeGame }
     // gameData,
   );

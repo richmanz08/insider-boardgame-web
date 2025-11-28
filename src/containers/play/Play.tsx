@@ -37,7 +37,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   onPlayEnd,
   onOpenCard,
 }) => {
-  console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
+  // console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
   const { getRoleDisplay } = usePlayHook();
 
