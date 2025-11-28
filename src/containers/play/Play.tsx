@@ -57,7 +57,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
   // Mock: จำนวนผู้เล่นทั้งหมดและผู้เล่นที่เปิดการ์ดแล้ว
 
-  const [flippedPlayers, setFlippedPlayers] = useState(0);
   const [currentUserId] = useState("2"); // Mock current user ID
 
   // จำลองการที่ผู้เล่นคนอื่นเปิดการ์ด (ใน production จะใช้ WebSocket)
@@ -428,8 +427,8 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
           {/* Waiting for other players */}
           {isCardFlipped && !gameStarted && (
             <WaitingOpenCardBox
-              playersLength={players.length}
-              flippedPlayers={flippedPlayers}
+              players={players}
+              openedCard={activeGame.cardOpened}
             />
           )}
 

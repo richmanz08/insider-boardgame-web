@@ -60,8 +60,8 @@ export interface ActiveGame {
   roles?: Record<string, RoleGame>; // playerUuid -> role name
   startedAt?: string | null; // ISO string (server LocalDateTime.toString())
   endsAt?: string | null; // ISO string
-  durationSeconds?: number;
-  finished?: boolean;
+  durationSeconds: number;
+  finished: boolean;
   // cardOpened: playerUuid -> boolean (true = player has opened their card)
-  // cardOpened?: Record<string, boolean>;
+  cardOpened: Record<string, boolean>;
 }
