@@ -425,7 +425,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
           </div>
 
           {/* Waiting for other players */}
-          {isCardFlipped && !gameStarted && (
+          {!gameStarted && (
             <WaitingOpenCardBox
               players={players}
               openedCard={activeGame.cardOpened}

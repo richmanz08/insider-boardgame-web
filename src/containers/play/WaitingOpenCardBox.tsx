@@ -10,7 +10,7 @@ export const WaitingOpenCardBox: React.FC<WaitingOpenCardBoxProps> = ({
   openedCard,
 }) => {
   return (
-    <div className="text-center mt-8 animate-fade-in w-full">
+    <div className="text-center mt-8 animate-fade-in w-full mt-16">
       <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-6 inline-block min-w-[300px] w-full flex flex-col items-center justify-center">
         <i className="pi pi-spin pi-spinner text-3xl text-blue-400 mb-3" />
         <p className="text-lg text-blue-300 font-semibold mb-3">

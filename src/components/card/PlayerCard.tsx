@@ -48,24 +48,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-lg font-bold">{player.playerName}</h3>
-            {/* Active Badge */}
-            {player.active ? (
-              <span className="text-green-500 text-xs flex items-center gap-1">
-                <i
-                  className="pi pi-circle-fill"
-                  style={{ fontSize: "0.5rem" }}
-                />
-                ออนไลน์
-              </span>
-            ) : (
-              <span className="text-gray-500 text-xs flex items-center gap-1">
-                <i
-                  className="pi pi-circle-fill"
-                  style={{ fontSize: "0.5rem" }}
-                />
-                ออฟไลน์
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-2">
             {player.ready ? (
