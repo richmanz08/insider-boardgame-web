@@ -35,15 +35,13 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const me = useSelector((state: RootState) => state.me.me);
 
   const {
-    players,
     isConnected,
-    lastUpdate,
+    room,
     toggleReady,
     startGame,
     gamePrivateInfo,
     handleCardOpened,
-    // activeGame,
-    activedGame,
+    activeGame,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
   // const { data: gameData } = useQuery({
@@ -56,12 +54,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
   console.log(
     "RoomContainer log data:",
-    { players },
-    // { isConnected },
-    { lastUpdate },
     { gamePrivateInfo },
-    { activedGame }
-    // { activeGame }
+    { room },
+    { activeGame }
     // gameData,
   );
 
@@ -71,21 +66,21 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [hasPassword, setHasPassword] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
-  const [activeGame, setActiveGame] = useState<GameSummaryDto | null>(null);
+  // const [activeGame, setActiveGame] = useState<GameSummaryDto | null>(null);
   const [hostStartGame, setHostStartGame] = useState(false);
 
-  const allPlayersReady = players.every((p) => p.ready);
+  const allPlayersReady = room?.players.every((p) => p.ready);
 
   const currentPlayerMemorize = React.useMemo(() => {
-    return players.find((p) => p.uuid === me?.uuid);
-  }, [players, me]);
+    return room?.players.find((p) => p.uuid === me?.uuid);
+  }, [room, me]);
 
   const isHost = currentPlayerMemorize?.host || false;
 
   // Display countdown automatically when all players are ready and user is host
   useEffect(() => {
     if (activeGame || !isHost || hostStartGame) return;
-    const isReadyToStart = checkShowModalCountdownStart(players);
+    const isReadyToStart = checkShowModalCountdownStart(room?.players || []);
     if (isReadyToStart) {
       const timer = setTimeout(() => {
         startGame();
@@ -93,19 +88,13 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [players, startGame]);
+  }, [room, startGame]);
 
   useEffect(() => {
-    if (
-      lastUpdate &&
-      lastUpdate.activeGame &&
-      !showCountdown &&
-      roomStatus === RoomStatus.WAITING
-    ) {
+    if (activeGame && !showCountdown && roomStatus === RoomStatus.WAITING) {
       setShowCountdown(true);
-      setActiveGame(lastUpdate.activeGame);
     }
-  }, [lastUpdate]);
+  }, [activeGame]);
 
   const handleCountdownComplete = () => {
     setShowCountdown(false);
@@ -181,7 +170,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
               />
               <span className="text-gray-400">
                 <i className="pi pi-users mr-2" />
-                {players.length}/{maxPlayers} ผู้เล่น
+                {room?.players.length}/{maxPlayers} ผู้เล่น
               </span>
               {allPlayersReady && roomStatus === RoomStatus.READY && (
                 <Tag
@@ -235,7 +224,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
       {roomStatus === RoomStatus.PLAYING && gamePrivateInfo && activeGame ? (
         <PlayContainer
-          players={players}
+          players={room?.players || []}
           activeGame={activeGame}
           myJob={gamePrivateInfo}
           roomCode={roomData.roomCode}
@@ -252,16 +241,16 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           <div className="mb-6">
             <h2 className="text-xl font-bold mb-4">ผู้เล่นในห้อง</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {map(players, (player) => (
+              {map(room?.players || [], (player) => (
                 <PlayerCard key={player.uuid} player={player} />
               ))}
 
               {/* Empty Slots */}
-              {Array.from({ length: maxPlayers - players.length }).map(
-                (_, index) => (
-                  <PlayerCardEmpty key={`empty-${index}`} />
-                )
-              )}
+              {Array.from({
+                length: maxPlayers - (room?.players.length || 0),
+              }).map((_, index) => (
+                <PlayerCardEmpty key={`empty-${index}`} />
+              ))}
             </div>
           </div>
 
@@ -298,7 +287,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
               {!allPlayersReady && (
                 <p className="text-sm text-yellow-500 mt-2">
                   <i className="pi pi-exclamation-triangle mr-1" />
-                  รอผู้เล่น {players.filter((p) => !p.ready).length} คนกดพร้อม
+                  รอผู้เล่น {room?.players.filter((p) => !p.ready).length}{" "}
+                  คนกดพร้อม
                 </p>
               )}
             </div>

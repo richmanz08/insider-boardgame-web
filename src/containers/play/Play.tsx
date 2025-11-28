@@ -24,7 +24,7 @@ interface PlayContainerProps {
   players: PlayerData[];
   myJob: GamePrivateMessage;
   roomCode: string;
-  activeGame: GameSummaryDto;
+  activeGame: ActiveGame;
   onPlayEnd: () => void;
   onOpenCard: () => void;
 }
