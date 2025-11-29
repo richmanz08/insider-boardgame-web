@@ -1,8 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
-import { Card } from "primereact/card";
 import { GamePlay } from "./GamePlay";
 import { VotePlayer } from "./VotePlayer";
 import { ScoreBoardContainer } from "./ScoreBoard";
@@ -40,6 +38,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   activeGame,
   onPlayEnd,
   onOpenCard,
+  onMasterRoleIsSetToVoteTime,
 }) => {
   // console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
@@ -190,73 +189,68 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     );
   }
 
-  // ถ้าเกมเริ่มแล้ว แสดงหน้าเล่นเกม
-  if (gameIsStarted && myRole) {
-    return (
-      <GamePlay
-        myRole={myRole}
-        timeRemaining={timeRemaining}
-        onTimeUp={handleTimeUp}
-        onEndGame={handleEndGame}
-      />
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Timer Bar - แสดงเมื่อเกมเริ่มแล้ว */}
       <BarGameTime
         isStarted={gameIsStarted}
         timeRemaining={timeRemaining}
-        isFlippedAll={allPlayersHaveFlipped}
-        players={players}
+        myRole={myRole}
+        actionMasterEndGame={onMasterRoleIsSetToVoteTime}
       />
+      {gameIsStarted ? (
+        <GamePlay
+          myRole={myRole}
+          timeRemaining={timeRemaining}
+          onTimeUp={handleTimeUp}
+        />
+      ) : (
+        <div
+          className={`container max-w-4xl mx-auto flex-1 flex items-center justify-center ${
+            gameIsStarted ? "mt-32" : ""
+          }`}
+        >
+          {/* Header */}
+          <div className="w-full">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                บทบาทของคุณ
+              </h1>
+              {!gameIsStarted ? (
+                <p className="text-gray-400">คลิกที่การ์ดเพื่อเปิดดู</p>
+              ) : (
+                <p className="text-green-400 font-semibold animate-pulse">
+                  <i className="pi pi-check-circle mr-2" />
+                  เกมเริ่มแล้ว!
+                </p>
+              )}
+            </div>
 
-      <div
-        className={`container max-w-4xl mx-auto flex-1 flex items-center justify-center ${
-          gameIsStarted ? "mt-32" : ""
-        }`}
-      >
-        {/* Header */}
-        <div className="w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              บทบาทของคุณ
-            </h1>
-            {!gameIsStarted ? (
-              <p className="text-gray-400">คลิกที่การ์ดเพื่อเปิดดู</p>
-            ) : (
-              <p className="text-green-400 font-semibold animate-pulse">
-                <i className="pi pi-check-circle mr-2" />
-                เกมเริ่มแล้ว!
-              </p>
-            )}
-          </div>
-
-          {/* Card Container */}
-          <DraftRoleCard
-            isCardFlipped={isCardFlipped}
-            onFlipCard={handleFlipCard}
-            my={myRole}
-          />
-
-          {/* Waiting for other players */}
-          {!gameIsStarted && (
-            <WaitingOpenCardBox
-              players={players}
-              openedCard={activeGame.cardOpened}
+            {/* Card Container */}
+            <DraftRoleCard
+              isCardFlipped={isCardFlipped}
+              onFlipCard={handleFlipCard}
+              my={myRole}
             />
-          )}
 
-          {/* Warning */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-yellow-500">
-              <i className="pi pi-exclamation-triangle mr-2" />
-              อย่าให้ผู้เล่นคนอื่นเห็นบทบาทของคุณ!
-            </p>
+            {/* Waiting for other players */}
+            {!gameIsStarted && (
+              <WaitingOpenCardBox
+                players={players}
+                openedCard={activeGame.cardOpened}
+              />
+            )}
+
+            {/* Warning */}
+            <div className="mt-8 text-center">
+              <p className="text-sm text-yellow-500">
+                <i className="pi pi-exclamation-triangle mr-2" />
+                อย่าให้ผู้เล่นคนอื่นเห็นบทบาทของคุณ!
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

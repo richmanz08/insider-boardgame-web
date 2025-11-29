@@ -183,9 +183,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
           <div className="flex gap-2">
             {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
-            {isHost && (
+            {isHost && roomStatus !== RoomStatus.PLAYING && (
               <Button
-                hidden={roomStatus !== RoomStatus.PLAYING}
                 label="แก้ไขห้อง"
                 icon="pi pi-cog"
                 severity="secondary"
@@ -193,14 +192,15 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
                 onClick={() => setShowEditModal(true)}
               />
             )}
-            <Button
-              hidden={currentPlayerMemorize?.playing}
-              label="ออกจากห้อง"
-              icon="pi pi-sign-out"
-              severity="danger"
-              outlined
-              onClick={() => onExitRoom()}
-            />
+            {!currentPlayerMemorize?.playing && (
+              <Button
+                label="ออกจากห้อง"
+                icon="pi pi-sign-out"
+                severity="danger"
+                outlined
+                onClick={() => onExitRoom()}
+              />
+            )}
           </div>
         </div>
 

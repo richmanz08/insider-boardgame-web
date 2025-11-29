@@ -12,18 +12,15 @@ interface GamePlayProps {
   myRole: RoleAssignment;
   timeRemaining: number;
   onTimeUp: () => void;
-  onEndGame?: () => void; // Master สามารถจบเกมได้ก่อนเวลาหมด
 }
 
 export const GamePlay: React.FC<GamePlayProps> = ({
   myRole,
   timeRemaining,
   onTimeUp,
-  onEndGame,
 }) => {
   const { getRoleDisplay } = usePlayHook();
   const [showRole, setShowRole] = useState(true);
-  const [showEndGameConfirm, setShowEndGameConfirm] = useState(false);
 
   useEffect(() => {
     if (timeRemaining <= 0) {
@@ -31,141 +28,10 @@ export const GamePlay: React.FC<GamePlayProps> = ({
     }
   }, [timeRemaining, onTimeUp]);
 
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
   const roleDisplay = getRoleDisplay(myRole.role);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-8">
-      {/* Timer Bar - Fixed at Top */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700 shadow-2xl">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <i className="pi pi-clock text-white text-xl" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 mb-1">เวลาที่เหลือ</p>
-                <p
-                  className={`text-4xl font-bold tabular-nums ${
-                    timeRemaining <= 60
-                      ? "text-red-500 animate-pulse"
-                      : timeRemaining <= 180
-                      ? "text-yellow-500"
-                      : "text-green-500"
-                  }`}
-                >
-                  {formatTime(timeRemaining)}
-                </p>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p className="text-xs text-gray-400 mb-1">สถานะเกม</p>
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    timeRemaining > 0
-                      ? "bg-green-500 animate-pulse"
-                      : "bg-red-500"
-                  }`}
-                />
-                <p className="text-lg font-semibold text-white">
-                  {timeRemaining > 0 ? "กำลังเล่น" : "หมดเวลา"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="relative w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
-            <div
-              className={`h-full transition-all duration-1000 ease-linear ${
-                timeRemaining <= 60
-                  ? "bg-gradient-to-r from-red-600 to-red-400"
-                  : timeRemaining <= 180
-                  ? "bg-gradient-to-r from-yellow-600 to-yellow-400"
-                  : "bg-gradient-to-r from-green-600 to-green-400"
-              }`}
-              style={{ width: `${(timeRemaining / 600) * 100}%` }}
-            >
-              <div className="w-full h-full animate-pulse" />
-            </div>
-          </div>
-
-          {/* Time warnings */}
-          {timeRemaining <= 60 && timeRemaining > 0 && (
-            <div className="mt-2 text-center">
-              <p className="text-sm text-red-400 animate-pulse font-semibold">
-                <i className="pi pi-exclamation-triangle mr-2" />
-                เหลือเวลาไม่ถึง 1 นาที!
-              </p>
-            </div>
-          )}
-
-          {/* Master End Game Button */}
-          {myRole.role === RoleGame.MASTER && onEndGame && (
-            <div className="mt-3 text-center">
-              <Button
-                label="จบเกม (มีคนตอบถูกแล้ว)"
-                icon="pi pi-check-circle"
-                severity="success"
-                size="small"
-                onClick={() => setShowEndGameConfirm(true)}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* End Game Confirmation Modal */}
-      {showEndGameConfirm && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setShowEndGameConfirm(false)}
-          />
-          <Card className="relative z-[201] max-w-md mx-4 bg-gray-800 border-2 border-gray-600">
-            <div className="p-6 text-center">
-              <i className="pi pi-question-circle text-yellow-400 text-5xl mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-3">
-                ยืนยันจบเกม?
-              </h3>
-              <p className="text-gray-300 mb-6">
-                แน่ใจหรือไม่ว่ามีผู้เล่นตอบถูกแล้ว?
-                <br />
-                เกมจะไปสู่ขั้นตอนการโหวตหา Insider
-              </p>
-              <div className="flex gap-3">
-                <Button
-                  label="ยกเลิก"
-                  icon="pi pi-times"
-                  severity="secondary"
-                  outlined
-                  onClick={() => setShowEndGameConfirm(false)}
-                  className="flex-1"
-                />
-                <Button
-                  label="จบเกม"
-                  icon="pi pi-check"
-                  severity="success"
-                  onClick={() => {
-                    setShowEndGameConfirm(false);
-                    onEndGame?.();
-                  }}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="container mx-auto px-4 pt-32 max-w-6xl">
         {/* Game Instructions */}
