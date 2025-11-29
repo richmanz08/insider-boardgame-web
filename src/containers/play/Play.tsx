@@ -50,9 +50,17 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   // const [gameIsStarted, setgameIsStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
-  const [timeRemaining, setTimeRemaining] = useState(
-    activeGame.durationSeconds ?? 0
-  );
+  // ⭐ คำนวณ initial time จาก endsAt แทน durationSeconds
+  const [timeRemaining, setTimeRemaining] = useState(() => {
+    if (!activeGame.endsAt) return 100;
+
+    const now = new Date().getTime();
+    const gameEndTime = new Date(activeGame.endsAt).getTime();
+    return Math.max(0, Math.floor((gameEndTime - now) / 1000));
+  });
+
+  console.log({ activeGame, timeRemaining });
+
   const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 
   const gameIsStarted = !isNull(activeGame.startedAt);
@@ -61,46 +69,56 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
   const [currentUserId] = useState("2"); // Mock current user ID
 
-  // ⭐ คำนวณเวลาจาก server time แทน client timer
+  // ⭐ คำนวณเวลาจาก endsAt (แม่นยำกว่า startedAt + duration)
   useEffect(() => {
-    if (!gameIsStarted || !activeGame.startedAt) return;
-
+    if (!gameIsStarted) return;
+    let isComponentMounted = true;
     const updateTimeRemaining = () => {
+      if (!isComponentMounted) return;
+
       const now = Date.now();
-      const gameStartTime = new Date(activeGame.startedAt!).getTime();
-      const elapsed = Math.floor((now - gameStartTime) / 1000);
-      const remaining = Math.max(
-        0,
-        (activeGame.durationSeconds || 0) - elapsed
-      );
+      let remaining = 0;
+
+      if (activeGame.endsAt) {
+        // ✅ วิธีแม่นยำ: ใช้ endsAt
+        const gameEndTime = new Date(activeGame.endsAt).getTime();
+        remaining = Math.max(0, Math.floor((gameEndTime - now) / 1000));
+      }
 
       setTimeRemaining(remaining);
 
       if (remaining <= 0) {
-        console.log("Time's up!");
-        // TODO: จบเกม
+        console.log("⏰ Time's up!");
+        setGameEnded(true); // ⭐ เซ็ต state โดยตรง
         return;
       }
     };
 
     // อัปเดททันทีและทุก 1 วินาที
     updateTimeRemaining();
-    const timer = setInterval(updateTimeRemaining, 1000);
+    const timerRef = setInterval(updateTimeRemaining, 1000);
 
-    // ⭐ Sync เวลาเมื่อ tab กลับมา active
+    // ⭐ Sync เวลาเมื่อ tab กลับมา active (สำคัญสำหรับ refresh!)
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
+      if (document.visibilityState === "visible" && isComponentMounted) {
         updateTimeRemaining(); // Sync ทันทีเมื่อกลับมา
+        console.log("🔄 Timer synced after tab became visible");
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      clearInterval(timer);
+      isComponentMounted = false; // ⭐ ป้องกัน memory leak
+      clearInterval(timerRef);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [gameIsStarted, activeGame.startedAt, activeGame.durationSeconds]);
+  }, [
+    gameIsStarted,
+    activeGame.endsAt,
+    activeGame.startedAt,
+    activeGame.durationSeconds,
+  ]); // ⭐ เพิ่ม dependencies
 
   const handleFlipCard = () => {
     setIsCardFlipped(true);

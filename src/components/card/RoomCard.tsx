@@ -16,8 +16,6 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoin }) => {
       case RoomStatus.WAITING:
         return "success";
       case RoomStatus.PLAYING:
-        return "warning";
-      case RoomStatus.FINISHED:
         return "info";
       default:
         return "info";
@@ -30,8 +28,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoin }) => {
         return "รอผู้เล่น";
       case RoomStatus.PLAYING:
         return "กำลังเล่น";
-      case RoomStatus.FINISHED:
-        return "จบเกม";
+
       default:
         return status;
     }

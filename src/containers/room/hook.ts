@@ -14,12 +14,11 @@ export const useRoomHook = () => {
     switch (status) {
       case RoomStatus.WAITING:
         return "รอผู้เล่น";
-      case RoomStatus.READY:
-        return "พร้อมเริ่ม";
+      // case RoomStatus.READY:
+      //   return "พร้อมเริ่ม";
       case RoomStatus.PLAYING:
         return "กำลังเล่น";
-      case RoomStatus.FINISHED:
-        return "จบเกม";
+
       default:
         return status;
     }
@@ -29,12 +28,8 @@ export const useRoomHook = () => {
     switch (status) {
       case RoomStatus.WAITING:
         return "info";
-      case RoomStatus.READY:
-        return "success";
       case RoomStatus.PLAYING:
         return "warning";
-      case RoomStatus.FINISHED:
-        return "secondary";
       default:
         return "info";
     }

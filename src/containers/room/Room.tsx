@@ -35,29 +35,19 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const me = useSelector((state: RootState) => state.me.me);
 
   const {
-    isConnected,
     room,
     toggleReady,
     startGame,
-    gamePrivateInfo,
+    // gamePrivateInfo,
     handleCardOpened,
     activeGame,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
-  // const { data: gameData } = useQuery({
-  //   queryKey: ["game", roomData.roomCode],
-  //   queryFn: async () => {
-  //     const gameRes = await getActiveGameService(roomData.roomCode);
-  //     return gameRes;
-  //   },
-  // });
-
   console.log(
     "RoomContainer log data:",
-    { gamePrivateInfo },
+    // { gamePrivateInfo },
     { room },
     { activeGame }
-    // gameData,
   );
 
   const [roomName, setRoomName] = useState(roomData.roomName);
@@ -66,7 +56,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [hasPassword, setHasPassword] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
-  // const [activeGame, setActiveGame] = useState<GameSummaryDto | null>(null);
   const [hostStartGame, setHostStartGame] = useState(false);
 
   const allPlayersReady = room?.players.every((p) => p.ready);
@@ -172,7 +161,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
                 <i className="pi pi-users mr-2" />
                 {room?.players.length}/{maxPlayers} ผู้เล่น
               </span>
-              {allPlayersReady && roomStatus === RoomStatus.READY && (
+              {allPlayersReady && (
                 <Tag
                   value="ทุกคนพร้อมแล้ว!"
                   severity="success"
@@ -222,11 +211,13 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         )}
       </div>
 
-      {roomStatus === RoomStatus.PLAYING && gamePrivateInfo && activeGame ? (
+      {roomStatus === RoomStatus.PLAYING &&
+      activeGame &&
+      activeGame.privateMessage ? (
         <PlayContainer
           players={room?.players || []}
           activeGame={activeGame}
-          myJob={gamePrivateInfo}
+          myJob={activeGame.privateMessage}
           roomCode={roomData.roomCode}
           onOpenCard={function () {
             handleCardOpened();

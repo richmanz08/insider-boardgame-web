@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
-import { RoomUpdateMessage, GamePrivateMessage, ActiveGame } from "./interface";
+import {
+  RoomUpdateMessage,
+  // GamePrivateMessage,
+  ActiveGame,
+} from "./interface";
+import { isUndefined } from "lodash";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080/ws";
 
@@ -9,8 +14,8 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   const clientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [room, setRoom] = useState<RoomUpdateMessage | null>(null);
-  const [gamePrivateInfo, setGamePrivateInfo] =
-    useState<GamePrivateMessage | null>(null);
+  // const [gamePrivateInfo, setGamePrivateInfo] =
+  //   useState<GamePrivateMessage | null>(null);
 
   // NEW: activeGame snapshot (may contain cardOpened map)
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
@@ -24,6 +29,12 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     });
 
     client.onConnect = () => {
+      console.log(
+        "🔌 WebSocket Connected for room:",
+        roomCode,
+        "player:",
+        playerUuid
+      );
       setIsConnected(true);
 
       // Subscribe to room updates
@@ -55,23 +66,28 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
 
       // Subscribe to per-user active_game response (server sends to /user/queue/active_game)
       client.subscribe("/user/queue/active_game", (message: IMessage) => {
+        console.log("🎯 @@@ active_game message received:", message.body);
+
         try {
           const payload = JSON.parse(message.body);
           // server might send either { game: {...} } or direct Game object
           const game = payload && payload.game ? payload.game : payload;
-          console.log("active_game (user queue) received:", game);
-          setActiveGame(game);
+          console.log("🎮 active_game (user queue) received:", game);
+          if (isUndefined(game?.game)) {
+            setActiveGame(game);
+            // setGamePrivateInfo(game.privateMessage || null);
+          }
         } catch (err) {
-          console.error("Failed parse active_game response:", err);
+          console.error("❌ Failed parse active_game response:", err);
         }
       });
 
-      // Subscribe to game private messages (role & word for MASTER/INSIDER)
-      client.subscribe(`/user/queue/game_private`, (message: IMessage) => {
-        const privateInfo: GamePrivateMessage = JSON.parse(message.body);
-        console.log("Game private info received:", privateInfo);
-        setGamePrivateInfo(privateInfo);
-      });
+      // // Subscribe to game private messages (role & word for MASTER/INSIDER)
+      // client.subscribe(`/user/queue/game_private`, (message: IMessage) => {
+      //   const privateInfo: GamePrivateMessage = JSON.parse(message.body);
+      //   console.log("Game private info received:", privateInfo);
+      //   setGamePrivateInfo(privateInfo);
+      // });
 
       // join
       client.publish({
@@ -81,6 +97,17 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           active: true,
         }),
       });
+
+      // ⭐ ALWAYS request active game data after join (especially important on refresh)
+      setTimeout(() => {
+        console.log("🔄 Requesting active game data after join/refresh...");
+        if (clientRef.current?.connected && playerUuid) {
+          clientRef.current.publish({
+            destination: `/app/room/${roomCode}/active_game`,
+            body: JSON.stringify({ playerUuid }),
+          });
+        }
+      }, 1000); // Wait a bit longer for join to complete
 
       // sync visibility after join
       setTimeout(() => {
@@ -161,6 +188,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   // Handle card opened (user action)
   const handleCardOpened = useCallback(() => {
     if (clientRef.current && isConnected) {
+      console.log("🃏 Opening card for player:", playerUuid);
       clientRef.current.publish({
         destination: `/app/room/${roomCode}/open_card`,
         body: JSON.stringify({ playerUuid }),
@@ -174,13 +202,27 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
+  // 🆘 Manual function to request active game (for debugging)
+  const requestActiveGame = useCallback(() => {
+    if (clientRef.current && isConnected) {
+      console.log("🔄 Manually requesting active game data...");
+      clientRef.current.publish({
+        destination: `/app/room/${roomCode}/active_game`,
+        body: JSON.stringify({ playerUuid }),
+      });
+    } else {
+      console.warn("⚠️ Cannot request active game - WebSocket not connected");
+    }
+  }, [roomCode, playerUuid, isConnected]);
+
   return {
     isConnected,
     room,
     activeGame, // NEW: the per-user active game snapshot (may contain cardOpened map)
-    gamePrivateInfo,
+    // gamePrivateInfo,
     toggleReady,
     startGame,
     handleCardOpened,
+    requestActiveGame, // 🆘 For debugging - manually request active game data
   };
 }

@@ -62,6 +62,6 @@ export interface ActiveGame {
   endsAt?: string | null; // ISO string
   durationSeconds: number;
   finished: boolean;
-  // cardOpened: playerUuid -> boolean (true = player has opened their card)
   cardOpened: Record<string, boolean>;
+  privateMessage: GamePrivateMessage | null;
 }
