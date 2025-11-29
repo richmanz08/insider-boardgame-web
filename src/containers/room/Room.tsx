@@ -36,20 +36,14 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
   const {
     room,
+    activeGame,
     toggleReady,
     startGame,
-    // gamePrivateInfo,
     handleCardOpened,
-    activeGame,
     masterRoleIsSetToVoteTime,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
-  // console.log(
-  //   "RoomContainer log data:",
-  //   // { gamePrivateInfo },
-  //   { room },
-  //   { activeGame }
-  // );
+  console.log("RoomContainer log data:", { room }, { activeGame });
 
   const [roomName, setRoomName] = useState(roomData.roomName);
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
