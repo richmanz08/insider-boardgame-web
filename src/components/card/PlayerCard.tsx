@@ -55,6 +55,11 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
                 <i className="pi pi-check-circle" />
                 พร้อม
               </span>
+            ) : player.playing ? (
+              <span className="text-gray-400 text-sm flex items-center gap-1">
+                <i className="pi pi-play" />
+                กำลังเล่น...
+              </span>
             ) : (
               <span className="text-gray-400 text-sm flex items-center gap-1">
                 <i className="pi pi-clock" />

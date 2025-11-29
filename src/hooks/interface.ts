@@ -33,6 +33,7 @@ export interface PlayerData {
   playerName: string;
   host: boolean;
   ready: boolean;
+  playing: boolean;
   joinedAt: string;
   active: boolean;
   lastActiveAt: string;
