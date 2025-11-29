@@ -50,6 +50,8 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
         if (
           update.type === "CARD_OPENED" ||
           update.type === "GAME_STARTED" ||
+          update.type === "VOTE_CAST" || // ← ใหม่!
+          update.type === "VOTE_STARTED" ||
           (update.activeGame !== undefined && update.activeGame !== null)
         ) {
           if (clientRef.current?.connected && playerUuid) {
@@ -215,15 +217,27 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
-  const playerVote = useCallback(() => {
-    if (clientRef.current && isConnected) {
-      console.log("🗳️ Player is voting...");
-      clientRef.current.publish({
-        destination: `/app/room/${roomCode}/vote`,
-        body: JSON.stringify({ playerUuid }),
-      });
-    }
-  }, [roomCode, playerUuid, isConnected]);
+  const playerVote = useCallback(
+    (targetPlayerUuid: string) => {
+      if (clientRef.current && isConnected) {
+        console.log("🗳️ Player is voting...", targetPlayerUuid);
+        clientRef.current.publish({
+          destination: `/app/room/${roomCode}/vote`,
+          body: JSON.stringify({ playerUuid, targetPlayerUuid }),
+        });
+
+        setTimeout(() => {
+          if (clientRef.current?.connected) {
+            clientRef.current.publish({
+              destination: `/app/room/${roomCode}/active_game`,
+              body: JSON.stringify({ playerUuid }),
+            });
+          }
+        }, 100);
+      }
+    },
+    [roomCode, playerUuid, isConnected]
+  );
 
   return {
     isConnected,

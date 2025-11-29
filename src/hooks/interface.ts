@@ -26,6 +26,8 @@ export enum RoomUpdateMessageType {
   GAME_STARTED = "GAME_STARTED",
   GAME_FINISHED = "GAME_FINISHED",
   CARD_OPENED = "CARD_OPENED",
+  VOTE_STARTED = "VOTE_STARTED",
+  VOTE_CAST = "VOTE_CAST",
 }
 
 export interface PlayerData {

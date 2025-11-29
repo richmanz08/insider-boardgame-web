@@ -29,6 +29,7 @@ interface PlayContainerProps {
   onPlayEnd: () => void;
   onOpenCard: () => void;
   onMasterRoleIsSetToVoteTime: () => void;
+  onPlayerVote: (targetPlayerUuid: string) => void;
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
@@ -39,6 +40,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   onPlayEnd,
   onOpenCard,
   onMasterRoleIsSetToVoteTime,
+  onPlayerVote,
 }) => {
   // console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
@@ -121,6 +123,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     activeGame.endsAt,
     activeGame.startedAt,
     activeGame.durationSeconds,
+    gameEnded,
   ]); // ⭐ เพิ่ม dependencies
 
   const allPlayersHaveFlipped = useMemo(() => {
@@ -140,11 +143,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   const handleEndGame = () => {
     console.log("Master ended game early.");
     setGameEnded(true);
-  };
-
-  const handleVoteComplete = (votedPlayerId: string) => {
-    console.log("Voted for:", votedPlayerId);
-    // TODO: Send vote to API/WebSocket
   };
 
   const handleScoreBoard = () => {
@@ -180,11 +178,12 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   if (gameEnded && myRole) {
     return (
       <VotePlayer
+        players={players}
         roomId={roomCode}
         myPlayerId={currentUserId}
         myRole={myRole.role}
-        onVoteComplete={handleVoteComplete}
         onNavigateToEndgame={handleScoreBoard}
+        onMyVote={onPlayerVote}
       />
     );
   }

@@ -177,6 +177,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           onMasterRoleIsSetToVoteTime={function () {
             masterRoleIsSetToVoteTime();
           }}
+          onPlayerVote={function (targetPlayerUuid: string) {
+            playerVote(targetPlayerUuid);
+          }}
         />
       ) : (
         <>

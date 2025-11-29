@@ -2,96 +2,33 @@
 import React, { useState, useEffect } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
-import { RoleGame } from "@/src/hooks/interface";
+import { PlayerData, RoleGame } from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
 
-interface Player {
-  id: string;
-  name: string;
-  isHost: boolean;
-  avatar?: string;
-  votes: number; // จำนวนโหวตที่ได้รับ
-  role?: RoleGame; // จะถูกเปิดเผยในตอนท้าย
-}
-
 interface VotePlayerProps {
+  players: PlayerData[];
   roomId?: string;
   myPlayerId: string;
   myRole: RoleGame;
-  onVoteComplete: (votedPlayerId: string) => void;
   onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
+  onMyVote: (playerUuid: string) => void;
 }
 
 export const VotePlayer: React.FC<VotePlayerProps> = ({
+  players,
   roomId,
   myPlayerId,
   myRole,
-  onVoteComplete,
   onNavigateToEndgame,
+  onMyVote,
 }) => {
   console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลจาก API
   const { getRoleDisplay } = usePlayHook();
-  // Mock players data
-  const [players, setPlayers] = useState<Player[]>([
-    { id: "1", name: "PlayerOne", isHost: false, votes: 0 },
-    { id: "2", name: "You", isHost: true, votes: 0 },
-    { id: "3", name: "GameMaster", isHost: false, votes: 0 },
-    { id: "4", name: "Newbie", isHost: false, votes: 0 },
-  ]);
+
   const [myVote, setMyVote] = useState<string | null>(null);
-  const [allVoted, setAllVoted] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [revealedPlayers, setRevealedPlayers] = useState<string[]>([]);
   const [autoNavigateIn, setAutoNavigateIn] = useState<number | null>(null);
-
-  // Mock: จำลองการโหวตของผู้เล่นคนอื่น
-  useEffect(() => {
-    if (myVote) {
-      // TODO: ส่งโหวตไปยัง WebSocket
-      console.log(`Voted for player ${myVote}`);
-
-      // Mock: สมมติว่าผู้เล่นคนอื่นโหวตเสร็จหมดแล้วหลัง 3 วินาที
-      const timer = setTimeout(() => {
-        // Mock: กระจายโหวตแบบสุ่ม
-        const updatedPlayers = players.map((p) => ({
-          ...p,
-          votes: Math.floor(Math.random() * 3), // Random 0-2 votes
-          role:
-            p.id === "1"
-              ? RoleGame.INSIDER
-              : p.id === "2"
-              ? RoleGame.MASTER
-              : RoleGame.CITIZEN,
-        }));
-        setPlayers(updatedPlayers);
-        setAllVoted(true);
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [myVote, players]);
-
-  // เมื่อทุกคนโหวตเสร็จ เริ่มแสดงผล
-  useEffect(() => {
-    if (allVoted && showResults === false) {
-      // เรียงจากคนที่โดนโหวตมากสุดไปน้อยสุด
-      const sortedPlayers = [...players].sort((a, b) => b.votes - a.votes);
-
-      // รอ 2 วินาทีแล้วเริ่มเปิดการ์ด
-      const mainTimer = setTimeout(() => {
-        setShowResults(true);
-
-        // เปิดการ์ดทีละคนทุกๆ 2 วินาที
-        sortedPlayers.forEach((player, index) => {
-          setTimeout(() => {
-            setRevealedPlayers((prev) => [...prev, player.id]);
-          }, (index + 1) * 2000);
-        });
-      }, 2000);
-
-      return () => clearTimeout(mainTimer);
-    }
-  }, [allVoted, players, showResults]);
 
   // Auto-navigate หลังจากเปิดการ์ดครบทั้งหมดแล้ว 7 วินาที
   useEffect(() => {
@@ -147,11 +84,12 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     }
 
     setMyVote(playerId);
-    onVoteComplete(playerId);
+    onMyVote(playerId);
   };
 
   const isMaster = myRole === RoleGame.MASTER;
   const canVote = !isMaster && !myVote;
+  const allVoted = myVote !== null; // สมมติว่าเมื่อฉันโหวตแล้ว แสดงว่าทุกคนโหวตเสร็จ
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
@@ -193,7 +131,8 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
             <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
               <i className="pi pi-check-circle text-green-400 text-2xl mb-2" />
               <p className="text-green-300 font-semibold">
-                คุณโหวตให้ {players.find((p) => p.id === myVote)?.name} แล้ว
+                คุณโหวตให้ {players.find((p) => p.uuid === myVote)?.playerName}{" "}
+                แล้ว
               </p>
               <div className="mt-3">
                 <i className="pi pi-spin pi-spinner text-green-400" />
@@ -208,16 +147,16 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
         {/* Players Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {players.map((player) => {
-            const isRevealed = revealedPlayers.includes(player.id);
-            const isMyVote = myVote === player.id;
-            const isMe = player.id === myPlayerId;
+            const isRevealed = revealedPlayers.includes(player.uuid);
+            const isMyVote = myVote === player.uuid;
+            const isMe = player.uuid === myPlayerId;
 
             return (
-              <div key={player.id} className="relative">
+              <div key={player.uuid} className="relative">
                 {/* Vote Count Badge */}
                 {allVoted && (
                   <div className="absolute -top-2 -right-2 z-10 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg shadow-lg">
-                    {player.votes}
+                    {2}
                   </div>
                 )}
 
@@ -225,7 +164,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                   className={`relative transition-all duration-300 cursor-pointer ${
                     isRevealed
                       ? `bg-gradient-to-br ${
-                          getRoleDisplay(player.role!).bgColor
+                          getRoleDisplay(RoleGame.INSIDER).bgColor
                         } border-2`
                       : isMyVote
                       ? "bg-green-800 border-2 border-green-500 scale-105"
@@ -235,7 +174,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                       ? "bg-gray-800 border-2 border-gray-600 hover:border-red-500 hover:scale-105"
                       : "bg-gray-800 border-2 border-gray-600 opacity-60"
                   }`}
-                  onClick={() => !isRevealed && handleVote(player.id)}
+                  onClick={() => !isRevealed && handleVote(player.uuid)}
                 >
                   <div className="p-4">
                     {!isRevealed ? (
@@ -243,13 +182,13 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                         {/* Avatar */}
                         <div className="flex justify-center mb-3">
                           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                            {player.name.charAt(0).toUpperCase()}
+                            {player.playerName.charAt(0).toUpperCase()}
                           </div>
                         </div>
 
                         {/* Player Name */}
                         <h3 className="text-center text-lg font-bold text-white mb-2">
-                          {player.name}
+                          {player.playerName}
                         </h3>
 
                         {/* Status Badges */}
@@ -277,23 +216,21 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                           <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-3">
                             <i
                               className={`pi ${
-                                getRoleDisplay(player.role!).icon
+                                getRoleDisplay(RoleGame.INSIDER).icon
                               } text-white text-3xl`}
                             />
                           </div>
                           <h3 className="text-white text-lg font-bold mb-1">
-                            {player.name}
+                            {player.playerName}
                           </h3>
                           <p
                             className={`text-2xl font-bold ${
-                              getRoleDisplay(player.role!).color
+                              getRoleDisplay(RoleGame.INSIDER).color
                             }`}
                           >
-                            {getRoleDisplay(player.role!).name}
+                            {getRoleDisplay(RoleGame.INSIDER).name}
                           </p>
-                          <p className="text-white text-sm mt-2">
-                            {player.votes} โหวต
-                          </p>
+                          <p className="text-white text-sm mt-2">{2} โหวต</p>
                         </div>
                       </>
                     )}
@@ -320,8 +257,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
           </div>
         )}
 
-        {/* Results Summary */}
-        {showResults && revealedPlayers.length === players.length && (
+        {/* {showResults && revealedPlayers.length === players.length && (
           <div className="mt-8 text-center animate-fade-in">
             <Card className="max-w-2xl mx-auto bg-gray-800 border-2 border-gray-700">
               <div className="p-6">
@@ -338,7 +274,6 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                   </div>
                 )}
 
-                {/* Auto-navigate countdown */}
                 {autoNavigateIn !== null && autoNavigateIn > 0 && (
                   <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-3 mb-4">
                     <p className="text-blue-300 text-sm">
@@ -365,7 +300,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
               </div>
             </Card>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
