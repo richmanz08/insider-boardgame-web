@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Card } from "primereact/card";
 import { GamePlay } from "./GamePlay";
@@ -14,6 +15,8 @@ import {
 import { usePlayHook } from "./hook";
 import { WaitingOpenCardBox } from "./WaitingOpenCardBox";
 import { isNull } from "lodash";
+import { BarGameTime } from "./BarGameTime";
+import { DraftRoleCard } from "@/src/components/card/DraftRoleCard";
 
 export interface RoleAssignment {
   role: RoleGame;
@@ -27,6 +30,7 @@ interface PlayContainerProps {
   activeGame: ActiveGame;
   onPlayEnd: () => void;
   onOpenCard: () => void;
+  onMasterRoleIsSetToVoteTime: () => void;
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
@@ -61,7 +65,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
   console.log({ activeGame, timeRemaining });
 
-  const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
+  // const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 
   const gameIsStarted = !isNull(activeGame.startedAt);
 
@@ -120,15 +124,13 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     activeGame.durationSeconds,
   ]); // ⭐ เพิ่ม dependencies
 
+  const allPlayersHaveFlipped = useMemo(() => {
+    return players.every((player) => activeGame.cardOpened[player.uuid]);
+  }, [players]);
+
   const handleFlipCard = () => {
     setIsCardFlipped(true);
     onOpenCard();
-  };
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const handleTimeUp = () => {
@@ -203,56 +205,12 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   return (
     <div className="min-h-screen flex flex-col p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Timer Bar - แสดงเมื่อเกมเริ่มแล้ว */}
-      {gameIsStarted && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-700 shadow-lg">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <i className="pi pi-clock text-2xl text-blue-400" />
-                <div>
-                  <p className="text-sm text-gray-400">เวลาที่เหลือ</p>
-                  <p
-                    className={`text-3xl font-bold ${
-                      timeRemaining <= 60
-                        ? "text-red-500 animate-pulse"
-                        : timeRemaining <= 180
-                        ? "text-yellow-500"
-                        : "text-green-500"
-                    }`}
-                  >
-                    {formatTime(timeRemaining)}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-400">สถานะ</p>
-                <p className="text-lg font-semibold text-green-400">
-                  <i className="pi pi-play-circle mr-2" />
-                  กำลังเล่น
-                </p>
-                {allPlayersFlipped && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    ผู้เล่นครบ {players.length} คน
-                  </p>
-                )}
-              </div>
-            </div>
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-              <div
-                className={`h-full transition-all duration-1000 ${
-                  timeRemaining <= 60
-                    ? "bg-red-500"
-                    : timeRemaining <= 180
-                    ? "bg-yellow-500"
-                    : "bg-green-500"
-                }`}
-                style={{ width: `${(timeRemaining / 600) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <BarGameTime
+        isStarted={gameIsStarted}
+        timeRemaining={timeRemaining}
+        isFlippedAll={allPlayersHaveFlipped}
+        players={players}
+      />
 
       <div
         className={`container max-w-4xl mx-auto flex-1 flex items-center justify-center ${
@@ -276,163 +234,11 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
           </div>
 
           {/* Card Container */}
-          <div className="perspective-1000">
-            <div
-              className={`relative w-full max-w-md mx-auto transition-transform duration-700 transform-style-3d ${
-                isCardFlipped ? "rotate-y-180" : ""
-              }`}
-              style={{
-                transformStyle: "preserve-3d",
-                minHeight: isCardFlipped ? "auto" : "400px",
-              }}
-            >
-              {/* Card Back (ด้านหลัง) */}
-              <div
-                className={`absolute inset-0 backface-hidden ${
-                  isCardFlipped ? "pointer-events-none" : ""
-                }`}
-              >
-                <Card
-                  className="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 cursor-pointer hover:border-blue-500 transition-all duration-300 hover:scale-105"
-                  onClick={handleFlipCard}
-                >
-                  <div className="flex flex-col items-center justify-center py-16">
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-6 animate-pulse">
-                      <i className="pi pi-question text-white text-6xl" />
-                    </div>
-                    <h2 className="text-3xl font-bold text-white mb-4">???</h2>
-                    <p className="text-gray-400 text-center">
-                      คลิกเพื่อเปิดการ์ด
-                    </p>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Card Front (ด้านหน้า - เปิดแล้ว) */}
-              <div
-                className={`backface-hidden rotate-y-180 ${
-                  isCardFlipped ? "relative" : "absolute inset-0"
-                }`}
-                style={{ transform: "rotateY(180deg)" }}
-              >
-                {myRole && (
-                  <Card
-                    className={`bg-gradient-to-br ${
-                      getRoleDisplay(myRole.role).bgColor
-                    } border-2 border-opacity-50`}
-                  >
-                    <div className="flex flex-col items-center justify-center py-8">
-                      {/* Role Icon */}
-                      <div className="w-24 h-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-6">
-                        <i
-                          className={`pi ${
-                            getRoleDisplay(myRole.role).icon
-                          } text-white text-5xl`}
-                        />
-                      </div>
-
-                      {/* Role Name */}
-                      <h2 className="text-4xl font-bold text-white mb-6">
-                        {getRoleDisplay(myRole.role).name}
-                      </h2>
-
-                      {/* Role Information */}
-                      <div className="w-full space-y-4">
-                        {myRole.role === RoleGame.CITIZEN && (
-                          <>
-                            <i className="pi pi-question-circle text-white text-3xl mb-3" />
-                            <p className="text-white text-lg">
-                              คุณไม่ทราบคำตอบ
-                            </p>
-                            <p className="text-gray-200 text-sm mt-2">
-                              ถามคำถามเพื่อหาคำตอบ
-                            </p>
-                          </>
-                        )}
-
-                        {myRole.role === RoleGame.MASTER && (
-                          <div className="space-y-3">
-                            {/* Image Display */}
-                            {myRole.answer && (
-                              <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 overflow-hidden border border-gray-700">
-                                <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900 mb-3">
-                                  <Image
-                                    src="/images/disneyland.png"
-                                    alt={myRole.answer || "Answer image"}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    className="object-cover rounded-lg"
-                                    priority
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Answer */}
-                            <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">
-                              <p className="text-gray-300 text-xs mb-1">
-                                คำตอบ:
-                              </p>
-                              <p className="text-white text-2xl font-bold">
-                                {myRole.answer}
-                              </p>
-                            </div>
-
-                            {/* Instruction */}
-                            <div className="bg-yellow-500 bg-opacity-20 rounded-lg p-4">
-                              <p className="text-yellow-200 text-sm">
-                                <i className="pi pi-info-circle mr-2" />
-                                คุณต้องให้คำใบ้ผู้เล่นแต่ไม่ให้รู้คำตอบ
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {myRole.role === RoleGame.INSIDER && (
-                          <div className="space-y-3">
-                            {/* Image Display */}
-                            {myRole.answer && (
-                              <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 overflow-hidden border border-gray-700">
-                                <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900 mb-3">
-                                  <Image
-                                    src="/images/disneyland.png"
-                                    alt={myRole.answer || "Answer image"}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    className="object-cover rounded-lg"
-                                    priority
-                                  />
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Answer */}
-                            <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">
-                              <p className="text-gray-300 text-xs mb-1">
-                                คำตอบ:
-                              </p>
-                              <p className="text-white text-2xl font-bold">
-                                {myRole.answer}
-                              </p>
-                            </div>
-
-                            {/* Instruction */}
-                            <div className="bg-red-500 bg-opacity-20 rounded-lg p-4">
-                              <p className="text-red-200 text-sm">
-                                <i className="pi pi-eye mr-2" />
-                                คุณต้องบงการผู้เล่นให้ไปสู่คำตอบ
-                                แต่อย่าให้ถูกจับได้!
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                )}
-              </div>
-            </div>
-          </div>
+          <DraftRoleCard
+            isCardFlipped={isCardFlipped}
+            onFlipCard={handleFlipCard}
+            my={myRole}
+          />
 
           {/* Waiting for other players */}
           {!gameIsStarted && (
