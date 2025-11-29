@@ -215,6 +215,16 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
+  const playerVote = useCallback(() => {
+    if (clientRef.current && isConnected) {
+      console.log("🗳️ Player is voting...");
+      clientRef.current.publish({
+        destination: `/app/room/${roomCode}/vote`,
+        body: JSON.stringify({ playerUuid }),
+      });
+    }
+  }, [roomCode, playerUuid, isConnected]);
+
   return {
     isConnected,
     room,
@@ -225,5 +235,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     handleCardOpened,
     requestActiveGame, // 🆘 For debugging - manually request active game data
     masterRoleIsSetToVoteTime,
+    playerVote,
   };
 }
