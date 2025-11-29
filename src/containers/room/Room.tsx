@@ -180,27 +180,27 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
             </div>
           </div>
 
-          {roomStatus !== RoomStatus.PLAYING && (
-            <div className="flex gap-2">
-              {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
-              {isHost && (
-                <Button
-                  label="แก้ไขห้อง"
-                  icon="pi pi-cog"
-                  severity="secondary"
-                  outlined
-                  onClick={() => setShowEditModal(true)}
-                />
-              )}
+          <div className="flex gap-2">
+            {/* ปุ่มแก้ไขห้อง - แสดงเฉพาะหัวห้อง */}
+            {isHost && (
               <Button
-                label="ออกจากห้อง"
-                icon="pi pi-sign-out"
-                severity="danger"
+                hidden={roomStatus !== RoomStatus.PLAYING}
+                label="แก้ไขห้อง"
+                icon="pi pi-cog"
+                severity="secondary"
                 outlined
-                onClick={() => onExitRoom()}
+                onClick={() => setShowEditModal(true)}
               />
-            </div>
-          )}
+            )}
+            <Button
+              hidden={currentPlayerMemorize?.playing}
+              label="ออกจากห้อง"
+              icon="pi pi-sign-out"
+              severity="danger"
+              outlined
+              onClick={() => onExitRoom()}
+            />
+          </div>
         </div>
 
         {/* Progress Info */}

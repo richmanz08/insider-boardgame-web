@@ -8,8 +8,10 @@ interface RoomCardProps {
   onJoin: (room: RoomData) => void;
 }
 export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoin }) => {
-  const isJoinable =
-    room.status === RoomStatus.WAITING && room.currentPlayers < room.maxPlayers;
+  // const isJoinable =
+  //   room.status === RoomStatus.WAITING && room.currentPlayers < room.maxPlayers;
+
+  const isJoinable = room.currentPlayers < room.maxPlayers;
 
   const getStatusSeverity = (status: RoomData["status"]) => {
     switch (status) {
@@ -66,17 +68,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoin }) => {
         <div className="flex flex-col gap-2">
           {isJoinable ? (
             <Button
-              label="เข้าร่วม"
+              label={
+                room.status === RoomStatus.PLAYING ? "เข้าไปรอ" : "เข้าร่วม"
+              }
               icon="pi pi-sign-in"
               onClick={() => onJoin(room)}
               severity="success"
             />
           ) : (
-            <Button
-              label={room.status === RoomStatus.PLAYING ? "กำลังเล่น" : "เต็ม"}
-              disabled
-              severity="secondary"
-            />
+            <Button label={"เต็ม"} disabled severity="secondary" />
           )}
         </div>
       </div>

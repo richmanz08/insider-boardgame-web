@@ -8,6 +8,9 @@ interface PlayerCardProps {
 }
 export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
   const { player } = props;
+
+  console.log("Rendering PlayerCard for player:", player);
+
   return (
     <Card key={player.uuid} className="relative overflow-hidden">
       {/* Host Badge */}
@@ -26,7 +29,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
         {/* Avatar */}
         <div className="relative">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-            {player.playerName.charAt(0).toUpperCase()}
+            {player?.playerName?.charAt(0).toUpperCase()}
           </div>
 
           {/* Active Status Indicator - จุดเขียว/เทา */}
