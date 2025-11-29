@@ -14,9 +14,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   const clientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [room, setRoom] = useState<RoomUpdateMessage | null>(null);
-  // const [gamePrivateInfo, setGamePrivateInfo] =
-  //   useState<GamePrivateMessage | null>(null);
-
   // NEW: activeGame snapshot (may contain cardOpened map)
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
 
@@ -81,13 +78,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           console.error("❌ Failed parse active_game response:", err);
         }
       });
-
-      // // Subscribe to game private messages (role & word for MASTER/INSIDER)
-      // client.subscribe(`/user/queue/game_private`, (message: IMessage) => {
-      //   const privateInfo: GamePrivateMessage = JSON.parse(message.body);
-      //   console.log("Game private info received:", privateInfo);
-      //   setGamePrivateInfo(privateInfo);
-      // });
 
       // join
       client.publish({

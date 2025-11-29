@@ -136,6 +136,15 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     router.push("/");
   };
 
+  const CountdownModalMemo = React.useMemo(() => {
+    return (
+      <CountdownPlayModal
+        open={showCountdown}
+        onCountdownComplete={handleCountdownComplete}
+      />
+    );
+  }, [showCountdown]);
+
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       {/* Room Header */}
@@ -288,10 +297,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       )}
 
       {/* Countdown Modal */}
-      <CountdownPlayModal
-        open={showCountdown}
-        onCountdownComplete={handleCountdownComplete}
-      />
+      {CountdownModalMemo}
 
       {/* Edit Room Modal - แสดงเฉพาะหัวห้อง */}
       <EditRoomModal
