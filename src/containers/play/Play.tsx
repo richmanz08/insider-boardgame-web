@@ -132,7 +132,9 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
   const handleFlipCard = () => {
     setIsCardFlipped(true);
-    onOpenCard();
+    setTimeout(() => {
+      onOpenCard();
+    }, 2500);
   };
 
   const handleTimeUp = () => {

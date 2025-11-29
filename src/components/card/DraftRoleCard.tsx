@@ -3,6 +3,7 @@ import { RoleAssignment } from "@/src/containers/play/Play";
 import { RoleGame } from "@/src/hooks/interface";
 import Image from "next/image";
 import { Card } from "primereact/card";
+import React, { useEffect } from "react";
 
 interface DraftRoleCardProps {
   isCardFlipped: boolean;
@@ -16,6 +17,34 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
   my,
 }) => {
   const { getRoleDisplay } = usePlayHook();
+
+  const [timeRemaining, setTimeRemaining] = React.useState(10); // 10 seconds
+
+  // countdown timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (timeRemaining > 0) {
+      timer = setInterval(() => {
+        setTimeRemaining((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [timeRemaining]);
+
+  // auto flip card in 10 seconds
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (!isCardFlipped) {
+      timer = setTimeout(() => {
+        onFlipCard();
+      }, 10000); // 10 seconds
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isCardFlipped, onFlipCard]);
 
   return (
     <div className="perspective-1000">
@@ -44,6 +73,19 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
               </div>
               <h2 className="text-3xl font-bold text-white mb-4">???</h2>
               <p className="text-gray-400 text-center">คลิกเพื่อเปิดการ์ด</p>
+            </div>
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-full transition-all duration-1000 ${
+                  timeRemaining <= 60
+                    ? "bg-red-500"
+                    : timeRemaining <= 180
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
+                }`}
+                style={{ width: `${(timeRemaining / 600) * 100}%` }}
+              />
             </div>
           </Card>
         </div>
