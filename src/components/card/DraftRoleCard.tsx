@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { setSessionWithExpiry } from "@/src/common/function";
 import { usePlayHook } from "@/src/containers/play/hook";
 import { RoleAssignment } from "@/src/containers/play/Play";
 import { ActiveGame, RoleGame } from "@/src/hooks/interface";
@@ -64,11 +65,11 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
       // ถ้าเพิ่งเริ่มนับ (countdown = delay) → ตั้งเวลาลงใน sessionStorage
       if (countdown === delay) {
         const now = Date.now();
-        sessionStorage.setItem(keySessionStartCountdown, now.toString());
-        sessionStorage.setItem(
-          keySessionEndCountdown,
-          (now + delay * 1000).toString()
-        );
+        // Save start time for delay seconds
+        setSessionWithExpiry(keySessionStartCountdown, now, delay);
+
+        // Save end time for delay seconds
+        setSessionWithExpiry(keySessionEndCountdown, now + delay * 1000, delay);
       }
 
       const timer = setTimeout(() => {
