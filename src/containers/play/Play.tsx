@@ -1,16 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { GamePlay } from "./GamePlay";
 import { VotePlayer } from "./VotePlayer";
 import { ScoreBoardContainer } from "./ScoreBoard";
 import {
   ActiveGame,
   GamePrivateMessage,
-  PlayerData,
   RoleGame,
 } from "@/src/hooks/interface";
-import { usePlayHook } from "./hook";
 import { WaitingOpenCardBox } from "./WaitingOpenCardBox";
 import { isNull } from "lodash";
 import { BarGameTime } from "./BarGameTime";
@@ -22,7 +20,7 @@ export interface RoleAssignment {
 }
 
 interface PlayContainerProps {
-  players: PlayerData[];
+  // players: PlayerData[];
   myJob: GamePrivateMessage;
   roomCode: string;
   activeGame: ActiveGame;
@@ -33,7 +31,7 @@ interface PlayContainerProps {
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
-  players,
+  // players,
   roomCode,
   myJob,
   activeGame,
@@ -44,14 +42,15 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 }) => {
   // console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
-  const { getRoleDisplay } = usePlayHook();
+  // const { getRoleDisplay } = usePlayHook();
 
+  const players = activeGame.playerInGame;
   const [isCardFlipped, setIsCardFlipped] = useState(false);
   const myRole: RoleAssignment = {
     role: myJob.role,
     ...(myJob.word && { answer: myJob.word }),
   };
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   // const [gameIsStarted, setgameIsStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
@@ -124,9 +123,9 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     gameEnded,
   ]); // ⭐ เพิ่ม dependencies
 
-  const allPlayersHaveFlipped = useMemo(() => {
-    return players.every((player) => activeGame.cardOpened[player.uuid]);
-  }, [players]);
+  // const allPlayersHaveFlipped = useMemo(() => {
+  //   return players.every((player) => activeGame.cardOpened[player.uuid]);
+  // }, [players]);
 
   const handleFlipCard = () => {
     setIsCardFlipped(true);
@@ -140,10 +139,10 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     setGameEnded(true);
   };
 
-  const handleEndGame = () => {
-    console.log("Master ended game early.");
-    setGameEnded(true);
-  };
+  // const handleEndGame = () => {
+  //   console.log("Master ended game early.");
+  //   setGameEnded(true);
+  // };
 
   const handleScoreBoard = () => {
     console.log("Navigate to endgame summary");

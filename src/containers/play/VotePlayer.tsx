@@ -2,13 +2,18 @@
 "use client";
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Card } from "primereact/card";
-import { ActiveGame, PlayerData, RoleGame } from "@/src/hooks/interface";
+import {
+  ActiveGame,
+  PlayerData,
+  PlayerInGame,
+  RoleGame,
+} from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
 import { isEmpty, map } from "lodash";
 import { Avatar } from "@/src/components/avatar/Avatar";
 
 interface VotePlayerProps {
-  players: PlayerData[];
+  players: PlayerInGame[];
   myUuid: string;
   myRole: RoleGame;
   activeGame: ActiveGame;

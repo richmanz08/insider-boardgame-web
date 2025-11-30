@@ -164,7 +164,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       activeGame &&
       activeGame.privateMessage ? (
         <PlayContainer
-          players={room?.players || []}
+          // players={room?.players || []}
           activeGame={activeGame}
           myJob={activeGame.privateMessage}
           roomCode={roomData.roomCode}

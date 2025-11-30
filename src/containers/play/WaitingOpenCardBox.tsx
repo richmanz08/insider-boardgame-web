@@ -1,8 +1,8 @@
 import { Avatar } from "@/src/components/avatar/Avatar";
-import { PlayerData } from "@/src/hooks/interface";
+import { PlayerInGame } from "@/src/hooks/interface";
 
 interface WaitingOpenCardBoxProps {
-  players: PlayerData[];
+  players: PlayerInGame[];
   openedCard: Record<string, boolean>;
 }
 export const WaitingOpenCardBox: React.FC<WaitingOpenCardBoxProps> = ({

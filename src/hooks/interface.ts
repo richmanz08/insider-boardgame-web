@@ -68,4 +68,10 @@ export interface ActiveGame {
   cardOpened: Record<string, boolean>;
   privateMessage: GamePrivateMessage | null;
   votes: Record<string, string>; // playerUuid -> targetPlayerUuid
+  playerInGame: PlayerInGame[];
+}
+
+export interface PlayerInGame {
+  uuid: string;
+  playerName: string;
 }
