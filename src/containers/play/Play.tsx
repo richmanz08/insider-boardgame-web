@@ -232,6 +232,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
               isCardFlipped={isCardFlipped}
               onFlipCard={handleFlipCard}
               my={myRole}
+              activeGame={activeGame}
             />
 
             {/* Waiting for other players */}

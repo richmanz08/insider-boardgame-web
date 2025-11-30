@@ -1,51 +1,118 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { usePlayHook } from "@/src/containers/play/hook";
 import { RoleAssignment } from "@/src/containers/play/Play";
-import { RoleGame } from "@/src/hooks/interface";
+import { ActiveGame, RoleGame } from "@/src/hooks/interface";
 import Image from "next/image";
 import { Card } from "primereact/card";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 interface DraftRoleCardProps {
   isCardFlipped: boolean;
   onFlipCard: () => void;
   my: RoleAssignment;
+  activeGame: ActiveGame;
 }
 
 export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
   isCardFlipped,
   onFlipCard,
   my,
+  activeGame,
 }) => {
   const { getRoleDisplay } = usePlayHook();
 
-  const [timeRemaining, setTimeRemaining] = React.useState(10); // 10 seconds
+  const keySessionStartCountdown = `dcds_${activeGame.id}`;
+  const keySessionEndCountdown = `dcde_${activeGame.id}`;
 
-  // countdown timer
+  const delay = 15;
+
+  // -----------------------------------------------------
+  // INITIAL COUNTDOWN (อ่านจาก sessionStorage)
+  // -----------------------------------------------------
+  const [countdown, setCountdown] = useState(() => {
+    const getStoredEnd = sessionStorage.getItem(keySessionEndCountdown);
+
+    if (getStoredEnd) {
+      const endTime = parseInt(getStoredEnd, 10);
+      const now = Date.now();
+      const diffSeconds = Math.ceil((endTime - now) / 1000);
+
+      if (diffSeconds > 0 && diffSeconds <= delay) {
+        return diffSeconds;
+      }
+      if (diffSeconds <= 0) {
+        return 0;
+      }
+    }
+
+    // ไม่เจอใน sessionStorage → ตั้งใหม่
+    sessionStorage.setItem(
+      keySessionEndCountdown,
+      (Date.now() + delay * 1000).toString()
+    );
+
+    return delay;
+  });
+
+  // -----------------------------------------------------
+  // COUNTDOWN EFFECT
+  // -----------------------------------------------------
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (timeRemaining > 0) {
-      timer = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1);
+    if (isCardFlipped) return;
+
+    if (countdown > 0) {
+      // ถ้าเพิ่งเริ่มนับ (countdown = delay) → ตั้งเวลาลงใน sessionStorage
+      if (countdown === delay) {
+        const now = Date.now();
+        sessionStorage.setItem(keySessionStartCountdown, now.toString());
+        sessionStorage.setItem(
+          keySessionEndCountdown,
+          (now + delay * 1000).toString()
+        );
+      }
+
+      const timer = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
       }, 1000);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [timeRemaining]);
 
-  // auto flip card in 10 seconds
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (!isCardFlipped) {
-      timer = setTimeout(() => {
+      return () => clearTimeout(timer);
+    }
+
+    // หมดเวลา countdown = 0 → ลบ sessionStorage
+    if (countdown === 0) {
+      sessionStorage.removeItem(keySessionStartCountdown);
+      sessionStorage.removeItem(keySessionEndCountdown);
+
+      const completeTimer = setTimeout(() => {
         onFlipCard();
-      }, 10000); // 10 seconds
-    }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [isCardFlipped, onFlipCard]);
+      }, 1000);
 
+      return () => clearTimeout(completeTimer);
+    }
+  }, [countdown, onFlipCard]);
+
+  // -----------------------------------------------------
+  // PROGRESS BAR (แก้บัคเริ่มที่ 100%)
+  // -----------------------------------------------------
+  const countdownProgressMemo = useMemo(() => {
+    const progress = Math.max(
+      0,
+      Math.min(100, ((delay - countdown) / delay) * 100)
+    );
+
+    return (
+      <div className="mt-8 w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+        <div
+          className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-1000 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    );
+  }, [countdown]);
+
+  // -----------------------------------------------------
+  // UI
+  // -----------------------------------------------------
   return (
     <div className="perspective-1000">
       <div
@@ -57,7 +124,7 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
           minHeight: isCardFlipped ? "auto" : "400px",
         }}
       >
-        {/* Card Back (ด้านหลัง) */}
+        {/* Back Side */}
         <div
           className={`absolute inset-0 backface-hidden ${
             isCardFlipped ? "pointer-events-none" : ""
@@ -74,23 +141,12 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
               <h2 className="text-3xl font-bold text-white mb-4">???</h2>
               <p className="text-gray-400 text-center">คลิกเพื่อเปิดการ์ด</p>
             </div>
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-              <div
-                className={`h-full transition-all duration-1000 ${
-                  timeRemaining <= 60
-                    ? "bg-red-500"
-                    : timeRemaining <= 180
-                    ? "bg-yellow-500"
-                    : "bg-green-500"
-                }`}
-                style={{ width: `${(timeRemaining / 600) * 100}%` }}
-              />
-            </div>
+
+            {countdownProgressMemo}
           </Card>
         </div>
 
-        {/* Card Front (ด้านหน้า - เปิดแล้ว) */}
+        {/* Front Side */}
         <div
           className={`backface-hidden rotate-y-180 ${
             isCardFlipped ? "relative" : "absolute inset-0"
@@ -118,8 +174,8 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                   {getRoleDisplay(my.role).name}
                 </h2>
 
-                {/* Role Information */}
                 <div className="w-full space-y-4">
+                  {/* CITIZEN */}
                   {my.role === RoleGame.CITIZEN && (
                     <>
                       <i className="pi pi-question-circle text-white text-3xl mb-3" />
@@ -130,9 +186,9 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                     </>
                   )}
 
+                  {/* MASTER */}
                   {my.role === RoleGame.MASTER && (
                     <div className="space-y-3">
-                      {/* Image Display */}
                       {my.answer && (
                         <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 overflow-hidden border border-gray-700">
                           <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900 mb-3">
@@ -140,7 +196,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                               src="/images/disneyland.png"
                               alt={my.answer || "Answer image"}
                               fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               className="object-cover rounded-lg"
                               priority
                             />
@@ -148,7 +203,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                         </div>
                       )}
 
-                      {/* Answer */}
                       <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">
                         <p className="text-gray-300 text-xs mb-1">คำตอบ:</p>
                         <p className="text-white text-2xl font-bold">
@@ -156,7 +210,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                         </p>
                       </div>
 
-                      {/* Instruction */}
                       <div className="bg-yellow-500 bg-opacity-20 rounded-lg p-4">
                         <p className="text-yellow-200 text-sm">
                           <i className="pi pi-info-circle mr-2" />
@@ -166,9 +219,9 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                     </div>
                   )}
 
+                  {/* INSIDER */}
                   {my.role === RoleGame.INSIDER && (
                     <div className="space-y-3">
-                      {/* Image Display */}
                       {my.answer && (
                         <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 overflow-hidden border border-gray-700">
                           <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900 mb-3">
@@ -176,7 +229,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                               src="/images/disneyland.png"
                               alt={my.answer || "Answer image"}
                               fill
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               className="object-cover rounded-lg"
                               priority
                             />
@@ -184,7 +236,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                         </div>
                       )}
 
-                      {/* Answer */}
                       <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">
                         <p className="text-gray-300 text-xs mb-1">คำตอบ:</p>
                         <p className="text-white text-2xl font-bold">
@@ -192,7 +243,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                         </p>
                       </div>
 
-                      {/* Instruction */}
                       <div className="bg-red-500 bg-opacity-20 rounded-lg p-4">
                         <p className="text-red-200 text-sm">
                           <i className="pi pi-eye mr-2" />
