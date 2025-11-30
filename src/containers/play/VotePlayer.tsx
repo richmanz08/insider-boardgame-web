@@ -1,34 +1,37 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Card } from "primereact/card";
-import { Button } from "primereact/button";
-import { PlayerData, RoleGame } from "@/src/hooks/interface";
+import { ActiveGame, PlayerData, RoleGame } from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
+import { isEmpty, map } from "lodash";
+import { Avatar } from "@/src/components/avatar/Avatar";
 
 interface VotePlayerProps {
   players: PlayerData[];
-  roomId?: string;
-  myPlayerId: string;
+  myUuid: string;
   myRole: RoleGame;
+  activeGame: ActiveGame;
   onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
   onMyVote: (playerUuid: string) => void;
 }
 
 export const VotePlayer: React.FC<VotePlayerProps> = ({
+  activeGame,
   players,
-  roomId,
-  myPlayerId,
+  myUuid,
   myRole,
   onNavigateToEndgame,
   onMyVote,
 }) => {
-  console.log("Room ID:", roomId); // TODO: ใช้ดึงข้อมูลจาก API
-  const { getRoleDisplay } = usePlayHook();
+  const { getRoleDisplay, countVotes, findWhoIsVoteMe } = usePlayHook();
 
   const [myVote, setMyVote] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [revealedPlayers, setRevealedPlayers] = useState<string[]>([]);
   const [autoNavigateIn, setAutoNavigateIn] = useState<number | null>(null);
+  const [uuidsVoted, setUuidsVoted] = useState<Record<string, number>>({});
+  const [voteFinished, setVoteFinished] = useState(false);
 
   // Auto-navigate หลังจากเปิดการ์ดครบทั้งหมดแล้ว 7 วินาที
   useEffect(() => {
@@ -74,12 +77,21 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     onNavigateToEndgame,
   ]);
 
+  useLayoutEffect(() => {
+    if (isEmpty(activeGame.votes)) return;
+    const vote = activeGame.votes[myUuid];
+    if (vote) {
+      setMyVote(vote);
+    }
+    setUuidsVoted(countVotes(activeGame.votes));
+  }, [activeGame.votes, myUuid]);
+
   const handleVote = (playerId: string) => {
     if (myRole === RoleGame.MASTER) {
       return; // Master ไม่สามารถโหวตได้
     }
 
-    if (playerId === myPlayerId) {
+    if (playerId === myUuid) {
       return; // ไม่สามารถโหวตตัวเองได้
     }
 
@@ -89,7 +101,8 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
 
   const isMaster = myRole === RoleGame.MASTER;
   const canVote = !isMaster && !myVote;
-  const allVoted = myVote !== null; // สมมติว่าเมื่อฉันโหวตแล้ว แสดงว่าทุกคนโหวตเสร็จ
+
+  console.log("VotePlayer is activeGame:", players, activeGame, myVote);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
@@ -97,9 +110,9 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-red-400 to-orange-600 bg-clip-text text-transparent">
-            {!allVoted ? "ใครคือ Insider?" : "กำลังเปิดเผยบทบาท..."}
+            {!voteFinished ? "ใครคือ Insider?" : "กำลังเปิดเผยบทบาท..."}
           </h1>
-          {!allVoted && (
+          {!voteFinished && (
             <p className="text-gray-400 text-lg">
               {isMaster
                 ? "คุณเป็น Master ไม่สามารถโหวตได้"
@@ -111,7 +124,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
         </div>
 
         {/* Master Notice */}
-        {isMaster && !allVoted && (
+        {isMaster && (
           <div className="max-w-2xl mx-auto mb-6">
             <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 text-center">
               <i className="pi pi-crown text-purple-400 text-2xl mb-2" />
@@ -126,7 +139,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
         )}
 
         {/* My Vote Status */}
-        {myVote && !allVoted && !isMaster && (
+        {myVote && !isMaster && (
           <div className="max-w-2xl mx-auto mb-6">
             <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
               <i className="pi pi-check-circle text-green-400 text-2xl mb-2" />
@@ -149,14 +162,20 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
           {players.map((player) => {
             const isRevealed = revealedPlayers.includes(player.uuid);
             const isMyVote = myVote === player.uuid;
-            const isMe = player.uuid === myPlayerId;
+            const isMe = player.uuid === myUuid;
+            const thisPlayerWasVote = uuidsVoted[player.uuid] ?? 0;
+            const whoIsVoteMe = findWhoIsVoteMe(
+              activeGame.votes,
+              player.uuid,
+              players
+            );
 
             return (
               <div key={player.uuid} className="relative">
                 {/* Vote Count Badge */}
-                {allVoted && (
+                {thisPlayerWasVote > 0 && (
                   <div className="absolute -top-2 -right-2 z-10 bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg shadow-lg">
-                    {2}
+                    {thisPlayerWasVote}
                   </div>
                 )}
 
@@ -169,30 +188,28 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                       : isMyVote
                       ? "bg-green-800 border-2 border-green-500 scale-105"
                       : isMe
-                      ? "bg-gray-700 border-2 border-gray-500"
+                      ? "bg-gray-700 border-2 border-gray-500 !cursor-default"
                       : canVote
                       ? "bg-gray-800 border-2 border-gray-600 hover:border-red-500 hover:scale-105"
                       : "bg-gray-800 border-2 border-gray-600 opacity-60"
                   }`}
-                  onClick={() => !isRevealed && handleVote(player.uuid)}
+                  onClick={() =>
+                    !isRevealed && !isMe && handleVote(player.uuid)
+                  }
                 >
                   <div className="p-4">
                     {!isRevealed ? (
-                      <>
-                        {/* Avatar */}
-                        <div className="flex justify-center mb-3">
-                          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                            {player.playerName.charAt(0).toUpperCase()}
-                          </div>
-                        </div>
+                      <div className="flex flex-col items-center">
+                        <Avatar
+                          name={player.playerName ?? "UNKNOW_NAME"}
+                          size="lg"
+                        />
 
                         {/* Player Name */}
-                        <h3 className="text-center text-lg font-bold text-white mb-2">
-                          {player.playerName}
-                        </h3>
-
-                        {/* Status Badges */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex items-center flex-nowrap gap-2">
+                          <h3 className="text-center text-lg font-bold text-white">
+                            {player.playerName}
+                          </h3>
                           {isMe && (
                             <div className="text-center">
                               <span className="text-xs bg-blue-600 px-2 py-1 rounded">
@@ -200,6 +217,10 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                               </span>
                             </div>
                           )}
+                        </div>
+
+                        {/* Status Badges */}
+                        <div className="flex flex-col gap-1">
                           {isMyVote && (
                             <div className="text-center">
                               <span className="text-xs bg-green-600 px-2 py-1 rounded">
@@ -208,7 +229,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                             </div>
                           )}
                         </div>
-                      </>
+                      </div>
                     ) : (
                       <>
                         {/* Revealed Role */}
@@ -235,27 +256,20 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                       </>
                     )}
                   </div>
+                  <div className="flex w-full justify-center opacity-45">
+                    {map(whoIsVoteMe, (voter) => (
+                      <Avatar
+                        key={voter.uuid}
+                        name={voter.playerName ?? "UNKNOWN_NAME"}
+                        size="sm"
+                      />
+                    ))}
+                  </div>
                 </Card>
               </div>
             );
           })}
         </div>
-
-        {/* Instructions */}
-        {!allVoted && (
-          <div className="text-center">
-            <div className="inline-block bg-yellow-900/30 border border-yellow-700 rounded-lg px-6 py-3">
-              <p className="text-yellow-400 text-sm">
-                <i className="pi pi-info-circle mr-2" />
-                {canVote
-                  ? "คลิกที่ผู้เล่นที่คุณคิดว่าเป็น Insider"
-                  : isMaster
-                  ? "Master ไม่สามารถโหวตได้"
-                  : "รอผู้เล่นคนอื่นโหวต..."}
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* {showResults && revealedPlayers.length === players.length && (
           <div className="mt-8 text-center animate-fade-in">

@@ -1,4 +1,4 @@
-import { RoleGame } from "@/src/hooks/interface";
+import { PlayerData, RoleGame } from "@/src/hooks/interface";
 
 export const usePlayHook = () => {
   function getRoleDisplay(role: RoleGame) {
@@ -29,5 +29,32 @@ export const usePlayHook = () => {
         };
     }
   }
-  return { getRoleDisplay };
+  function countVotes(votes: Record<string, string>) {
+    const voteCount: Record<string, number> = {};
+    Object.values(votes).forEach((targetPlayerUuid) => {
+      if (voteCount[targetPlayerUuid]) {
+        voteCount[targetPlayerUuid] += 1;
+      } else {
+        voteCount[targetPlayerUuid] = 1;
+      }
+    });
+    return voteCount;
+  }
+  function findWhoIsVoteMe(
+    votes: Record<string, string>,
+    myUuid: string,
+    players: PlayerData[]
+  ): PlayerData[] {
+    const voters: PlayerData[] = [];
+    Object.entries(votes).forEach(([playerUuid, targetPlayerUuid]) => {
+      if (targetPlayerUuid === myUuid) {
+        const player = players.find((p) => p.uuid === playerUuid);
+        if (player) {
+          voters.push(player);
+        }
+      }
+    });
+    return voters;
+  }
+  return { getRoleDisplay, countVotes, findWhoIsVoteMe };
 };

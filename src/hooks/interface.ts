@@ -67,4 +67,5 @@ export interface ActiveGame {
   finished: boolean;
   cardOpened: Record<string, boolean>;
   privateMessage: GamePrivateMessage | null;
+  votes: Record<string, string>; // playerUuid -> targetPlayerUuid
 }

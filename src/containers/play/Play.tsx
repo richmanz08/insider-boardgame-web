@@ -72,8 +72,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
   // Mock: จำนวนผู้เล่นทั้งหมดและผู้เล่นที่เปิดการ์ดแล้ว
 
-  const [currentUserId] = useState("2"); // Mock current user ID
-
   // ⭐ คำนวณเวลาจาก endsAt (แม่นยำกว่า startedAt + duration)
   useEffect(() => {
     if (!gameIsStarted || gameEnded) return;
@@ -180,9 +178,9 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   if (gameEnded && myRole) {
     return (
       <VotePlayer
+        activeGame={activeGame}
         players={players}
-        roomId={roomCode}
-        myPlayerId={currentUserId}
+        myUuid={myJob.playerUuid}
         myRole={myRole.role}
         onNavigateToEndgame={handleScoreBoard}
         onMyVote={onPlayerVote}
