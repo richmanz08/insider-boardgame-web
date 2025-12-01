@@ -47,6 +47,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           update.type === "GAME_STARTED" ||
           update.type === "VOTE_CAST" || // ← ใหม่!
           update.type === "VOTE_STARTED" ||
+          update.type === "GAME_FINISHED" ||
           update.type === "GAME_FINISHED_WITH_SCORING" ||
           (update.activeGame !== undefined && update.activeGame !== null)
         ) {

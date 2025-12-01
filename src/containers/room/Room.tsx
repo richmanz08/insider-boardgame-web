@@ -62,13 +62,17 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     hostSummary,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
-  console.log("RoomContainer log data:", { room }, { activeGame });
-
   const [showCountdown, setShowCountdown] = useState(false);
   const [hostStartGame, setHostStartGame] = useState(false);
   const [gameSummary, setGameSummary] = useState<ActiveGame | null>(null);
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false);
-
+  console.log(
+    "RoomContainer log data:",
+    { room },
+    { activeGame },
+    { gameSummary },
+    { showBoardTotalScore }
+  );
   const allPlayersReady =
     (room?.players.every((p) => p.ready) ?? false) &&
     (room?.players?.length ?? 0) > 5;
