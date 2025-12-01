@@ -20,7 +20,7 @@ export interface RoleAssignment {
 }
 
 interface PlayContainerProps {
-  // players: PlayerData[];
+  isHost: boolean;
   myJob: GamePrivateMessage;
   roomCode: string;
   activeGame: ActiveGame;
@@ -32,7 +32,7 @@ interface PlayContainerProps {
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
-  // players,
+  isHost,
   roomCode,
   myJob,
   activeGame,
@@ -179,6 +179,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   if (gameEnded && myRole) {
     return (
       <VotePlayer
+        isHost={isHost}
         activeGame={activeGame}
         players={players}
         myUuid={myJob.playerUuid}

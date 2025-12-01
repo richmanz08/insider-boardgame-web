@@ -4,7 +4,7 @@ import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Card } from "primereact/card";
 import { ActiveGame, PlayerInGame, RoleGame } from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
-import { isEmpty, map, set } from "lodash";
+import { isEmpty, map } from "lodash";
 import { Avatar } from "@/src/components/avatar/Avatar";
 import { Button } from "primereact/button";
 
@@ -13,6 +13,7 @@ interface VotePlayerProps {
   myUuid: string;
   myRole: RoleGame;
   activeGame: ActiveGame;
+  isHost: boolean;
   onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
   onMyVote: (playerUuid: string) => void;
   onHostSummary: () => void;
@@ -22,6 +23,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   activeGame,
   players,
   myUuid,
+  isHost,
   // myRole,
   onNavigateToEndgame,
   onMyVote,
@@ -129,12 +131,14 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
               }
             </p>
           )}
-          <Button
-            disabled={!voteFinished}
-            className="mt-4"
-            onClick={onHostSummary}
-            label="สรุปผลโดยโฮสต์"
-          />
+          {isHost && (
+            <Button
+              disabled={!voteFinished}
+              className="mt-4"
+              onClick={onHostSummary}
+              label="สรุปผลโดยโฮสต์"
+            />
+          )}
         </div>
 
         {/* Master Notice */}
