@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CountdownPlayModal } from "./CountdownPlay";
-import { EditRoomModal, EditRoomFormData } from "./EditRoom";
 import { PlayContainer } from "../play/Play";
 import { leaveRoomService } from "@/app/api/room/RoomService";
 import { useSelector } from "react-redux";
@@ -13,10 +12,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
 import { useRoomWebSocket } from "@/src/hooks/useRoomWebSocket";
 import { useRoomHook } from "./hook";
-import { ActiveGame, RoomUpdateMessage } from "@/src/hooks/interface";
+import {
+  ActiveGame,
+  PlayerData,
+  RoomUpdateMessage,
+} from "@/src/hooks/interface";
 import { HeaderRoom } from "./HeaderRoom";
 import { RoomPlayersList } from "./RoomPlayers";
 import { ScoreBoardContainer } from "../scoreboard/ScoreBoard";
+import { Button } from "primereact/button";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -26,12 +30,18 @@ export const RoomContext = React.createContext<{
   room: RoomUpdateMessage | null;
   roomCode: string;
   isHost: boolean;
+  allReady: boolean;
+  my: PlayerData | null;
   onShowScoreBoard: () => void;
+  onExitRoom: () => void;
 }>({
   room: null,
   roomCode: "",
   isHost: false,
+  allReady: false,
+  my: null,
   onShowScoreBoard: () => {},
+  onExitRoom: () => {},
 });
 
 export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
@@ -54,11 +64,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
   console.log("RoomContainer log data:", { room }, { activeGame });
 
-  const [roomName, setRoomName] = useState(roomData.roomName);
   const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
-  const [maxPlayers, setMaxPlayers] = useState(roomData.maxPlayers);
-  const [hasPassword, setHasPassword] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+
   const [showCountdown, setShowCountdown] = useState(false);
   const [hostStartGame, setHostStartGame] = useState(false);
   const [gameSummary, setGameSummary] = useState<ActiveGame | null>(null);
@@ -104,27 +111,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     // TODO: เรียก API เริ่มเกม และ navigate ไปหน้าเกม
   };
 
-  const handleEditRoom = (data: EditRoomFormData) => {
-    console.log("Edit room data:", data);
-
-    // อัพเดทข้อมูลห้อง
-    setRoomName(data.roomName);
-    setMaxPlayers(data.maxPlayers);
-
-    // จัดการพาสเวิร์ด
-    if (data.removePassword) {
-      setHasPassword(false);
-      console.log("Password removed");
-      // TODO: เรียก API ลบพาสเวิร์ด
-    } else if (data.password && data.password.length > 0) {
-      setHasPassword(true);
-      console.log("Password updated/set");
-      // TODO: เรียก API อัพเดทพาสเวิร์ด
-    }
-
-    // TODO: เรียก API อัพเดทข้อมูลห้อง
-  };
-
   const onResetRoom = () => {
     // รีเซ็ตสถานะห้องและผู้เล่น
     setRoomStatus(RoomStatus.WAITING);
@@ -165,23 +151,15 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         room: room,
         roomCode: roomData.roomCode,
         isHost: isHost,
+        allReady: allPlayersReady,
+        my: currentPlayerMemorize,
         onShowScoreBoard: () => setShowBoardTotalScore(true),
+        onExitRoom: onExitRoom,
       }}
     >
       <div className="container mx-auto p-4 max-w-6xl">
         {/* Room Header */}
-        <HeaderRoom
-          room={room}
-          roomName={roomName}
-          hasPassword={hasPassword}
-          roomStatus={roomStatus}
-          maxPlayers={maxPlayers}
-          allPlayersReady={allPlayersReady}
-          isHost={isHost}
-          currentPlayerMemorize={currentPlayerMemorize}
-          setShowEditModal={setShowEditModal}
-          onExitRoom={onExitRoom}
-        />
+        <HeaderRoom roomStatus={roomStatus} />
 
         {showBoardTotalScore && gameSummary ? (
           <ScoreBoardContainer
@@ -229,18 +207,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
         {/* Countdown Modal */}
         {CountdownModalMemo}
-
-        {/* Edit Room Modal - แสดงเฉพาะหัวห้อง */}
-        <EditRoomModal
-          open={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onEditRoom={handleEditRoom}
-          currentRoomData={{
-            roomName,
-            maxPlayers,
-            hasPassword,
-          }}
-        />
       </div>
     </RoomContext.Provider>
   );

@@ -17,7 +17,7 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
   allReady,
   onToggleReady,
 }) => {
-  const { isHost } = useContext(RoomContext);
+  const { isHost, my, onExitRoom } = useContext(RoomContext);
   return (
     <div>
       <>
@@ -55,7 +55,6 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
         </div>
 
         {/* Spacer for fixed button */}
-        <div className="h-24" />
 
         {/* Host Info */}
         {isHost && (
@@ -72,6 +71,16 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
               </p>
             )}
           </div>
+        )}
+        {!my?.playing && (
+          <Button
+            className="w-full !mt-8"
+            label="ออกจากห้อง"
+            icon="pi pi-sign-out"
+            severity="danger"
+            outlined
+            onClick={() => onExitRoom()}
+          />
         )}
       </>
     </div>
