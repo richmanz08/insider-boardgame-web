@@ -2,9 +2,18 @@ interface AvatarProps {
   name: string;
   size?: "sm" | "md" | "lg";
   className?: string;
+  showActive?: {
+    show: boolean;
+    active: boolean;
+  };
 }
 
-export const Avatar = ({ name, size = "md", className = "" }: AvatarProps) => {
+export const Avatar = ({
+  name,
+  size = "md",
+  className = "",
+  showActive,
+}: AvatarProps) => {
   // ดึงตัวอักษรแรกของชื่อ
   const getInitial = (name: string): string => {
     if (!name || name.trim().length === 0) return "?";
@@ -53,10 +62,20 @@ export const Avatar = ({ name, size = "md", className = "" }: AvatarProps) => {
         text-white font-bold
         select-none
         shadow-md
+        relative
       `}
       title={name}
     >
       {initial}
+      {showActive && showActive.show && (
+        <div
+          className="absolute top-0 right-0 w-4 h-4 rounded-full border-2 border-white"
+          style={{
+            backgroundColor: showActive?.active ? "#10b981" : "#6b7280",
+          }}
+          title={showActive?.active ? "ออนไลน์" : "ออฟไลน์"}
+        />
+      )}
     </div>
   );
 };
