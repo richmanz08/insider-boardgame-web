@@ -2,15 +2,11 @@
 "use client";
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Card } from "primereact/card";
-import {
-  ActiveGame,
-  PlayerData,
-  PlayerInGame,
-  RoleGame,
-} from "@/src/hooks/interface";
+import { ActiveGame, PlayerInGame, RoleGame } from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
-import { isEmpty, map } from "lodash";
+import { isEmpty, map, set } from "lodash";
 import { Avatar } from "@/src/components/avatar/Avatar";
+import { Button } from "primereact/button";
 
 interface VotePlayerProps {
   players: PlayerInGame[];
@@ -19,17 +15,20 @@ interface VotePlayerProps {
   activeGame: ActiveGame;
   onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
   onMyVote: (playerUuid: string) => void;
+  onHostSummary: () => void;
 }
 
 export const VotePlayer: React.FC<VotePlayerProps> = ({
   activeGame,
   players,
   myUuid,
-  myRole,
+  // myRole,
   onNavigateToEndgame,
   onMyVote,
+  onHostSummary,
 }) => {
-  const { getRoleDisplay, countVotes, findWhoIsVoteMe } = usePlayHook();
+  const { getRoleDisplay, countVotes, findWhoIsVoteMe, allPlayersVoted } =
+    usePlayHook();
 
   const [myVote, setMyVote] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -89,12 +88,13 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
       setMyVote(vote);
     }
     setUuidsVoted(countVotes(activeGame.votes));
+    setVoteFinished(allPlayersVoted(activeGame.votes, players));
   }, [activeGame.votes, myUuid]);
 
   const handleVote = (playerId: string) => {
-    if (myRole === RoleGame.MASTER) {
-      return; // Master ไม่สามารถโหวตได้
-    }
+    // if (myRole === RoleGame.MASTER) {
+    //   return; // Master ไม่สามารถโหวตได้
+    // }
 
     if (playerId === myUuid) {
       return; // ไม่สามารถโหวตตัวเองได้
@@ -104,8 +104,8 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     onMyVote(playerId);
   };
 
-  const isMaster = myRole === RoleGame.MASTER;
-  const canVote = !isMaster && !myVote;
+  // const isMaster = myRole === RoleGame.MASTER;
+  // const canVote = !isMaster && !myVote;
 
   console.log("VotePlayer is activeGame:", players, activeGame, myVote);
 
@@ -119,17 +119,26 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
           </h1>
           {!voteFinished && (
             <p className="text-gray-400 text-lg">
-              {isMaster
-                ? "คุณเป็น Master ไม่สามารถโหวตได้"
-                : myVote
-                ? "รอผู้เล่นคนอื่นโหวต..."
-                : "เลือกผู้เล่นที่คุณคิดว่าเป็น Insider"}
+              {
+                // isMaster
+                //   ? "คุณเป็น Master ไม่สามารถโหวตได้"
+                //   :
+                myVote
+                  ? "รอผู้เล่นคนอื่นโหวต..."
+                  : "เลือกผู้เล่นที่คุณคิดว่าเป็น Insider"
+              }
             </p>
           )}
+          <Button
+            disabled={!voteFinished}
+            className="mt-4"
+            onClick={onHostSummary}
+            label="สรุปผลโดยโฮสต์"
+          />
         </div>
 
         {/* Master Notice */}
-        {isMaster && (
+        {/* {isMaster && (
           <div className="max-w-2xl mx-auto mb-6">
             <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 text-center">
               <i className="pi pi-crown text-purple-400 text-2xl mb-2" />
@@ -141,10 +150,10 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
               </p>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* My Vote Status */}
-        {myVote && !isMaster && (
+        {myVote && (
           <div className="max-w-2xl mx-auto mb-6">
             <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
               <i className="pi pi-check-circle text-green-400 text-2xl mb-2" />
@@ -194,9 +203,9 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                       ? "bg-green-800 border-2 border-green-500 scale-105"
                       : isMe
                       ? "bg-gray-700 border-2 border-gray-500 !cursor-default"
-                      : canVote
-                      ? "bg-gray-800 border-2 border-gray-600 hover:border-red-500 hover:scale-105"
-                      : "bg-gray-800 border-2 border-gray-600 opacity-60"
+                      : // : canVote
+                        // ? "bg-gray-800 border-2 border-gray-600 hover:border-red-500 hover:scale-105"
+                        "bg-gray-800 border-2 border-gray-600 opacity-60"
                   }`}
                   onClick={() =>
                     !isRevealed && !isMe && handleVote(player.uuid)

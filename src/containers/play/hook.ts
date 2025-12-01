@@ -1,4 +1,4 @@
-import { PlayerData, PlayerInGame, RoleGame } from "@/src/hooks/interface";
+import { PlayerInGame, RoleGame } from "@/src/hooks/interface";
 
 export const usePlayHook = () => {
   function getRoleDisplay(role: RoleGame) {
@@ -56,5 +56,11 @@ export const usePlayHook = () => {
     });
     return voters;
   }
-  return { getRoleDisplay, countVotes, findWhoIsVoteMe };
+  function allPlayersVoted(
+    votes: Record<string, string>,
+    players: PlayerInGame[]
+  ): boolean {
+    return Object.keys(votes).length === players.length;
+  }
+  return { getRoleDisplay, countVotes, findWhoIsVoteMe, allPlayersVoted };
 };

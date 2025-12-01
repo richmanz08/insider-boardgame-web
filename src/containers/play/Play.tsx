@@ -28,6 +28,7 @@ interface PlayContainerProps {
   onOpenCard: () => void;
   onMasterRoleIsSetToVoteTime: () => void;
   onPlayerVote: (targetPlayerUuid: string) => void;
+  onHostSummary: () => void;
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
@@ -39,6 +40,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   onOpenCard,
   onMasterRoleIsSetToVoteTime,
   onPlayerVote,
+  onHostSummary,
 }) => {
   // console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
@@ -183,6 +185,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
         myRole={myRole.role}
         onNavigateToEndgame={handleScoreBoard}
         onMyVote={onPlayerVote}
+        onHostSummary={onHostSummary}
       />
     );
   }

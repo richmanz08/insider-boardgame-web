@@ -43,6 +43,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     handleCardOpened,
     masterRoleIsSetToVoteTime,
     playerVote,
+    hostSummary,
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
   console.log("RoomContainer log data:", { room }, { activeGame });
@@ -179,6 +180,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           }}
           onPlayerVote={function (targetPlayerUuid: string) {
             playerVote(targetPlayerUuid);
+          }}
+          onHostSummary={function () {
+            hostSummary();
           }}
         />
       ) : (

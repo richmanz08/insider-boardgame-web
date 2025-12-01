@@ -239,6 +239,25 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     [roomCode, playerUuid, isConnected]
   );
 
+  const hostSummary = useCallback(() => {
+    if (clientRef.current && isConnected) {
+      console.log("📊 Host is requesting game summary...");
+      clientRef.current.publish({
+        destination: `/app/room/${roomCode}/host_summary`,
+        body: JSON.stringify({ playerUuid }),
+      });
+
+      setTimeout(() => {
+        if (clientRef.current?.connected) {
+          clientRef.current.publish({
+            destination: `/app/room/${roomCode}/active_game`,
+            body: JSON.stringify({ playerUuid }),
+          });
+        }
+      }, 100);
+    }
+  }, [roomCode, playerUuid, isConnected]);
+
   return {
     isConnected,
     room,
@@ -250,5 +269,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     requestActiveGame, // 🆘 For debugging - manually request active game data
     masterRoleIsSetToVoteTime,
     playerVote,
+    hostSummary,
   };
 }
