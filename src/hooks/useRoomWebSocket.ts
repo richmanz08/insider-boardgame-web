@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
-import {
-  RoomUpdateMessage,
-  // GamePrivateMessage,
-  ActiveGame,
-} from "./interface";
+import { RoomUpdateMessage, ActiveGame } from "./interface";
 import { isUndefined } from "lodash";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080/ws";
@@ -14,7 +10,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
   const clientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [room, setRoom] = useState<RoomUpdateMessage | null>(null);
-  // NEW: activeGame snapshot (may contain cardOpened map)
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
 
   useEffect(() => {
@@ -75,7 +70,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           console.log("🎮 active_game (user queue) received:", game);
           if (isUndefined(game?.game)) {
             setActiveGame(game);
-            // setGamePrivateInfo(game.privateMessage || null);
           }
         } catch (err) {
           console.error("❌ Failed parse active_game response:", err);
@@ -188,10 +182,10 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
       });
 
       // Optionally also request snapshot immediately (redundant if server broadcasts CARD_OPENED)
-      clientRef.current.publish({
-        destination: `/app/room/${roomCode}/active_game`,
-        body: JSON.stringify({ playerUuid }),
-      });
+      // clientRef.current.publish({
+      //   destination: `/app/room/${roomCode}/active_game`,
+      //   body: JSON.stringify({ playerUuid }),
+      // });
     }
   }, [roomCode, playerUuid, isConnected]);
 
@@ -213,15 +207,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           destination: `/app/room/${roomCode}/vote`,
           body: JSON.stringify({ playerUuid, targetPlayerUuid }),
         });
-
-        // setTimeout(() => {
-        //   if (clientRef.current?.connected) {
-        //     clientRef.current.publish({
-        //       destination: `/app/room/${roomCode}/active_game`,
-        //       body: JSON.stringify({ playerUuid }),
-        //     });
-        //   }
-        // }, 100);
       }
     },
     [roomCode, playerUuid, isConnected]
@@ -235,14 +220,14 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
         body: JSON.stringify({ playerUuid }),
       });
 
-      setTimeout(() => {
-        if (clientRef.current?.connected) {
-          clientRef.current.publish({
-            destination: `/app/room/${roomCode}/active_game`,
-            body: JSON.stringify({ playerUuid }),
-          });
-        }
-      }, 100);
+      // setTimeout(() => {
+      //   if (clientRef.current?.connected) {
+      //     clientRef.current.publish({
+      //       destination: `/app/room/${roomCode}/active_game`,
+      //       body: JSON.stringify({ playerUuid }),
+      //     });
+      //   }
+      // }, 100);
     }
   }, [roomCode, playerUuid, isConnected]);
 
