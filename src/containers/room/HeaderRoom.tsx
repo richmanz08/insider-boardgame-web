@@ -7,10 +7,7 @@ import { useContext, useState } from "react";
 import { RoomContext } from "./Room";
 import { EditRoomModal } from "./EditRoom";
 
-interface HeaderRoomProps {
-  roomStatus: RoomStatus;
-}
-export const HeaderRoom: React.FC<HeaderRoomProps> = ({ roomStatus }) => {
+export const HeaderRoom: React.FC = () => {
   const { getStatusLabel, getStatusSeverity } = useRoomHook();
   const { allReady, room } = useContext(RoomContext);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -32,8 +29,8 @@ export const HeaderRoom: React.FC<HeaderRoomProps> = ({ roomStatus }) => {
           </div>
           <div className="flex items-center gap-3">
             <Tag
-              value={getStatusLabel(roomStatus)}
-              severity={getStatusSeverity(roomStatus)}
+              value={getStatusLabel(room?.status ?? RoomStatus.WAITING)}
+              severity={getStatusSeverity(room?.status ?? RoomStatus.WAITING)}
               icon="pi pi-info-circle"
             />
             <span className="text-gray-400">
@@ -52,7 +49,7 @@ export const HeaderRoom: React.FC<HeaderRoomProps> = ({ roomStatus }) => {
       </div>
 
       {/* Progress Info */}
-      {roomStatus === RoomStatus.WAITING && (
+      {room?.status === RoomStatus.WAITING && (
         <Card className="bg-blue-900/20 border-blue-500/30">
           <div className="flex items-center gap-3">
             <i className="pi pi-info-circle text-blue-400 text-xl" />

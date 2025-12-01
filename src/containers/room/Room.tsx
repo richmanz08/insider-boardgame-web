@@ -47,8 +47,7 @@ export const RoomContext = React.createContext<{
 export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { checkShowModalCountdownStart, getStatusLabel, getStatusSeverity } =
-    useRoomHook();
+  const { checkShowModalCountdownStart } = useRoomHook();
   const me = useSelector((state: RootState) => state.me.me);
 
   const {
@@ -63,8 +62,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
 
   console.log("RoomContainer log data:", { room }, { activeGame });
-
-  const [roomStatus, setRoomStatus] = useState<RoomStatus>(roomData.status);
 
   const [showCountdown, setShowCountdown] = useState(false);
   const [hostStartGame, setHostStartGame] = useState(false);
@@ -95,7 +92,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   }, [room, startGame]);
 
   useEffect(() => {
-    if (activeGame && !showCountdown && roomStatus === RoomStatus.WAITING) {
+    if (activeGame && !showCountdown && room?.status === RoomStatus.WAITING) {
       setShowCountdown(true);
     }
 
@@ -106,14 +103,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
   const handleCountdownComplete = () => {
     setShowCountdown(false);
-    setRoomStatus(RoomStatus.PLAYING);
     console.log("Game started!");
     // TODO: เรียก API เริ่มเกม และ navigate ไปหน้าเกม
-  };
-
-  const onResetRoom = () => {
-    // รีเซ็ตสถานะห้องและผู้เล่น
-    setRoomStatus(RoomStatus.WAITING);
   };
 
   const onExitRoom = async () => {
@@ -159,7 +150,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     >
       <div className="container mx-auto p-4 max-w-6xl">
         {/* Room Header */}
-        <HeaderRoom roomStatus={roomStatus} />
+        <HeaderRoom />
 
         {showBoardTotalScore && gameSummary ? (
           <ScoreBoardContainer
@@ -169,20 +160,15 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
               setGameSummary(null);
             }}
           />
-        ) : roomStatus === RoomStatus.PLAYING &&
+        ) : room.status === RoomStatus.PLAYING &&
           activeGame &&
           activeGame.privateMessage ? (
           <PlayContainer
             // players={room?.players || []}
-            isHost={isHost}
             activeGame={activeGame}
             myJob={activeGame.privateMessage}
-            roomCode={roomData.roomCode}
             onOpenCard={function () {
               handleCardOpened();
-            }}
-            onPlayEnd={function () {
-              onResetRoom();
             }}
             onMasterRoleIsSetToVoteTime={function () {
               masterRoleIsSetToVoteTime();

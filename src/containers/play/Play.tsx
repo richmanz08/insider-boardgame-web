@@ -20,11 +20,8 @@ export interface RoleAssignment {
 }
 
 interface PlayContainerProps {
-  isHost: boolean;
   myJob: GamePrivateMessage;
-  roomCode: string;
   activeGame: ActiveGame;
-  onPlayEnd: () => void;
   onOpenCard: () => void;
   onMasterRoleIsSetToVoteTime: () => void;
   onPlayerVote: (targetPlayerUuid: string) => void;
@@ -32,7 +29,6 @@ interface PlayContainerProps {
 }
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
-  isHost,
   myJob,
   activeGame,
   onOpenCard,
@@ -40,10 +36,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   onPlayerVote,
   onHostSummary,
 }) => {
-  // console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
-
-  const { onShowScoreBoard } = useContext(RoomContext);
-  // const { getRoleDisplay } = usePlayHook();
+  const { onShowScoreBoard, isHost } = useContext(RoomContext);
 
   const players = activeGame.playerInGame;
   const [isCardFlipped, setIsCardFlipped] = useState(false);
@@ -51,8 +44,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     role: myJob.role,
     ...(myJob.word && { answer: myJob.word }),
   };
-  // const [isLoading, setIsLoading] = useState(true);
-  // const [gameIsStarted, setgameIsStarted] = useState(false);
+
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
 
   // ⭐ คำนวณ initial time จาก endsAt แทน durationSeconds
@@ -63,8 +55,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     const gameEndTime = new Date(activeGame.endsAt).getTime();
     return Math.max(0, Math.floor((gameEndTime - now) / 1000));
   });
-
-  console.log({ activeGame, timeRemaining });
 
   // const [allPlayersFlipped, setAllPlayersFlipped] = useState(false);
 

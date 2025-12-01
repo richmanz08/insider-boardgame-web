@@ -1,3 +1,5 @@
+import { RoomStatus } from "@/app/api/room/RoomInterface";
+
 export interface RoomUpdateMessage {
   type: RoomUpdateMessageType; // "PLAYER_JOINED", "PLAYER_LEFT", "PLAYER_READY", "ROOM_UPDATE"
   roomCode: string;
@@ -5,7 +7,7 @@ export interface RoomUpdateMessage {
   maxPlayers: number;
   hostUuid: string;
   currentPlayers: number;
-  status: string;
+  status: RoomStatus;
   players: PlayerData[];
   message: string;
   activeGame: GameSummaryDto | null;
