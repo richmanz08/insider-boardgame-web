@@ -1,5 +1,5 @@
 import { RuleUI } from "@/src/components/rules/RuleUI";
-import { ActiveGame } from "@/src/hooks/interface";
+import { ActiveGame, RoleGame } from "@/src/hooks/interface";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import React from "react";
@@ -12,6 +12,28 @@ export const MatchResult: React.FC<MatchResultProps> = ({
   onBackToRooms,
   activeGame,
 }) => {
+  const getRoleIcon = (role: RoleGame) => {
+    switch (role) {
+      case RoleGame.INSIDER:
+        return "pi-eye";
+      case RoleGame.MASTER:
+        return "pi-crown";
+      case RoleGame.CITIZEN:
+        return "pi-user";
+    }
+  };
+
+  const getRoleColor = (role: RoleGame) => {
+    switch (role) {
+      case RoleGame.INSIDER:
+        return "text-red-500";
+      case RoleGame.MASTER:
+        return "text-purple-500";
+      case RoleGame.CITIZEN:
+        return "text-blue-500";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4 relative">
       <div className="text-center mb-8">
@@ -21,18 +43,61 @@ export const MatchResult: React.FC<MatchResultProps> = ({
         <p className="text-gray-400 text-lg">คะแนนของทุกคนในเกมนี้</p>
       </div>
 
-      {activeGame.playerInGame.length > 0 && (
-        <div className="max-w-2xl mx-auto mb-8 animate-fade-in">
-          <Card className="bg-gradient-to-br from-yellow-600 to-orange-700 border-2 border-yellow-500">
-            <div className="text-center py-6">
-              <i className="pi pi-trophy text-6xl text-white mb-4" />
-              <h2 className="text-3xl font-bold text-white mb-2">ผู้ชนะ!</h2>
-              <p className="text-5xl font-bold text-white mb-2">{"asdd"}</p>
-              <p className="text-2xl text-yellow-100">{2} คะแนน</p>
+      <Card key={activeGame.id} className="bg-gray-700 border border-gray-600">
+        <div className="p-4">
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h4 className="text-lg font-bold text-white">
+                เกม {activeGame.id}
+              </h4>
+              <p className="text-yellow-400 font-semibold">{activeGame.word}</p>
             </div>
-          </Card>
+            <div className="flex flex-col gap-1">
+              {activeGame.summary?.citizensAnsweredCorrectly && (
+                <span className="text-xs bg-green-600 px-2 py-0.5 rounded">
+                  ✓ ตอบถูก
+                </span>
+              )}
+              {/* {activeGame.timeUp && (
+                <span className="text-xs bg-red-600 px-2 py-0.5 rounded">
+                  ⏰ หมดเวลา
+                </span>
+              )} */}
+              {activeGame.summary?.insiderCaught && (
+                <span className="text-xs bg-blue-600 px-2 py-0.5 rounded">
+                  🎯 จับได้
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {activeGame.playerInGame.map((player) => {
+              const role = activeGame.roles[player.uuid];
+              const score = activeGame.summary?.scores[player.uuid] || 0;
+              return (
+                <div
+                  key={player.uuid}
+                  className="bg-gray-800 rounded p-2 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <i
+                      className={`pi ${getRoleIcon(role)} ${getRoleColor(
+                        role
+                      )}`}
+                    />
+                    <span className="text-white text-sm">
+                      {player.playerName}
+                    </span>
+                  </div>
+                  {score > 0 && (
+                    <span className="text-yellow-400 font-bold">+{score}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      )}
+      </Card>
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 p-4 z-30">
         <div className="container mx-auto max-w-7xl flex gap-3 justify-center">
           <Button

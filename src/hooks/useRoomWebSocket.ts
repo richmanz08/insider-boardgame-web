@@ -52,6 +52,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           update.type === "GAME_STARTED" ||
           update.type === "VOTE_CAST" || // ← ใหม่!
           update.type === "VOTE_STARTED" ||
+          update.type === "GAME_FINISHED_WITH_SCORING" ||
           (update.activeGame !== undefined && update.activeGame !== null)
         ) {
           if (clientRef.current?.connected && playerUuid) {
@@ -194,19 +195,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     }
   }, [roomCode, playerUuid, isConnected]);
 
-  // 🆘 Manual function to request active game (for debugging)
-  const requestActiveGame = useCallback(() => {
-    if (clientRef.current && isConnected) {
-      console.log("🔄 Manually requesting active game data...");
-      clientRef.current.publish({
-        destination: `/app/room/${roomCode}/active_game`,
-        body: JSON.stringify({ playerUuid }),
-      });
-    } else {
-      console.warn("⚠️ Cannot request active game - WebSocket not connected");
-    }
-  }, [roomCode, playerUuid, isConnected]);
-
   const masterRoleIsSetToVoteTime = useCallback(() => {
     if (clientRef.current && isConnected) {
       console.log("⏰ Master is setting to vote time...");
@@ -226,14 +214,14 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           body: JSON.stringify({ playerUuid, targetPlayerUuid }),
         });
 
-        setTimeout(() => {
-          if (clientRef.current?.connected) {
-            clientRef.current.publish({
-              destination: `/app/room/${roomCode}/active_game`,
-              body: JSON.stringify({ playerUuid }),
-            });
-          }
-        }, 100);
+        // setTimeout(() => {
+        //   if (clientRef.current?.connected) {
+        //     clientRef.current.publish({
+        //       destination: `/app/room/${roomCode}/active_game`,
+        //       body: JSON.stringify({ playerUuid }),
+        //     });
+        //   }
+        // }, 100);
       }
     },
     [roomCode, playerUuid, isConnected]
@@ -266,7 +254,6 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
     toggleReady,
     startGame,
     handleCardOpened,
-    requestActiveGame, // 🆘 For debugging - manually request active game data
     masterRoleIsSetToVoteTime,
     playerVote,
     hostSummary,
