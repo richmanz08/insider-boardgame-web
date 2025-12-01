@@ -3,30 +3,32 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "primereact/card";
-import { Button } from "primereact/button";
-import { Tag } from "primereact/tag";
 import { CountdownPlayModal } from "./CountdownPlay";
 import { EditRoomModal, EditRoomFormData } from "./EditRoom";
 import { PlayContainer } from "../play/Play";
 import { leaveRoomService } from "@/app/api/room/RoomService";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
 import { useRoomWebSocket } from "@/src/hooks/useRoomWebSocket";
-import { map } from "lodash";
-import { PlayerCard } from "@/src/components/card/PlayerCard";
-import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
 import { useRoomHook } from "./hook";
-import { MINIMUM_PLAYERS } from "@/src/config/system";
-import { getActiveGameService } from "@/app/api/game/GameService";
-import { GameSummaryDto } from "@/src/hooks/interface";
+import { ActiveGame } from "@/src/hooks/interface";
 import { HeaderRoom } from "./HeaderRoom";
+import { RoomPlayersList } from "./RoomPlayers";
+import { ScoreBoardContainer } from "../scoreboard/ScoreBoard";
 
 interface RoomContainerProps {
   roomData: RoomData;
 }
+
+export const RoomContext = React.createContext<{
+  roomCode: string;
+  onShowScoreBoard: () => void;
+}>({
+  roomCode: "",
+  onShowScoreBoard: () => {},
+});
 
 export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const router = useRouter();
@@ -55,6 +57,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [hostStartGame, setHostStartGame] = useState(false);
+  const [gameSummary, setGameSummary] = useState<ActiveGame | null>(null);
+  const [showBoardTotalScore, setShowBoardTotalScore] = useState(false);
 
   const allPlayersReady = room?.players.every((p) => p.ready) ?? false;
 
@@ -80,6 +84,10 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   useEffect(() => {
     if (activeGame && !showCountdown && roomStatus === RoomStatus.WAITING) {
       setShowCountdown(true);
+    }
+
+    if (activeGame && activeGame.summary) {
+      setGameSummary(activeGame);
     }
   }, [activeGame]);
 
@@ -146,121 +154,86 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   if (!room || !currentPlayerMemorize) return null;
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      {/* Room Header */}
-      <HeaderRoom
-        room={room}
-        roomName={roomName}
-        hasPassword={hasPassword}
-        roomStatus={roomStatus}
-        maxPlayers={maxPlayers}
-        allPlayersReady={allPlayersReady}
-        isHost={isHost}
-        currentPlayerMemorize={currentPlayerMemorize}
-        setShowEditModal={setShowEditModal}
-        onExitRoom={onExitRoom}
-      />
-
-      {roomStatus === RoomStatus.PLAYING &&
-      activeGame &&
-      activeGame.privateMessage ? (
-        <PlayContainer
-          // players={room?.players || []}
+    <RoomContext.Provider
+      value={{
+        roomCode: roomData.roomCode,
+        onShowScoreBoard: () => setShowBoardTotalScore(true),
+      }}
+    >
+      <div className="container mx-auto p-4 max-w-6xl">
+        {/* Room Header */}
+        <HeaderRoom
+          room={room}
+          roomName={roomName}
+          hasPassword={hasPassword}
+          roomStatus={roomStatus}
+          maxPlayers={maxPlayers}
+          allPlayersReady={allPlayersReady}
           isHost={isHost}
-          activeGame={activeGame}
-          myJob={activeGame.privateMessage}
-          roomCode={roomData.roomCode}
-          onOpenCard={function () {
-            handleCardOpened();
-          }}
-          onPlayEnd={function () {
-            onResetRoom();
-          }}
-          onMasterRoleIsSetToVoteTime={function () {
-            masterRoleIsSetToVoteTime();
-          }}
-          onPlayerVote={function (targetPlayerUuid: string) {
-            playerVote(targetPlayerUuid);
-          }}
-          onHostSummary={function () {
-            hostSummary();
+          currentPlayerMemorize={currentPlayerMemorize}
+          setShowEditModal={setShowEditModal}
+          onExitRoom={onExitRoom}
+        />
+
+        {showBoardTotalScore && gameSummary ? (
+          <ScoreBoardContainer
+            roomId={roomData.roomCode}
+            onBackToRooms={function () {
+              setShowBoardTotalScore(false);
+              setGameSummary(null);
+            }}
+          />
+        ) : roomStatus === RoomStatus.PLAYING &&
+          activeGame &&
+          activeGame.privateMessage ? (
+          <PlayContainer
+            // players={room?.players || []}
+            isHost={isHost}
+            activeGame={activeGame}
+            myJob={activeGame.privateMessage}
+            roomCode={roomData.roomCode}
+            onOpenCard={function () {
+              handleCardOpened();
+            }}
+            onPlayEnd={function () {
+              onResetRoom();
+            }}
+            onMasterRoleIsSetToVoteTime={function () {
+              masterRoleIsSetToVoteTime();
+            }}
+            onPlayerVote={function (targetPlayerUuid: string) {
+              playerVote(targetPlayerUuid);
+            }}
+            onHostSummary={function () {
+              hostSummary();
+            }}
+          />
+        ) : (
+          <RoomPlayersList
+            room={room}
+            me={currentPlayerMemorize}
+            allReady={allPlayersReady}
+            onToggleReady={function () {
+              toggleReady();
+            }}
+          />
+        )}
+
+        {/* Countdown Modal */}
+        {CountdownModalMemo}
+
+        {/* Edit Room Modal - แสดงเฉพาะหัวห้อง */}
+        <EditRoomModal
+          open={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onEditRoom={handleEditRoom}
+          currentRoomData={{
+            roomName,
+            maxPlayers,
+            hasPassword,
           }}
         />
-      ) : (
-        <>
-          {/* Players Grid */}
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-4">ผู้เล่นในห้อง</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {map(room?.players || [], (player) => (
-                <PlayerCard key={player.uuid} player={player} />
-              ))}
-
-              {/* Empty Slots */}
-              {Array.from({
-                length: maxPlayers - (room?.players.length || 0),
-              }).map((_, index) => (
-                <PlayerCardEmpty key={`empty-${index}`} />
-              ))}
-            </div>
-          </div>
-
-          {/* Action Buttons - Fixed at Bottom */}
-          <div className="fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-gray-800 p-4 z-30">
-            <div className="container mx-auto max-w-6xl flex gap-4 justify-center">
-              <Button
-                label={currentPlayerMemorize?.ready ? "ยกเลิกพร้อม" : "พร้อม"}
-                icon={
-                  currentPlayerMemorize?.ready ? "pi pi-times" : "pi pi-check"
-                }
-                severity={
-                  currentPlayerMemorize?.ready ? "secondary" : "success"
-                }
-                size="large"
-                onClick={function () {
-                  toggleReady();
-                }}
-                className="w-full md:w-auto min-w-[200px]"
-              />
-            </div>
-          </div>
-
-          {/* Spacer for fixed button */}
-          <div className="h-24" />
-
-          {/* Host Info */}
-          {isHost && (
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-400">
-                <i className="pi pi-crown mr-1" />
-                คุณเป็นหัวห้อง เกมจะเริ่มอัตโนมัติเมื่อทุกคนพร้อม
-              </p>
-              {!allPlayersReady && (
-                <p className="text-sm text-yellow-500 mt-2">
-                  <i className="pi pi-exclamation-triangle mr-1" />
-                  รอผู้เล่น {room?.players.filter((p) => !p.ready).length}{" "}
-                  คนกดพร้อม
-                </p>
-              )}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Countdown Modal */}
-      {CountdownModalMemo}
-
-      {/* Edit Room Modal - แสดงเฉพาะหัวห้อง */}
-      <EditRoomModal
-        open={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onEditRoom={handleEditRoom}
-        currentRoomData={{
-          roomName,
-          maxPlayers,
-          hasPassword,
-        }}
-      />
-    </div>
+      </div>
+    </RoomContext.Provider>
   );
 };

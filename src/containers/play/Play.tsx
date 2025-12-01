@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { GamePlay } from "./GamePlay";
 import { VotePlayer } from "./VotePlayer";
-import { ScoreBoardContainer } from "./ScoreBoard";
 import {
   ActiveGame,
   GamePrivateMessage,
@@ -13,6 +12,7 @@ import { WaitingOpenCardBox } from "./WaitingOpenCardBox";
 import { isNull } from "lodash";
 import { BarGameTime } from "./BarGameTime";
 import { DraftRoleCard } from "@/src/components/card/DraftRoleCard";
+import { RoomContext } from "../room/Room";
 
 export interface RoleAssignment {
   role: RoleGame;
@@ -33,10 +33,8 @@ interface PlayContainerProps {
 
 export const PlayContainer: React.FC<PlayContainerProps> = ({
   isHost,
-  roomCode,
   myJob,
   activeGame,
-  onPlayEnd,
   onOpenCard,
   onMasterRoleIsSetToVoteTime,
   onPlayerVote,
@@ -44,6 +42,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 }) => {
   // console.log("Room PlayContainer:", roomCode, myJob, activeGame); // TODO: ใช้ดึงข้อมูลเกมจาก API
 
+  const { onShowScoreBoard } = useContext(RoomContext);
   // const { getRoleDisplay } = usePlayHook();
 
   const players = activeGame.playerInGame;
@@ -55,7 +54,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   // const [isLoading, setIsLoading] = useState(true);
   // const [gameIsStarted, setgameIsStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false); // เมื่อเวลาหมดหรือ Master จบเกม
-  const [showBoardTotalScore, setShowBoardTotalScore] = useState(false); // แสดงหน้าสรุปผล
+
   // ⭐ คำนวณ initial time จาก endsAt แทน durationSeconds
   const [timeRemaining, setTimeRemaining] = useState(() => {
     if (!activeGame.endsAt) return 100;
@@ -125,10 +124,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     gameEnded,
   ]); // ⭐ เพิ่ม dependencies
 
-  // const allPlayersHaveFlipped = useMemo(() => {
-  //   return players.every((player) => activeGame.cardOpened[player.uuid]);
-  // }, [players]);
-
   const handleFlipCard = () => {
     setIsCardFlipped(true);
     setTimeout(() => {
@@ -141,38 +136,10 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     setGameEnded(true);
   };
 
-  // const handleEndGame = () => {
-  //   console.log("Master ended game early.");
-  //   setGameEnded(true);
-  // };
-
   const handleScoreBoard = () => {
     console.log("Navigate to endgame summary");
-    setShowBoardTotalScore(true);
+    onShowScoreBoard();
   };
-
-  // if (isLoading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <i className="pi pi-spin pi-spinner text-4xl text-blue-500 mb-4" />
-  //         <p className="text-xl text-gray-400">กำลังแจกบทบาท...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // ถ้าแสดงหน้าสรุปผลแล้ว
-  if (showBoardTotalScore) {
-    return (
-      <ScoreBoardContainer
-        roomId={roomCode}
-        onBackToRooms={function () {
-          onPlayEnd();
-        }}
-      />
-    );
-  }
 
   // ถ้าเกมจบแล้ว แสดงหน้าโหวต
   if (gameEnded && myRole) {
