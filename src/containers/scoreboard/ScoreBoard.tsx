@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { RoleGame } from "@/src/hooks/interface";
+import { RuleUI } from "@/src/components/rules/RuleUI";
 
 interface GameHistory {
   gameNumber: number;
@@ -363,42 +364,7 @@ export const ScoreBoardContainer: React.FC<ScoreBoardConProps> = ({
         </div>
 
         {/* Scoring Rules */}
-        <div className="mb-8">
-          <Card className="bg-gray-800 border-2 border-gray-700">
-            <div className="p-4">
-              <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                <i className="pi pi-info-circle text-yellow-400" />
-                เกณฑ์การให้คะแนน
-              </h3>
-              <div className="space-y-2 text-gray-300">
-                <div className="flex items-start gap-2">
-                  <i className="pi pi-user text-blue-400 mt-1" />
-                  <p>
-                    <span className="text-blue-400 font-semibold">Player:</span>{" "}
-                    ได้ 1 คะแนน เมื่อผู้เล่นส่วนใหญ่โหวต Insider ถูก (เกิน 50%)
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <i className="pi pi-eye text-red-400 mt-1" />
-                  <p>
-                    <span className="text-red-400 font-semibold">Insider:</span>{" "}
-                    ได้ 1 คะแนน เมื่อทีมตอบถูกภายในเวลา และ +1 คะแนนเพิ่ม
-                    หากไม่ถูกจับ
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <i className="pi pi-crown text-purple-400 mt-1" />
-                  <p>
-                    <span className="text-purple-400 font-semibold">
-                      Master:
-                    </span>{" "}
-                    ไม่นับคะแนน (ไม่ได้หรือเสียคะแนน)
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
+        <RuleUI />
 
         {/* Action Buttons */}
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 p-4 z-30">

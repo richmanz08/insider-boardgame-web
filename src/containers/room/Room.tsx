@@ -21,6 +21,7 @@ import { HeaderRoom } from "./HeaderRoom";
 import { RoomPlayersList } from "./RoomPlayers";
 import { ScoreBoardContainer } from "../scoreboard/ScoreBoard";
 import { Button } from "primereact/button";
+import { MatchResult } from "../scoreboard/MatchResult";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -153,8 +154,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         <HeaderRoom />
 
         {showBoardTotalScore && gameSummary ? (
-          <ScoreBoardContainer
-            roomId={roomData.roomCode}
+          <MatchResult
+            activeGame={gameSummary}
             onBackToRooms={function () {
               setShowBoardTotalScore(false);
               setGameSummary(null);
