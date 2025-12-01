@@ -400,48 +400,6 @@ export const ScoreBoardContainer: React.FC<ScoreBoardConProps> = ({
           </Card>
         </div>
 
-        {/* Player Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {playerScores.map((player, index) => (
-            <Card
-              key={player.id}
-              className={`border-2 ${
-                index === 0
-                  ? "bg-gradient-to-br from-yellow-900/50 to-orange-900/50 border-yellow-500"
-                  : "bg-gray-800 border-gray-700"
-              }`}
-            >
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-lg font-bold text-white">
-                    {player.name}
-                  </h4>
-                  {index === 0 && (
-                    <i className="pi pi-trophy text-yellow-400 text-xl" />
-                  )}
-                </div>
-                <p className="text-3xl font-bold text-yellow-400 mb-3">
-                  {player.totalScore} คะแนน
-                </p>
-                <div className="space-y-1 text-sm text-gray-400">
-                  <p>
-                    <i className="pi pi-eye text-red-400 mr-2" />
-                    Insider: {player.gamesAsInsider} เกม
-                  </p>
-                  <p>
-                    <i className="pi pi-crown text-purple-400 mr-2" />
-                    Master: {player.gamesAsMaster} เกม
-                  </p>
-                  <p>
-                    <i className="pi pi-user text-blue-400 mr-2" />
-                    Player: {player.gamesAsPlayer} เกม
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
         {/* Action Buttons */}
         <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 p-4 z-30">
           <div className="container mx-auto max-w-7xl flex gap-3 justify-center">

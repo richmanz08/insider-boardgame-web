@@ -62,5 +62,25 @@ export const usePlayHook = () => {
   ): boolean {
     return Object.keys(votes).length === players.length;
   }
-  return { getRoleDisplay, countVotes, findWhoIsVoteMe, allPlayersVoted };
+
+  function sortPlayersByVotes(
+    players: PlayerInGame[],
+    voteTally: Record<string, number>
+  ): string[] {
+    return players
+      .slice()
+      .sort((a, b) => {
+        const votesA = voteTally[a.uuid] || 0;
+        const votesB = voteTally[b.uuid] || 0;
+        return votesB - votesA; // เรียงจากมากไปน้อย
+      })
+      .map((player) => player.uuid);
+  }
+  return {
+    getRoleDisplay,
+    countVotes,
+    findWhoIsVoteMe,
+    allPlayersVoted,
+    sortPlayersByVotes,
+  };
 };

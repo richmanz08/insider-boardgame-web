@@ -59,8 +59,7 @@ export interface StartGameRequest {
 export interface ActiveGame {
   id?: string | null; // UUID string
   roomCode: string;
-  word?: string | null; // may be "" or null for non-authorized users
-  roles?: Record<string, RoleGame>; // playerUuid -> role name
+  roles: Record<string, RoleGame>; // playerUuid -> role name
   startedAt?: string | null; // ISO string (server LocalDateTime.toString())
   endsAt?: string | null; // ISO string
   durationSeconds: number;
@@ -69,8 +68,21 @@ export interface ActiveGame {
   privateMessage: GamePrivateMessage | null;
   votes: Record<string, string>; // playerUuid -> targetPlayerUuid
   playerInGame: PlayerInGame[];
+  summary: Summary | null;
+  word: string;
+  wordRevealed: boolean;
 }
 
+export interface Summary {
+  scores: Record<string, number>;
+  voteTally: Record<string, number>;
+  mostVoted: string[];
+  insiderCaught: boolean; // INSIDER ถูกจับได้
+  citizensAnsweredCorrectly: boolean; // CITIZENs ตอบถูก
+  insiderUuid: string;
+  masterUuid: string;
+  word: string;
+}
 export interface PlayerInGame {
   uuid: string;
   playerName: string;

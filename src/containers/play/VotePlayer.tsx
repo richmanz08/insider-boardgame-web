@@ -17,6 +17,7 @@ interface VotePlayerProps {
   onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
   onMyVote: (playerUuid: string) => void;
   onHostSummary: () => void;
+  onVoteFinished: () => void;
 }
 
 export const VotePlayer: React.FC<VotePlayerProps> = ({
@@ -28,9 +29,15 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   onNavigateToEndgame,
   onMyVote,
   onHostSummary,
+  onVoteFinished,
 }) => {
-  const { getRoleDisplay, countVotes, findWhoIsVoteMe, allPlayersVoted } =
-    usePlayHook();
+  const {
+    getRoleDisplay,
+    countVotes,
+    findWhoIsVoteMe,
+    allPlayersVoted,
+    sortPlayersByVotes,
+  } = usePlayHook();
 
   const [myVote, setMyVote] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -93,10 +100,48 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     setVoteFinished(allPlayersVoted(activeGame.votes, players));
   }, [activeGame.votes, myUuid]);
 
+  useLayoutEffect(() => {
+    if (!activeGame.summary) return;
+    const sortedUuids = sortPlayersByVotes(
+      players,
+      activeGame.summary.voteTally
+    );
+    const voteTally = activeGame.summary.voteTally;
+
+    // แยก uuid ที่ถูกโหวต (vote > 0) กับที่เหลือ
+    const votedUuids = sortedUuids.filter(
+      (uuid) => voteTally[uuid] && voteTally[uuid] > 0
+    );
+    const unvotedUuids = sortedUuids.filter(
+      (uuid) => !voteTally[uuid] || voteTally[uuid] === 0
+    );
+
+    setRevealedPlayers([]); // reset ก่อน
+
+    // เปิดทีละคน (delay 1.5s ต่อคน)
+    votedUuids.forEach((uuid, idx) => {
+      setTimeout(() => {
+        setRevealedPlayers((prev) => [...prev, uuid]);
+      }, idx * 1500);
+    });
+
+    // เปิดคนที่เหลือพร้อมกันหลังจากเปิดคนที่ถูกโหวตครบ
+    if (unvotedUuids.length > 0) {
+      setTimeout(() => {
+        setRevealedPlayers((prev) => [...prev, ...unvotedUuids]);
+
+        setTimeout(() => {
+          onVoteFinished();
+        }, 3000);
+      }, votedUuids.length * 1500 + 500); // เปิดพร้อมกันหลัง delay สุดท้าย
+    }
+  }, [activeGame.summary, players, onVoteFinished]);
+
   const handleVote = (playerId: string) => {
     // if (myRole === RoleGame.MASTER) {
     //   return; // Master ไม่สามารถโหวตได้
     // }
+    if (activeGame.summary) return;
 
     if (playerId === myUuid) {
       return; // ไม่สามารถโหวตตัวเองได้
@@ -131,7 +176,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
               }
             </p>
           )}
-          {isHost && (
+          {isHost && !activeGame.summary && (
             <Button
               disabled={!voteFinished}
               className="mt-4"
@@ -157,7 +202,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
         )} */}
 
         {/* My Vote Status */}
-        {myVote && (
+        {myVote && !voteFinished && (
           <div className="max-w-2xl mx-auto mb-6">
             <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
               <i className="pi pi-check-circle text-green-400 text-2xl mb-2" />
@@ -182,6 +227,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
             const isMyVote = myVote === player.uuid;
             const isMe = player.uuid === myUuid;
             const thisPlayerWasVote = uuidsVoted[player.uuid] ?? 0;
+            const myRoleIs = activeGame.roles[player.uuid];
             const whoIsVoteMe = findWhoIsVoteMe(
               activeGame.votes,
               player.uuid,
@@ -252,10 +298,10 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                       <>
                         {/* Revealed Role */}
                         <div className="flex flex-col items-center animate-fade-in">
-                          <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-3">
+                          <div className="w-16 h-16 rounded-full border border-white flex items-center justify-center mb-3">
                             <i
                               className={`pi ${
-                                getRoleDisplay(RoleGame.INSIDER).icon
+                                getRoleDisplay(myRoleIs).icon
                               } text-white text-3xl`}
                             />
                           </div>
@@ -264,10 +310,10 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
                           </h3>
                           <p
                             className={`text-2xl font-bold ${
-                              getRoleDisplay(RoleGame.INSIDER).color
+                              getRoleDisplay(myRoleIs).color
                             }`}
                           >
-                            {getRoleDisplay(RoleGame.INSIDER).name}
+                            {getRoleDisplay(myRoleIs).name}
                           </p>
                           <p className="text-white text-sm mt-2">{2} โหวต</p>
                         </div>

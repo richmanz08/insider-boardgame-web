@@ -149,7 +149,6 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   const handleScoreBoard = () => {
     console.log("Navigate to endgame summary");
     setShowBoardTotalScore(true);
-    setGameEnded(false);
   };
 
   // if (isLoading) {
@@ -187,6 +186,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
         onNavigateToEndgame={handleScoreBoard}
         onMyVote={onPlayerVote}
         onHostSummary={onHostSummary}
+        onVoteFinished={handleScoreBoard}
       />
     );
   }
