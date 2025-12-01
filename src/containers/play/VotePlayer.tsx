@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { Card } from "primereact/card";
 import { ActiveGame, PlayerInGame, RoleGame } from "@/src/hooks/interface";
 import { usePlayHook } from "./hook";
@@ -26,7 +26,6 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   myUuid,
   isHost,
   // myRole,
-  onNavigateToEndgame,
   onMyVote,
   onHostSummary,
   onVoteFinished,
@@ -40,55 +39,50 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   } = usePlayHook();
 
   const [myVote, setMyVote] = useState<string | null>(null);
-  const [showResults, setShowResults] = useState(false);
+
   const [revealedPlayers, setRevealedPlayers] = useState<string[]>([]);
-  const [autoNavigateIn, setAutoNavigateIn] = useState<number | null>(null);
+  // const [autoNavigateIn, setAutoNavigateIn] = useState<number | null>(null);
   const [uuidsVoted, setUuidsVoted] = useState<Record<string, number>>({});
   const [voteFinished, setVoteFinished] = useState(false);
 
-  // Auto-navigate หลังจากเปิดการ์ดครบทั้งหมดแล้ว 7 วินาที
-  useEffect(() => {
-    if (
-      showResults &&
-      revealedPlayers.length === players.length &&
-      autoNavigateIn === null
-    ) {
-      // เริ่มนับถอยหลัง และ navigate
-      let countdown = 7;
+  // // Auto-navigate หลังจากเปิดการ์ดครบทั้งหมดแล้ว 7 วินาที
+  // useEffect(() => {
+  //   if (revealedPlayers.length === players.length && autoNavigateIn === null) {
+  //     // เริ่มนับถอยหลัง และ navigate
+  //     let countdown = 7;
 
-      const countdownInterval = setInterval(() => {
-        countdown -= 1;
-        setAutoNavigateIn(countdown);
+  //     const countdownInterval = setInterval(() => {
+  //       countdown -= 1;
+  //       setAutoNavigateIn(countdown);
 
-        if (countdown <= 0) {
-          clearInterval(countdownInterval);
-        }
-      }, 1000);
+  //       if (countdown <= 0) {
+  //         clearInterval(countdownInterval);
+  //       }
+  //     }, 1000);
 
-      // Callback ไปหน้าสรุปผลหลัง 7 วินาที
-      const navigateTimer = setTimeout(() => {
-        if (onNavigateToEndgame) {
-          onNavigateToEndgame();
-        }
-      }, 7000);
+  //     // Callback ไปหน้าสรุปผลหลัง 7 วินาที
+  //     const navigateTimer = setTimeout(() => {
+  //       if (onNavigateToEndgame) {
+  //         onNavigateToEndgame();
+  //       }
+  //     }, 7000);
 
-      // ตั้งค่าเริ่มต้น
-      setTimeout(() => {
-        setAutoNavigateIn(7);
-      }, 0);
+  //     // ตั้งค่าเริ่มต้น
+  //     setTimeout(() => {
+  //       setAutoNavigateIn(7);
+  //     }, 0);
 
-      return () => {
-        clearInterval(countdownInterval);
-        clearTimeout(navigateTimer);
-      };
-    }
-  }, [
-    showResults,
-    revealedPlayers.length,
-    players.length,
-    autoNavigateIn,
-    onNavigateToEndgame,
-  ]);
+  //     return () => {
+  //       clearInterval(countdownInterval);
+  //       clearTimeout(navigateTimer);
+  //     };
+  //   }
+  // }, [
+  //   revealedPlayers.length,
+  //   players.length,
+  //   autoNavigateIn,
+  //   onNavigateToEndgame,
+  // ]);
 
   useLayoutEffect(() => {
     if (isEmpty(activeGame.votes)) return;

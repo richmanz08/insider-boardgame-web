@@ -3,6 +3,7 @@ export interface RoomUpdateMessage {
   roomCode: string;
   roomName: string;
   maxPlayers: number;
+  hostUuid: string;
   currentPlayers: number;
   status: string;
   players: PlayerData[];
@@ -33,7 +34,6 @@ export enum RoomUpdateMessageType {
 export interface PlayerData {
   uuid: string;
   playerName: string;
-  host: boolean;
   ready: boolean;
   playing: boolean;
   joinedAt: string;

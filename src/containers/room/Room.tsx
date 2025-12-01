@@ -13,7 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
 import { useRoomWebSocket } from "@/src/hooks/useRoomWebSocket";
 import { useRoomHook } from "./hook";
-import { ActiveGame } from "@/src/hooks/interface";
+import { ActiveGame, RoomUpdateMessage } from "@/src/hooks/interface";
 import { HeaderRoom } from "./HeaderRoom";
 import { RoomPlayersList } from "./RoomPlayers";
 import { ScoreBoardContainer } from "../scoreboard/ScoreBoard";
@@ -23,10 +23,14 @@ interface RoomContainerProps {
 }
 
 export const RoomContext = React.createContext<{
+  room: RoomUpdateMessage | null;
   roomCode: string;
+  isHost: boolean;
   onShowScoreBoard: () => void;
 }>({
+  room: null,
   roomCode: "",
+  isHost: false,
   onShowScoreBoard: () => {},
 });
 
@@ -60,13 +64,15 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [gameSummary, setGameSummary] = useState<ActiveGame | null>(null);
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false);
 
-  const allPlayersReady = room?.players.every((p) => p.ready) ?? false;
+  const allPlayersReady =
+    (room?.players.every((p) => p.ready) ?? false) &&
+    (room?.players?.length ?? 0) > 5;
 
   const currentPlayerMemorize = React.useMemo(() => {
     return room?.players.find((p) => p.uuid === me?.uuid);
   }, [room, me]);
 
-  const isHost = currentPlayerMemorize?.host || false;
+  const isHost = currentPlayerMemorize?.uuid === room?.hostUuid;
 
   // Display countdown automatically when all players are ready and user is host
   useEffect(() => {
@@ -156,7 +162,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   return (
     <RoomContext.Provider
       value={{
+        room: room,
         roomCode: roomData.roomCode,
+        isHost: isHost,
         onShowScoreBoard: () => setShowBoardTotalScore(true),
       }}
     >

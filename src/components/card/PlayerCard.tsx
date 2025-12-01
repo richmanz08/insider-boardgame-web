@@ -1,7 +1,8 @@
+import { RoomContext } from "@/src/containers/room/Room";
 import { PlayerData } from "@/src/hooks/interface";
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
-import React from "react";
+import React, { useContext } from "react";
 
 interface PlayerCardProps {
   player: PlayerData;
@@ -9,12 +10,12 @@ interface PlayerCardProps {
 export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
   const { player } = props;
 
-  console.log("Rendering PlayerCard for player:", player);
+  const { room } = useContext(RoomContext);
 
   return (
     <Card key={player.uuid} className="relative overflow-hidden">
       {/* Host Badge */}
-      {player.host && (
+      {player.uuid === room?.hostUuid && (
         <div className="absolute top-2 right-2">
           <Tag
             icon="pi pi-crown"
@@ -38,13 +39,6 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
             style={{ backgroundColor: player.active ? "#10b981" : "#6b7280" }}
             title={player.active ? "ออนไลน์" : "ออฟไลน์"}
           />
-
-          {/* Ready Indicator */}
-          {player.ready && (
-            <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
-              <i className="pi pi-check text-white text-xs" />
-            </div>
-          )}
         </div>
 
         {/* Player Info */}

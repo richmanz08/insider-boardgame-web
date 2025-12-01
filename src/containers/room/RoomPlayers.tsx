@@ -3,6 +3,8 @@ import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
 import { PlayerData, RoomUpdateMessage } from "@/src/hooks/interface";
 import { map } from "lodash";
 import { Button } from "primereact/button";
+import { useContext } from "react";
+import { RoomContext } from "./Room";
 interface RoomPlayersListProps {
   room: RoomUpdateMessage;
   me: PlayerData;
@@ -15,7 +17,7 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
   allReady,
   onToggleReady,
 }) => {
-  const isHost = me?.host ?? false;
+  const { isHost } = useContext(RoomContext);
   return (
     <div>
       <>
