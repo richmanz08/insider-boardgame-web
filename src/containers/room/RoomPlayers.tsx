@@ -3,8 +3,9 @@ import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
 import { PlayerData, RoomUpdateMessage } from "@/src/hooks/interface";
 import { map } from "lodash";
 import { Button } from "primereact/button";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { RoomContext } from "./Room";
+import { ModalTotalScore } from "../scoreboard/ModalTotalScore";
 interface RoomPlayersListProps {
   room: RoomUpdateMessage;
   me: PlayerData;
@@ -18,12 +19,31 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
   onToggleReady,
 }) => {
   const { isHost, my, onExitRoom } = useContext(RoomContext);
+  const [visibleTotalScore, setVisibleTotalScore] = useState(false);
   return (
     <div>
       <>
         {/* Players Grid */}
         <div className="mb-6">
-          <h2 className="text-xl font-bold mb-4">ผู้เล่นในห้อง</h2>
+          <div className="flex items-end justify-between mb-4">
+            <h2 className="text-xl font-bold">ผู้เล่นในห้อง</h2>
+            <Button
+              text
+              label="ประวัติการเล่น"
+              severity="secondary"
+              icon="pi pi-chart-bar"
+              className="mb-2"
+              onClick={() => {
+                setVisibleTotalScore(true);
+              }}
+            />
+            <ModalTotalScore
+              visible={visibleTotalScore}
+              onHide={() => setVisibleTotalScore(false)}
+              roomCode={room.roomCode}
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {map(room.players || [], (player) => (
               <PlayerCard key={player.uuid} player={player} />
@@ -74,7 +94,7 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
         )}
         {!my?.playing && (
           <Button
-            className="w-full !mt-8"
+            className="w-full !mt-8 !mb-16"
             label="ออกจากห้อง"
             icon="pi pi-sign-out"
             severity="danger"
