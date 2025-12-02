@@ -19,10 +19,7 @@ import {
 } from "@/src/hooks/interface";
 import { HeaderRoom } from "./HeaderRoom";
 import { RoomPlayersList } from "./RoomPlayers";
-import { ScoreBoardContainer } from "../scoreboard/ScoreBoard";
-import { Button } from "primereact/button";
 import { MatchResult } from "../scoreboard/MatchResult";
-import { set } from "lodash";
 import { VotePlayer } from "../vote/VotePlayer";
 
 interface RoomContainerProps {
@@ -35,7 +32,6 @@ export const RoomContext = React.createContext<{
   isHost: boolean;
   allReady: boolean;
   my: PlayerData | null;
-  // onShowScoreBoard: () => void;
   onExitRoom: () => void;
   onRevealingRole: (val: boolean) => void;
 }>({
@@ -44,7 +40,6 @@ export const RoomContext = React.createContext<{
   isHost: false,
   allReady: false,
   my: null,
-  // onShowScoreBoard: () => {},
   onExitRoom: () => {},
   onRevealingRole: () => {},
 });
@@ -117,10 +112,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     if (room?.type === "ROOM_RESET_AFTER_GAME") {
       setHostStartGame(false);
     }
-
-    // if (room?.type === "GAME_FINISHED_WITH_SCORING") {
-    //   setIsLoadingShowBoard(true);
-    // }
   }, [room]);
 
   const handleCountdownComplete = () => {
@@ -168,7 +159,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         isHost: isHost,
         allReady: allPlayersReady,
         my: currentPlayerMemorize,
-        // onShowScoreBoard: () => setShowBoardTotalScore(true),
         onExitRoom: onExitRoom,
         onRevealingRole: (val) => {
           setIsRevealingRole(val);
@@ -222,6 +212,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
               onVoteFinished={() => {
                 setShowBoardTotalScore(true);
                 setIsRevealingRole(false);
+                setGameEnded(false);
               }}
             />
           </>

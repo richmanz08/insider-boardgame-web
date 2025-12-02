@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { GamePlay } from "./GamePlay";
 // import { VotePlayer } from "./VotePlayer";
 import {
@@ -107,7 +107,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     gameEnded,
   ]); // ⭐ เพิ่ม dependencies
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (activeGame.startedAt) {
       setTimeout(() => {
         setGameIsStarted(true);
