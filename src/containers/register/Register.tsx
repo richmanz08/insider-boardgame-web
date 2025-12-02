@@ -68,8 +68,13 @@ export const RegisterContainer: React.FC = () => {
                   value: 2,
                   message: "ชื่อต้องมีอย่างน้อย 2 ตัวอักษร",
                 },
+                validate: {
+                  notOnlySpaces: (value) =>
+                    value.trim().length > 0 ||
+                    "ชื่อต้องมีตัวอักษร ไม่ใช่แค่ช่องว่าง",
+                },
                 pattern: {
-                  value: /^[a-zA-Z0-9\u0E00-\u0E7F]+$/,
+                  value: /^[a-zA-Z0-9\u0E00-\u0E7F\s]+$/,
                   message:
                     "ชื่อต้องเป็นตัวอักษร a-z, A-Z, 0-9 หรือภาษาไทยเท่านั้น",
                 },
