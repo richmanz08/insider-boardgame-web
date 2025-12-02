@@ -192,16 +192,93 @@ export const RegisterContainer: React.FC = () => {
             </circle>
           </g>
 
-          {/* Head (Circle) */}
-          <circle
-            cx="60"
-            cy="70"
-            r="18"
-            stroke="url(#glowGradient)"
-            strokeWidth="3"
-            fill="none"
-            filter="url(#glow)"
-          />
+          {/* Head - Realistic face shape */}
+          <g filter="url(#glow)">
+            {/* Face outline - oval shape with defined jawline */}
+            <path
+              d="M48 58 Q45 62, 45 68 Q45 75, 48 80 Q52 84, 60 85 Q68 84, 72 80 Q75 75, 75 68 Q75 62, 72 58 Q68 54, 60 54 Q52 54, 48 58 Z"
+              stroke="url(#glowGradient)"
+              strokeWidth="3"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+
+            {/* Left Ear */}
+            <path
+              d="M44 65 Q41 65, 40 68 Q40 71, 41 74 Q42 75, 44 74"
+              stroke="url(#glowGradient)"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
+            />
+
+            {/* Right Ear */}
+            <path
+              d="M76 65 Q79 65, 80 68 Q80 71, 79 74 Q78 75, 76 74"
+              stroke="url(#glowGradient)"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </g>
+
+          {/* Face Features */}
+          <g filter="url(#glow)">
+            {/* Left Eye */}
+            <circle cx="53" cy="67" r="2" fill="url(#glowGradient)">
+              <animate
+                attributeName="r"
+                values="2;0.5;2"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </circle>
+
+            {/* Right Eye */}
+            <circle cx="67" cy="67" r="2" fill="url(#glowGradient)">
+              <animate
+                attributeName="r"
+                values="2;0.5;2"
+                dur="3s"
+                repeatCount="indefinite"
+              />
+            </circle>
+
+            {/* Nose */}
+            <line
+              x1="60"
+              y1="70"
+              x2="60"
+              y2="74"
+              stroke="url(#glowGradient)"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M60 74 Q58 75, 57 75"
+              stroke="url(#glowGradient)"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
+            />
+
+            {/* Smiling Mouth */}
+            <path
+              d="M53 77 Q60 80, 67 77"
+              stroke="url(#glowGradient)"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+            >
+              <animate
+                attributeName="d"
+                values="M53 77 Q60 80, 67 77;M53 77 Q60 81, 67 77;M53 77 Q60 80, 67 77"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </path>
+          </g>
 
           {/* Body (Triangle/Robe) */}
           <g filter="url(#glow)">
@@ -323,6 +400,7 @@ export const RegisterContainer: React.FC = () => {
             </label>
             <InputText
               id="playerName"
+              maxLength={20}
               {...register("playerName", {
                 required: "กรุณากรอกชื่อของคุณ",
                 minLength: {
@@ -363,7 +441,25 @@ export const RegisterContainer: React.FC = () => {
           <Button
             type="submit"
             label="เริ่มเกม"
-            className="w-full"
+            className="w-full !mt-8"
+            style={{
+              background: "linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)",
+              border: "none",
+              boxShadow:
+                "0 8px 16px rgba(139, 92, 246, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
+              transition: "all 0.3s ease",
+              fontWeight: "600",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow =
+                "0 12px 24px rgba(139, 92, 246, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow =
+                "0 8px 16px rgba(139, 92, 246, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
             disabled={!name}
           />
         </form>
