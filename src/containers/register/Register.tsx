@@ -106,60 +106,87 @@ export const RegisterContainer: React.FC = () => {
             </filter>
           </defs>
 
-          {/* Wizard Hat */}
+          {/* Magician Hat (Classic tall cone with wide brim) */}
           <g filter="url(#glow)">
+            {/* Wide circular brim */}
+            <ellipse
+              cx="60"
+              cy="50"
+              rx="35"
+              ry="8"
+              stroke="url(#glowGradient)"
+              strokeWidth="3"
+              fill="none"
+            />
+
+            {/* Tall cone body - curved for realistic magician hat */}
             <path
-              d="M60 10 L35 50 L85 50 Z"
+              d="M32 50 Q40 45, 45 35 L55 15 Q60 8, 65 15 L75 35 Q80 45, 88 50"
               stroke="url(#glowGradient)"
               strokeWidth="3"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {/* Hat Brim */}
-            <ellipse
-              cx="60"
-              cy="50"
-              rx="28"
-              ry="6"
+
+            {/* Hat band with decorative buckle */}
+            <path
+              d="M32 50 L88 50"
               stroke="url(#glowGradient)"
-              strokeWidth="3"
-              fill="none"
+              strokeWidth="4"
+              strokeLinecap="round"
             />
-            {/* Hat Band */}
+
+            {/* Decorative buckle on band */}
             <rect
-              x="35"
-              y="45"
-              width="50"
-              height="8"
-              rx="2"
+              x="56"
+              y="47"
+              width="8"
+              height="6"
+              rx="1"
               stroke="url(#glowGradient)"
-              strokeWidth="3"
+              strokeWidth="2"
               fill="none"
             />
 
-            {/* Star decorations on hat */}
-            <circle cx="60" cy="30" r="2" fill="url(#glowGradient)">
+            {/* Moon and stars decorations on hat */}
+            <path
+              d="M50 25 Q48 22, 50 20 Q52 22, 50 25"
+              stroke="url(#glowGradient)"
+              strokeWidth="2"
+              fill="url(#glowGradient)"
+              opacity="0.8"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.5;1;0.5"
+                dur="2s"
+                repeatCount="indefinite"
+              />
+            </path>
+
+            {/* Twinkling stars */}
+            <circle cx="68" cy="28" r="2" fill="url(#glowGradient)">
               <animate
                 attributeName="r"
-                values="2;3;2"
+                values="1.5;3;1.5"
                 dur="1.5s"
                 repeatCount="indefinite"
               />
             </circle>
-            <circle cx="50" cy="38" r="1.5" fill="url(#glowGradient)">
+            <circle cx="45" cy="32" r="1.5" fill="url(#glowGradient)">
               <animate
                 attributeName="r"
-                values="1.5;2.5;1.5"
+                values="1;2.5;1"
                 dur="2s"
                 repeatCount="indefinite"
               />
             </circle>
-            <circle cx="70" cy="38" r="1.5" fill="url(#glowGradient)">
+            <circle cx="70" cy="18" r="1.5" fill="url(#glowGradient)">
               <animate
                 attributeName="r"
-                values="1.5;2.5;1.5"
-                dur="2.2s"
+                values="1;2;1"
+                dur="1.8s"
                 repeatCount="indefinite"
               />
             </circle>
