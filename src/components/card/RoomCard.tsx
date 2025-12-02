@@ -1,7 +1,9 @@
 import { RoomData, RoomStatus } from "@/app/api/room/RoomInterface";
+import { map } from "lodash";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
+import { AmountPlayer } from "../player/AmountPlayer";
 
 interface RoomCardProps {
   room: RoomData;
@@ -48,15 +50,16 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoin }) => {
           <div className="flex items-center gap-4 mb-2">
             <div className="flex items-center gap-2">
               <i className="pi pi-users" />
-              <span>
-                {room.currentPlayers}/{room.maxPlayers} ผู้เล่น
-              </span>
+              <AmountPlayer
+                current={room.currentPlayers}
+                max={room.maxPlayers}
+              />
             </div>
 
-            <Tag
+            {/* <Tag
               value={getStatusLabel(room.status)}
               severity={getStatusSeverity(room.status)}
-            />
+            /> */}
           </div>
 
           <p className="text-sm text-gray-400">

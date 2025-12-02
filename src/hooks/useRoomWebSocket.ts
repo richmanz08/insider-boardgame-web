@@ -49,9 +49,12 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           update.type === "VOTE_STARTED" ||
           update.type === "GAME_FINISHED" ||
           update.type === "GAME_FINISHED_WITH_SCORING" ||
+          update.type === "ROOM_RESET_AFTER_GAME" ||
           (update.activeGame !== undefined && update.activeGame !== null)
         ) {
-          if (clientRef.current?.connected && playerUuid) {
+          if (update.type === "ROOM_RESET_AFTER_GAME") {
+            setActiveGame(null);
+          } else if (clientRef.current?.connected && playerUuid) {
             clientRef.current.publish({
               destination: `/app/room/${roomCode}/active_game`,
               body: JSON.stringify({ playerUuid }),

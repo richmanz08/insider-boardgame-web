@@ -22,6 +22,8 @@ import { RoomPlayersList } from "./RoomPlayers";
 import { ScoreBoardContainer } from "../scoreboard/ScoreBoard";
 import { Button } from "primereact/button";
 import { MatchResult } from "../scoreboard/MatchResult";
+import { set } from "lodash";
+import { VotePlayer } from "../vote/VotePlayer";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -33,16 +35,18 @@ export const RoomContext = React.createContext<{
   isHost: boolean;
   allReady: boolean;
   my: PlayerData | null;
-  onShowScoreBoard: () => void;
+  // onShowScoreBoard: () => void;
   onExitRoom: () => void;
+  onRevealingRole: (val: boolean) => void;
 }>({
   room: null,
   roomCode: "",
   isHost: false,
   allReady: false,
   my: null,
-  onShowScoreBoard: () => {},
+  // onShowScoreBoard: () => {},
   onExitRoom: () => {},
+  onRevealingRole: () => {},
 });
 
 export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
@@ -66,13 +70,16 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [hostStartGame, setHostStartGame] = useState(false);
   const [gameSummary, setGameSummary] = useState<ActiveGame | null>(null);
   const [showBoardTotalScore, setShowBoardTotalScore] = useState(false);
-  console.log(
-    "RoomContainer log data:",
-    { room },
-    { activeGame },
-    { gameSummary },
-    { showBoardTotalScore }
-  );
+  const [isRevealingRole, setIsRevealingRole] = useState(false);
+  const [gameEnded, setGameEnded] = useState(false);
+  // const [isLoadingShowBoard, setIsLoadingShowBoard] = useState(false);
+  // console.log(
+  //   "RoomContainer log data:",
+  //   { room },
+  //   { activeGame },
+  //   { gameSummary },
+  //   { showBoardTotalScore }
+  // );
   const allPlayersReady =
     (room?.players.every((p) => p.ready) ?? false) &&
     (room?.players?.length ?? 0) > 5;
@@ -105,6 +112,16 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       setGameSummary(activeGame);
     }
   }, [activeGame]);
+
+  useEffect(() => {
+    if (room?.type === "ROOM_RESET_AFTER_GAME") {
+      setHostStartGame(false);
+    }
+
+    // if (room?.type === "GAME_FINISHED_WITH_SCORING") {
+    //   setIsLoadingShowBoard(true);
+    // }
+  }, [room]);
 
   const handleCountdownComplete = () => {
     setShowCountdown(false);
@@ -141,6 +158,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
   if (!room || !currentPlayerMemorize) return null;
 
+  console.log({ gameEnded, isRevealingRole }, { gameSummary, activeGame });
+
   return (
     <RoomContext.Provider
       value={{
@@ -149,8 +168,11 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         isHost: isHost,
         allReady: allPlayersReady,
         my: currentPlayerMemorize,
-        onShowScoreBoard: () => setShowBoardTotalScore(true),
+        // onShowScoreBoard: () => setShowBoardTotalScore(true),
         onExitRoom: onExitRoom,
+        onRevealingRole: (val) => {
+          setIsRevealingRole(val);
+        },
       }}
     >
       <div className="container mx-auto p-4 max-w-6xl">
@@ -158,16 +180,24 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
         <HeaderRoom />
 
         {showBoardTotalScore && gameSummary ? (
-          <MatchResult
-            activeGame={gameSummary}
-            onBackToRooms={function () {
-              setShowBoardTotalScore(false);
-              setGameSummary(null);
-            }}
-          />
+          <>
+            {gameSummary ? (
+              <MatchResult
+                activeGame={gameSummary}
+                onBackToRooms={function () {
+                  setShowBoardTotalScore(false);
+                  setGameSummary(null);
+                  // setIsLoadingShowBoard(false);
+                }}
+              />
+            ) : (
+              <div>Loading...</div>
+            )}
+          </>
         ) : room.status === RoomStatus.PLAYING &&
           activeGame &&
-          activeGame.privateMessage ? (
+          activeGame.privateMessage &&
+          !gameEnded ? (
           <PlayContainer
             // players={room?.players || []}
             activeGame={activeGame}
@@ -178,13 +208,23 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
             onMasterRoleIsSetToVoteTime={function () {
               masterRoleIsSetToVoteTime();
             }}
-            onPlayerVote={function (targetPlayerUuid: string) {
-              playerVote(targetPlayerUuid);
-            }}
-            onHostSummary={function () {
-              hostSummary();
+            onGameTimeOut={function () {
+              console.log("Game time out");
+              setGameEnded(true);
             }}
           />
+        ) : (isRevealingRole || gameEnded) && (activeGame || gameSummary) ? (
+          <>
+            <VotePlayer
+              activeGame={activeGame || (gameSummary as ActiveGame)}
+              onMyVote={playerVote}
+              onHostSummary={() => hostSummary()}
+              onVoteFinished={() => {
+                setShowBoardTotalScore(true);
+                setIsRevealingRole(false);
+              }}
+            />
+          </>
         ) : (
           <RoomPlayersList
             room={room}

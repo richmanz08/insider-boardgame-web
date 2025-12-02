@@ -32,6 +32,7 @@ export const RoomListContainer: React.FC = () => {
       const response = await getRoomListService();
       return response;
     },
+    refetchOnWindowFocus: "always",
   });
   console.log("Fetched rooms data:", data);
 

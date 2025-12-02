@@ -6,6 +6,7 @@ import { MINIMUM_PLAYERS } from "@/src/config/system";
 import { useContext, useState } from "react";
 import { RoomContext } from "./Room";
 import { EditRoomModal } from "./EditRoom";
+import { AmountPlayer } from "@/src/components/player/AmountPlayer";
 
 export const HeaderRoom: React.FC = () => {
   const { getStatusLabel, getStatusSeverity } = useRoomHook();
@@ -33,10 +34,13 @@ export const HeaderRoom: React.FC = () => {
               severity={getStatusSeverity(room?.status ?? RoomStatus.WAITING)}
               icon="pi pi-info-circle"
             />
-            <span className="text-gray-400">
+            <div className="flex items-center gap-1">
               <i className="pi pi-users mr-2" />
-              {room?.players.length}/{room.maxPlayers} ผู้เล่น
-            </span>
+              <AmountPlayer
+                current={room.currentPlayers}
+                max={room.maxPlayers}
+              />{" "}
+            </div>
             {allReady && (
               <Tag
                 value="ทุกคนพร้อมแล้ว!"

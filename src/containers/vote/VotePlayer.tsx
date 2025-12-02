@@ -1,20 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect, useContext } from "react";
 import { Card } from "primereact/card";
-import { ActiveGame, PlayerInGame, RoleGame } from "@/src/hooks/interface";
-import { usePlayHook } from "./hook";
+import { ActiveGame, RoleGame } from "@/src/hooks/interface";
+import { usePlayHook } from "../play/hook";
 import { isEmpty, map } from "lodash";
 import { Avatar } from "@/src/components/avatar/Avatar";
 import { Button } from "primereact/button";
+import { RoomContext } from "../room/Room";
 
 interface VotePlayerProps {
-  players: PlayerInGame[];
-  myUuid: string;
-  myRole: RoleGame;
   activeGame: ActiveGame;
-  isHost: boolean;
-  onNavigateToEndgame: () => void; // Callback เมื่อต้องการไปหน้าสรุปผล
   onMyVote: (playerUuid: string) => void;
   onHostSummary: () => void;
   onVoteFinished: () => void;
@@ -22,10 +18,6 @@ interface VotePlayerProps {
 
 export const VotePlayer: React.FC<VotePlayerProps> = ({
   activeGame,
-  players,
-  myUuid,
-  isHost,
-  // myRole,
   onMyVote,
   onHostSummary,
   onVoteFinished,
@@ -38,51 +30,16 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     sortPlayersByVotes,
   } = usePlayHook();
 
+  const { isHost, onRevealingRole } = useContext(RoomContext);
+
   const [myVote, setMyVote] = useState<string | null>(null);
 
   const [revealedPlayers, setRevealedPlayers] = useState<string[]>([]);
-  // const [autoNavigateIn, setAutoNavigateIn] = useState<number | null>(null);
   const [uuidsVoted, setUuidsVoted] = useState<Record<string, number>>({});
   const [voteFinished, setVoteFinished] = useState(false);
 
-  // // Auto-navigate หลังจากเปิดการ์ดครบทั้งหมดแล้ว 7 วินาที
-  // useEffect(() => {
-  //   if (revealedPlayers.length === players.length && autoNavigateIn === null) {
-  //     // เริ่มนับถอยหลัง และ navigate
-  //     let countdown = 7;
-
-  //     const countdownInterval = setInterval(() => {
-  //       countdown -= 1;
-  //       setAutoNavigateIn(countdown);
-
-  //       if (countdown <= 0) {
-  //         clearInterval(countdownInterval);
-  //       }
-  //     }, 1000);
-
-  //     // Callback ไปหน้าสรุปผลหลัง 7 วินาที
-  //     const navigateTimer = setTimeout(() => {
-  //       if (onNavigateToEndgame) {
-  //         onNavigateToEndgame();
-  //       }
-  //     }, 7000);
-
-  //     // ตั้งค่าเริ่มต้น
-  //     setTimeout(() => {
-  //       setAutoNavigateIn(7);
-  //     }, 0);
-
-  //     return () => {
-  //       clearInterval(countdownInterval);
-  //       clearTimeout(navigateTimer);
-  //     };
-  //   }
-  // }, [
-  //   revealedPlayers.length,
-  //   players.length,
-  //   autoNavigateIn,
-  //   onNavigateToEndgame,
-  // ]);
+  const myUuid = activeGame.privateMessage?.playerUuid || "";
+  const players = activeGame.playerInGame;
 
   useLayoutEffect(() => {
     if (isEmpty(activeGame.votes)) return;
@@ -111,7 +68,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     );
 
     setRevealedPlayers([]); // reset ก่อน
-
+    onRevealingRole(true);
     // เปิดทีละคน (delay 1.5s ต่อคน)
     votedUuids.forEach((uuid, idx) => {
       setTimeout(() => {
@@ -132,11 +89,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   }, [activeGame.summary, players, onVoteFinished]);
 
   const handleVote = (playerId: string) => {
-    // if (myRole === RoleGame.MASTER) {
-    //   return; // Master ไม่สามารถโหวตได้
-    // }
     if (activeGame.summary) return;
-
     if (playerId === myUuid) {
       return; // ไม่สามารถโหวตตัวเองได้
     }
@@ -144,11 +97,6 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
     setMyVote(playerId);
     onMyVote(playerId);
   };
-
-  // const isMaster = myRole === RoleGame.MASTER;
-  // const canVote = !isMaster && !myVote;
-
-  console.log("VotePlayer is activeGame:", players, activeGame, myVote);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
@@ -160,14 +108,9 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
           </h1>
           {!voteFinished && (
             <p className="text-gray-400 text-lg">
-              {
-                // isMaster
-                //   ? "คุณเป็น Master ไม่สามารถโหวตได้"
-                //   :
-                myVote
-                  ? "รอผู้เล่นคนอื่นโหวต..."
-                  : "เลือกผู้เล่นที่คุณคิดว่าเป็น Insider"
-              }
+              {myVote
+                ? "รอผู้เล่นคนอื่นโหวต..."
+                : "เลือกผู้เล่นที่คุณคิดว่าเป็น Insider"}
             </p>
           )}
           {isHost && !activeGame.summary && (
@@ -179,21 +122,6 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
             />
           )}
         </div>
-
-        {/* Master Notice */}
-        {/* {isMaster && (
-          <div className="max-w-2xl mx-auto mb-6">
-            <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 text-center">
-              <i className="pi pi-crown text-purple-400 text-2xl mb-2" />
-              <p className="text-purple-300 font-semibold">
-                คุณเป็น Master และไม่สามารถโหวตได้
-              </p>
-              <p className="text-purple-400 text-sm mt-1">
-                รอผู้เล่นคนอื่นเลือก Insider
-              </p>
-            </div>
-          </div>
-        )} */}
 
         {/* My Vote Status */}
         {myVote && !voteFinished && (
@@ -328,51 +256,6 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
             );
           })}
         </div>
-
-        {/* {showResults && revealedPlayers.length === players.length && (
-          <div className="mt-8 text-center animate-fade-in">
-            <Card className="max-w-2xl mx-auto bg-gray-800 border-2 border-gray-700">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  ผลการโหวต
-                </h2>
-                {players.find((p) => p.role === RoleGame.INSIDER) && (
-                  <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 mb-4">
-                    <p className="text-red-300 text-lg font-semibold">
-                      <i className="pi pi-eye mr-2" />
-                      Insider คือ:{" "}
-                      {players.find((p) => p.role === RoleGame.INSIDER)?.name}
-                    </p>
-                  </div>
-                )}
-
-                {autoNavigateIn !== null && autoNavigateIn > 0 && (
-                  <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-3 mb-4">
-                    <p className="text-blue-300 text-sm">
-                      <i className="pi pi-clock mr-2" />
-                      จะไปหน้าสรุปผลอัตโนมัติใน{" "}
-                      <span className="font-bold text-lg">
-                        {autoNavigateIn}
-                      </span>{" "}
-                      วินาที
-                    </p>
-                  </div>
-                )}
-
-                <Button
-                  label="ไปหน้าสรุปผลทันที"
-                  icon="pi pi-arrow-right"
-                  size="large"
-                  onClick={() => {
-                    if (onNavigateToEndgame) {
-                      onNavigateToEndgame();
-                    }
-                  }}
-                />
-              </div>
-            </Card>
-          </div>
-        )} */}
       </div>
     </div>
   );

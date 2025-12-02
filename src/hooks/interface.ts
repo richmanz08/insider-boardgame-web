@@ -32,6 +32,7 @@ export enum RoomUpdateMessageType {
   CARD_OPENED = "CARD_OPENED",
   VOTE_STARTED = "VOTE_STARTED",
   VOTE_CAST = "VOTE_CAST",
+  ROOM_RESET_AFTER_GAME = "ROOM_RESET_AFTER_GAME",
 }
 
 export interface PlayerData {
