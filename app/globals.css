@@ -60,3 +60,19 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
+
+/* Magician Icon Animation */
+.magician-icon {
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.3));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
