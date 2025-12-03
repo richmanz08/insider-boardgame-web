@@ -5,6 +5,7 @@ import { Button } from "primereact/button";
 import { getHistoryGameService } from "@/app/api/game/GameService";
 import { GameHistoryData } from "@/app/api/game/GameInterface";
 import { RoleGame } from "@/src/hooks/interface";
+import { get } from "lodash";
 
 interface ModalTotalScoreProps {
   visible: boolean;
@@ -55,7 +56,7 @@ export const ModalTotalScore: React.FC<ModalTotalScoreProps> = ({
         if (!scoreMap[player.uuid]) {
           scoreMap[player.uuid] = { name: player.playerName, total: 0 };
         }
-        scoreMap[player.uuid].total += game.scores[player.uuid] || 0;
+        scoreMap[player.uuid].total += get(game?.scores, player.uuid, 0);
       });
     });
 
@@ -195,8 +196,8 @@ export const ModalTotalScore: React.FC<ModalTotalScoreProps> = ({
                         </div>
                       </td>
                       {allPlayers.map((player) => {
-                        const role = game.roles[player.uuid];
-                        const score = game.scores[player.uuid] || 0;
+                        const role = get(game.roles, player.uuid);
+                        const score = get(game.scores, player.uuid, 0);
                         return (
                           <td key={player.uuid} className="p-3 text-center">
                             <div className="flex flex-col items-center gap-1">
@@ -239,8 +240,8 @@ export const ModalTotalScore: React.FC<ModalTotalScoreProps> = ({
                   </div>
                   <div className="space-y-2">
                     {allPlayers.map((player) => {
-                      const role = game.roles[player.uuid];
-                      const score = game.scores[player.uuid] || 0;
+                      const role = get(game.roles, player.uuid);
+                      const score = get(game.scores, player.uuid, 0);
                       return (
                         <div
                           key={player.uuid}

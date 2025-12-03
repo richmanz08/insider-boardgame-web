@@ -11,8 +11,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-prompt);
+  --font-heading: var(--font-kanit);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,7 +25,52 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-prompt), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-kanit), sans-serif;
+  font-weight: 600;
+}
+
+/* Override PrimeReact font */
+.p-component,
+.p-button,
+.p-inputtext,
+.p-dialog,
+.p-card,
+.p-datatable,
+.p-dropdown,
+.p-menu,
+.p-menubar,
+.p-tabview,
+.p-accordion,
+.p-panel,
+.p-toast,
+.p-message,
+.p-tooltip,
+.p-checkbox-label,
+.p-radiobutton-label,
+input,
+button,
+select,
+textarea {
+  font-family: var(--font-prompt), sans-serif !important;
+}
+
+/* Override PrimeReact headings */
+.p-dialog-title,
+.p-card-title,
+.p-panel-title,
+.p-fieldset-legend,
+.p-accordion-header {
+  font-family: var(--font-kanit), sans-serif !important;
+  font-weight: 600;
 }
 
 /* 3D Card Flip Animation */

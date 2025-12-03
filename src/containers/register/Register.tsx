@@ -395,9 +395,9 @@ export const RegisterContainer: React.FC = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label htmlFor="playerName" className="font-semibold text-center">
+            {/* <label htmlFor="playerName" className="font-semibold text-center">
               ชื่อผู้เล่น
-            </label>
+            </label> */}
             <InputText
               id="playerName"
               maxLength={20}

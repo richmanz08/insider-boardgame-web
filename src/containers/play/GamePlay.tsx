@@ -87,7 +87,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                 {myRole.role !== RoleGame.CITIZEN && (
                   <div className="space-y-4">
                     {/* Image Display - Only for Master */}
-                    {myRole.role === RoleGame.MASTER && myRole.answer && (
+                    {/* {myRole.role === RoleGame.MASTER && myRole.answer && (
                       <div className="bg-gray-800 bg-opacity-60 rounded-lg p-4 overflow-hidden border border-gray-700">
                         <p className="text-gray-200 text-sm mb-3">รูปภาพ:</p>
                         <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900">
@@ -101,7 +101,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
                           />
                         </div>
                       </div>
-                    )}
+                    )} */}
 
                     {/* Answer Information */}
                     <div className="bg-gray-700 bg-opacity-70 rounded-lg p-4 border border-gray-600">

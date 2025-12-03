@@ -52,6 +52,8 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
     return Math.max(0, Math.floor((gameEndTime - now) / 1000));
   });
 
+  console.log({ timeRemaining }, activeGame.durationSeconds);
+
   // const gameIsStarted = !isNull(activeGame.startedAt);
 
   // ⭐ คำนวณเวลาจาก endsAt (แม่นยำกว่า startedAt + duration)
@@ -109,9 +111,13 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
 
   useLayoutEffect(() => {
     if (activeGame.startedAt) {
-      setTimeout(() => {
+      if (activeGame.durationSeconds - timeRemaining < 3) {
+        setTimeout(() => {
+          setGameIsStarted(true);
+        }, 2000);
+      } else {
         setGameIsStarted(true);
-      }, 2000);
+      }
     }
   }, [activeGame]);
 

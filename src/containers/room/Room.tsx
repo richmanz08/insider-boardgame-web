@@ -84,6 +84,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   }, [room, me]);
 
   const isHost = currentPlayerMemorize?.uuid === room?.hostUuid;
+  const meIsPlaying = currentPlayerMemorize?.playing;
 
   // Display countdown automatically when all players are ready and user is host
   useEffect(() => {
@@ -189,7 +190,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
           activeGame.privateMessage &&
           !gameEnded ? (
           <PlayContainer
-            // players={room?.players || []}
             activeGame={activeGame}
             myJob={activeGame.privateMessage}
             onOpenCard={function () {
@@ -216,6 +216,8 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
               }}
             />
           </>
+        ) : !activeGame && meIsPlaying && room.status === RoomStatus.PLAYING ? (
+          <div>Loding game data...</div>
         ) : (
           <RoomPlayersList
             room={room}
