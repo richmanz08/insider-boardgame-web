@@ -27,6 +27,7 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
   onCreateRoom,
 }) => {
   const me = useAppSelector((state: RootState) => state.me.me);
+  const [isClosing, setIsClosing] = React.useState(false);
 
   const {
     register,
@@ -63,12 +64,20 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
 
     // รีเซ็ตฟอร์มและปิด modal
     reset();
-    onClose();
+    handleClose();
+  };
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300); // ตรงกับระยะเวลา animation
   };
 
   const handleDialogHide = () => {
     reset();
-    onClose();
+    handleClose();
   };
 
   useEffect(() => {
@@ -84,20 +93,24 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open && !isClosing) return null;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40"
+        className={`fixed inset-0 bg-black/50 z-40 ${
+          isClosing ? "animate-fade-out" : "animate-fade-in"
+        }`}
         onClick={handleDialogHide}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-[#1e1e1e] rounded-lg shadow-xl w-full max-w-md border border-gray-700"
+          className={`bg-[#1e1e1e] rounded-lg shadow-xl w-full max-w-md border border-gray-700 ${
+            isClosing ? "animate-scale-down" : "animate-scale-up"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
