@@ -1,9 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Dialog } from "primereact/dialog";
-import { Password } from "primereact/password";
 import { CreateRoomContainer } from "./children/CreateRoomModal";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -35,7 +32,6 @@ export const RoomListContainer: React.FC = () => {
     },
     refetchOnWindowFocus: "always",
   });
-  console.log("Fetched rooms data:", data);
 
   const handleRefresh = () => {
     refetch();
