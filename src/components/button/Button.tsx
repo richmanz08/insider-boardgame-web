@@ -6,6 +6,7 @@ interface ButtonProps {
   outlined?: boolean;
   size?: ButtonSize;
   disabled?: boolean;
+  className?: string;
 }
 type ButtonSize = "small" | "medium" | "large";
 type ButtonSeverity =
@@ -25,6 +26,7 @@ export const Button: React.FC<ButtonProps> = ({
   outlined,
   size,
   disabled,
+  className,
 }) => {
   const styleClass: Record<string, string> = {
     primary: "btn-grad",
@@ -37,7 +39,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
   const sizeClass: Record<string, string> = {
     small: "h-[34px] px-4 py-2",
-    medium: "h-[40px]",
+    medium: "h-[40px] px-5 py-2",
     large: "h-[48px]",
   };
 
@@ -48,10 +50,10 @@ export const Button: React.FC<ButtonProps> = ({
       className={`btn ${sizeClass[size ?? "medium"]} ${
         styleClass[severity ?? "primary"]
       } ${outlined ? "outlined !bg-inherit" : ""} ${
-        disabled ? "disabled" : "cursor-pointer"
-      }`}
+        disabled ? "disabled-button" : "cursor-pointer"
+      } ${className ?? ""}`}
     >
-      {icon && <i className={`pi ${icon} mr-1`} />}
+      {icon && <i className={`pi ${icon} ${label ? "mr-2" : ""}`} />}
       {label}
     </button>
   );

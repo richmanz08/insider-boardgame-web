@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Dialog } from "primereact/dialog";
 import { Password } from "primereact/password";
-import { CreateRoomContainer } from "./CreateRoom";
+import { CreateRoomContainer } from "./children/CreateRoomModal";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {

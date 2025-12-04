@@ -112,6 +112,10 @@ textarea {
   animation: float 3s ease-in-out infinite;
 }
 
+.p-card-content {
+  padding: 0px 0px 0px 0px !important;
+}
+
 @keyframes float {
   0%,
   100% {
@@ -230,4 +234,20 @@ textarea {
   background-position: right center; /* change the direction of the change here */
   color: #fff;
   text-decoration: none;
+}
+
+/* secondary */
+.btn-secondary {
+  background-color: inherit;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid #6c757d;
+}
+
+.disabled-button {
+  pointer-events: none;
+  opacity: 0.2;
 }

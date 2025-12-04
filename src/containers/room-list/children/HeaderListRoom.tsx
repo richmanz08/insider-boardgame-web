@@ -14,7 +14,7 @@ export const HeaderListRoom: React.FC<HeaderListRoomProps> = ({
   length,
 }) => {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-end">
       <div className="w-full">
         <Typography type="title">รายการห้อง</Typography>
         <Typography type="body" className="text-gray-400">
@@ -22,7 +22,7 @@ export const HeaderListRoom: React.FC<HeaderListRoomProps> = ({
         </Typography>
       </div>
 
-      <div className="flex justify-between w-full mt-8 mb-2">
+      <div className="flex justify-between items-center w-full mt-8 mb-2">
         <div className="flex items-center gap-2 text-sm text-gray-400">
           <i className="pi pi-info-circle" />
           <span>พบ {length} ห้อง</span>
@@ -40,8 +40,10 @@ export const HeaderListRoom: React.FC<HeaderListRoomProps> = ({
             label="สร้างห้อง"
             icon="pi pi-plus"
             onClick={() => onCreateRoom()}
-            severity="indigo"
-            size="small"
+            // severity="indigo"
+            severity="secondary"
+            size="large"
+            // size="small"
             outlined
           />
         </div>
