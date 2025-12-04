@@ -15,9 +15,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
 import { HeaderListRoom } from "./children/HeaderListRoom";
 import { EnterPassword } from "./children/EnterPassword";
+import { useToast } from "@/src/contexts/ToastContext";
 
 export const RoomListContainer: React.FC = () => {
   const router = useRouter();
+  const { showToast } = useToast();
   const me = useSelector((state: RootState) => state.me.me);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -70,8 +72,8 @@ export const RoomListContainer: React.FC = () => {
         // Navigate to room page
         router.push(`/room/${roomCode}`);
       } else {
-        console.error("Failed to join room:", response?.message);
         setEnterPasswordDialog(null);
+        showToast("error", response?.message || "ไม่สามารถเข้าร่วมห้องได้");
       }
     } catch (error) {
       console.error("Error joining room:", error);

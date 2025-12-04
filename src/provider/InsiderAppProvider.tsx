@@ -7,6 +7,7 @@ import ReduxProvider from "./Redux";
 import LayoutProvider from "./Layout";
 import { AuthGuard } from "@/src/provider/AuthGuard";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ToastProvider } from "@/src/contexts/ToastContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,9 +24,11 @@ export function Providers({ children }: { children: ReactNode }) {
     <ReduxProvider>
       <QueryClientProvider client={queryClient}>
         <PrimeReactProvider value={{ ripple: true }}>
-          <LayoutProvider>
-            <AuthGuard>{children}</AuthGuard>
-          </LayoutProvider>
+          <ToastProvider>
+            <LayoutProvider>
+              <AuthGuard>{children}</AuthGuard>
+            </LayoutProvider>
+          </ToastProvider>
         </PrimeReactProvider>
       </QueryClientProvider>
     </ReduxProvider>
