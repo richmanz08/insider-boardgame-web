@@ -17,15 +17,15 @@ import { RoomCard } from "@/src/components/card/RoomCard";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
 import { HeaderListRoom } from "./children/HeaderListRoom";
+import { EnterPassword } from "./children/EnterPassword";
 
 export const RoomListContainer: React.FC = () => {
   const router = useRouter();
   const me = useSelector((state: RootState) => state.me.me);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<RoomData | null>(null);
-  const [roomPassword, setRoomPassword] = useState("");
+  const [enterPasswordDialog, setEnterPasswordDialog] =
+    useState<RoomData | null>(null);
 
   const { data, refetch, isRefetching } = useQuery({
     queryKey: ["rooms"],
@@ -49,24 +49,9 @@ export const RoomListContainer: React.FC = () => {
 
   const handleJoinRoom = (room: RoomData) => {
     if (room.hasPassword) {
-      setSelectedRoom(room);
-      setShowPasswordDialog(true);
+      setEnterPasswordDialog(room);
     } else {
       joinRoom(room.roomCode, undefined);
-    }
-  };
-
-  const handlePasswordSubmit = async () => {
-    if (selectedRoom && roomPassword) {
-      console.log(
-        "Joining room with password:",
-        selectedRoom.roomCode,
-        roomPassword
-      );
-      await joinRoom(selectedRoom.roomCode, roomPassword);
-      setShowPasswordDialog(false);
-      setRoomPassword("");
-      setSelectedRoom(null);
     }
   };
 
@@ -75,13 +60,6 @@ export const RoomListContainer: React.FC = () => {
       console.error("User not authenticated");
       return;
     }
-
-    console.log("Calling joinRoomService:", {
-      roomCode,
-      playerUuid: me.uuid,
-      playerName: me.playerName,
-      hasPassword: !!password,
-    });
 
     try {
       const response = await joinRoomService({
@@ -97,11 +75,10 @@ export const RoomListContainer: React.FC = () => {
         router.push(`/room/${roomCode}`);
       } else {
         console.error("Failed to join room:", response?.message);
-        alert(response?.message || "ไม่สามารถเข้าร่วมห้องได้");
+        setEnterPasswordDialog(null);
       }
     } catch (error) {
       console.error("Error joining room:", error);
-      alert("เกิดข้อผิดพลาดในการเข้าร่วมห้อง");
     }
   };
 
@@ -140,56 +117,12 @@ export const RoomListContainer: React.FC = () => {
       />
 
       {/* Dialog กรอกรหัสผ่าน */}
-      <Dialog
-        header="กรอกรหัสผ่าน"
-        visible={showPasswordDialog}
-        style={{ width: "400px" }}
-        onHide={() => {
-          setShowPasswordDialog(false);
-          setRoomPassword("");
-          setSelectedRoom(null);
-        }}
-      >
-        <div className="flex flex-col gap-4">
-          <p className="text-gray-400">
-            ห้อง &quot;{selectedRoom?.roomName}&quot;
-            ต้องการรหัสผ่านในการเข้าร่วม
-          </p>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="roomPassword" className="font-semibold">
-              รหัสผ่าน
-            </label>
-            <Password
-              id="roomPassword"
-              value={roomPassword}
-              onChange={(e) => setRoomPassword(e.target.value)}
-              placeholder="กรอกรหัสผ่าน"
-              toggleMask
-              feedback={false}
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end">
-            <Button
-              label="ยกเลิก"
-              severity="secondary"
-              outlined
-              onClick={() => {
-                setShowPasswordDialog(false);
-                setRoomPassword("");
-                setSelectedRoom(null);
-              }}
-            />
-            <Button
-              label="เข้าร่วม"
-              icon="pi pi-sign-in"
-              onClick={handlePasswordSubmit}
-              disabled={!roomPassword}
-            />
-          </div>
-        </div>
-      </Dialog>
+      <EnterPassword
+        open={!!enterPasswordDialog}
+        room={enterPasswordDialog}
+        onClose={() => setEnterPasswordDialog(null)}
+        joinRoom={joinRoom}
+      />
     </div>
   );
 };

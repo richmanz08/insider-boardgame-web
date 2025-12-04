@@ -32,7 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
     primary: "btn-grad",
     secondary: "btn-secondary",
     info: "btn-info",
-    success: "btn-success",
+    success: "btn-grad-success ",
     warning: "btn-grad-warn",
     danger: "btn-grad-danger",
     indigo: "btn-grad-indigo",

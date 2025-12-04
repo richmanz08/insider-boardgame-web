@@ -1,13 +1,14 @@
 "use client";
 import React, { useEffect } from "react";
 import { InputText } from "primereact/inputtext";
-import { Password } from "primereact/password";
-import { Button } from "primereact/button";
 import { useForm, Controller } from "react-hook-form";
 import { useAppSelector } from "@/src/redux/hook";
 import { RootState } from "@/src/redux/store";
 import { createRoomService } from "@/app/api/room/RoomService";
 import { RoomData } from "@/app/api/room/RoomInterface";
+import { Button } from "@/src/components/button/Button";
+import { PinInput } from "@/src/components/input/PinInput";
+import { trim } from "lodash";
 
 interface CreateRoomProps {
   open: boolean;
@@ -34,7 +35,7 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
     handleSubmit,
     reset,
     control,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<CreateRoomFormData>({
     defaultValues: {
       roomName: "",
@@ -45,14 +46,13 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
   });
 
   const handleFormSubmit = async (data: CreateRoomFormData) => {
-    console.log("Creating room:", data);
-
+    if (!me) return;
     try {
       const res = await createRoomService({
-        roomName: data.roomName,
+        roomName: trim(data.roomName),
         maxPlayers: data.maxPlayers,
-        hostUuid: me?.uuid || "",
-        hostName: me?.playerName || "",
+        hostUuid: me.uuid || "",
+        hostName: me.playerName || "",
         password: data.password,
       });
       if (res && onCreateRoom) {
@@ -72,7 +72,7 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
     setTimeout(() => {
       setIsClosing(false);
       onClose();
-    }, 300); // ตรงกับระยะเวลา animation
+    }, 300);
   };
 
   const handleDialogHide = () => {
@@ -81,8 +81,6 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
   };
 
   useEffect(() => {
-    console.log("CreateRoom - open prop changed:", open);
-    // ป้องกัน scroll เมื่อ modal เปิด
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
@@ -118,17 +116,14 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
             <h2 className="text-xl font-bold">สร้างห้องใหม่</h2>
             <button
               onClick={handleDialogHide}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors cursor-pointer"
             >
               <i className="pi pi-times text-xl" />
             </button>
           </div>
 
           {/* Content */}
-          <form
-            onSubmit={handleSubmit(handleFormSubmit)}
-            className="flex flex-col gap-4 p-6"
-          >
+          <div className="flex flex-col gap-4 p-6">
             {/* ชื่อห้อง */}
             <div className="flex flex-col gap-2">
               <label htmlFor="roomName" className="font-semibold">
@@ -145,6 +140,12 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
                   maxLength: {
                     value: 30,
                     message: "ชื่อห้องต้องไม่เกิน 30 ตัวอักษร",
+                  },
+                  validate: (value) => {
+                    if (value.trim().length < 3) {
+                      return "ชื่อห้องต้องมีตัวอักษร ไม่ใช่แค่ช่องว่าง, และต้องมีอย่างน้อย 3 ตัวอักษร";
+                    }
+                    return true;
                   },
                 })}
                 placeholder="กรอกชื่อห้อง"
@@ -165,6 +166,7 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
               <InputText
                 id="maxPlayers"
                 type="number"
+                max={10}
                 {...register("maxPlayers", {
                   required: "กรุณากรอกจำนวนผู้เล่น",
                   min: {
@@ -204,14 +206,10 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
                   },
                 }}
                 render={({ field }) => (
-                  <Password
-                    id="password"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    placeholder="ไม่ต้องกรอกถ้าไม่ต้องการตั้งรหัส"
-                    toggleMask
-                    feedback={false}
-                    className={errors.password ? "p-invalid w-full" : "w-full"}
+                  <PinInput
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    // onErrorChange={(field.onChange)}
                   />
                 )}
               />
@@ -229,19 +227,23 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
             <div className="flex gap-2 justify-end mt-4">
               <Button
                 label="ยกเลิก"
+                className="w-full"
                 severity="secondary"
                 outlined
-                type="button"
                 onClick={handleDialogHide}
               />
               <Button
+                disabled={!isValid}
                 label="สร้างห้อง"
-                type="submit"
+                className="w-full"
                 icon="pi pi-check"
-                severity="success"
+                severity="indigo"
+                onClick={function () {
+                  handleSubmit(handleFormSubmit)();
+                }}
               />
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </>

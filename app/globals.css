@@ -291,6 +291,33 @@ textarea {
   border: 1px solid #6c757d;
 }
 
+/* success */
+
+.btn-grad-success {
+  background-image: linear-gradient(
+    to right,
+    #76b852 0%,
+    #8dc26f 51%,
+    #76b852 100%
+  );
+}
+.btn-grad-success {
+  text-align: center;
+  text-transform: uppercase;
+  transition: 0.5s;
+  background-size: 200% auto;
+  color: white;
+  box-shadow: 0 0 6px #eee;
+  border-radius: 10px;
+  display: block;
+}
+
+.btn-grad-success:hover {
+  background-position: right center; /* change the direction of the change here */
+  color: #fff;
+  text-decoration: none;
+}
+
 .disabled-button {
   pointer-events: none;
   opacity: 0.2;
