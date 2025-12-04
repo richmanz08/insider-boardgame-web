@@ -16,6 +16,7 @@ import { map } from "lodash";
 import { RoomCard } from "@/src/components/card/RoomCard";
 import { useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
+import { HeaderListRoom } from "./children/HeaderListRoom";
 
 export const RoomListContainer: React.FC = () => {
   const router = useRouter();
@@ -106,39 +107,12 @@ export const RoomListContainer: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">รายการห้อง</h1>
-          <p className="text-gray-400">
-            เลือกห้องเพื่อเข้าร่วมหรือสร้างห้องใหม่
-          </p>
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            icon={isRefetching ? "pi pi-spin pi-spinner" : "pi pi-refresh"}
-            onClick={handleRefresh}
-            severity="secondary"
-            outlined
-            size="large"
-            tooltip="รีเฟรชรายการห้อง"
-            tooltipOptions={{ position: "bottom" }}
-            disabled={isRefetching}
-          />
-          <Button
-            label="สร้างห้อง"
-            icon="pi pi-plus"
-            onClick={() => setShowCreateDialog(true)}
-            severity="info"
-            size="large"
-          />
-        </div>
-      </div>
-
-      <div className="mb-4 flex items-center gap-2 text-sm text-gray-400">
-        <i className="pi pi-info-circle" />
-        <span>พบ {data?.data.length} ห้อง</span>
-      </div>
+      <HeaderListRoom
+        onRefresh={handleRefresh}
+        isRefetching={isRefetching}
+        onCreateRoom={() => setShowCreateDialog(true)}
+        length={data?.data.length || 0}
+      />
 
       {data?.data.length === 0 ? (
         <Card>
