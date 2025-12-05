@@ -144,18 +144,14 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
     );
   }, [countdown]);
 
-  // -----------------------------------------------------
-  // UI
-  // -----------------------------------------------------
   return (
-    <div className="perspective-1000">
+    <div className="perspective-1000 flex justify-center">
       <div
-        className={`relative w-full max-w-md mx-auto transition-transform duration-700 transform-style-3d ${
+        className={`relative w-[300px] h-[430px] transition-transform duration-700 transform-style-3d ${
           isCardFlipped ? "rotate-y-180" : ""
         }`}
         style={{
           transformStyle: "preserve-3d",
-          minHeight: isCardFlipped ? "auto" : "400px",
         }}
       >
         {/* Back Side */}
@@ -163,10 +159,18 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
           className={`absolute inset-0 backface-hidden ${
             isCardFlipped ? "pointer-events-none" : ""
           }`}
+          style={{
+            filter:
+              "drop-shadow(0 10px 20px rgba(59, 130, 246, 0.5)) drop-shadow(0 4px 8px rgba(96, 165, 250, 0.3))",
+          }}
         >
           <Card
-            className="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 cursor-pointer hover:border-blue-500 transition-all duration-300 hover:scale-105"
+            className="!rounded-2xl bg-gradient-to-br w-[300px] h-[430px] from-gray-700 to-gray-900 border-2 border-gray-600 cursor-pointer hover:border-blue-500 transition-all duration-300 hover:scale-105"
             onClick={onFlipCard}
+            style={{
+              boxShadow:
+                "0 20px 40px -10px rgba(59, 130, 246, 0.6), 0 8px 16px -5px rgba(96, 165, 250, 0.4)",
+            }}
           >
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-6 animate-pulse">
@@ -182,24 +186,32 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
 
         {/* Front Side */}
         <div
-          className={`backface-hidden rotate-y-180 ${
-            isCardFlipped ? "relative" : "absolute inset-0"
+          className={`absolute inset-0 backface-hidden ${
+            isCardFlipped ? "" : "pointer-events-none"
           }`}
-          style={{ transform: "rotateY(180deg)" }}
+          style={{
+            transform: "rotateY(180deg)",
+            filter:
+              "drop-shadow(0 10px 20px rgba(59, 130, 246, 0.5)) drop-shadow(0 4px 8px rgba(96, 165, 250, 0.3))",
+          }}
         >
           {my && (
             <Card
-              className={`bg-gradient-to-br ${
+              className={`!rounded-2xl bg-gradient-to-br w-[300px] h-[430px] ${
                 getRoleDisplay(my.role).bgColor
               } border-2 border-opacity-50`}
+              style={{
+                boxShadow:
+                  "0 20px 40px -10px rgba(59, 130, 246, 0.6), 0 8px 16px -5px rgba(96, 165, 250, 0.4)",
+              }}
             >
               <div className="flex flex-col items-center justify-center py-8">
                 {/* Role Icon */}
-                <div className="w-24 h-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center mb-6">
+                <div className="w-24 h-24 rounded-full border border-gray-600 bg-opacity-20 flex items-center justify-center mb-6">
                   <i
                     className={`pi ${
                       getRoleDisplay(my.role).icon
-                    } text-white text-5xl`}
+                    } text-gray-600 !text-4xl`}
                   />
                 </div>
 
@@ -211,13 +223,16 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                 <div className="w-full space-y-4">
                   {/* CITIZEN */}
                   {my.role === RoleGame.CITIZEN && (
-                    <>
-                      <i className="pi pi-question-circle text-white text-3xl mb-3" />
-                      <p className="text-white text-lg">คุณไม่ทราบคำตอบ</p>
+                    <div className="flex flex-col items-center">
+                      <div className="flex items-center gap-2">
+                        <p className="text-white text-lg">คุณไม่ทราบคำตอบ</p>
+                        <i className="pi pi-question-circle text-white text-3xl" />
+                      </div>
+
                       <p className="text-gray-200 text-sm mt-2">
                         ถามคำถามเพื่อหาคำตอบ
                       </p>
-                    </>
+                    </div>
                   )}
 
                   {/* MASTER */}
@@ -230,9 +245,9 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                         </p>
                       </div>
 
-                      <div className="bg-yellow-500 bg-opacity-20 rounded-lg p-4">
-                        <p className="text-yellow-200 text-sm">
-                          <i className="pi pi-info-circle mr-2" />
+                      <div className="bg-amber-500 bg-opacity-20 rounded-lg p-4 flex items-center">
+                        <i className="pi pi-info-circle mr-2" />
+                        <p className="text-white-500 text-sm">
                           คุณต้องให้คำใบ้ผู้เล่นแต่ไม่ให้รู้คำตอบ
                         </p>
                       </div>
@@ -249,9 +264,9 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                         </p>
                       </div>
 
-                      <div className="bg-red-500 bg-opacity-20 rounded-lg p-4">
+                      <div className="bg-red-500 bg-opacity-20 rounded-lg p-4 flex items-center">
+                        <i className="pi pi-eye mr-2" />
                         <p className="text-red-200 text-sm">
-                          <i className="pi pi-eye mr-2" />
                           คุณต้องบงการผู้เล่นให้ไปสู่คำตอบ แต่อย่าให้ถูกจับได้!
                         </p>
                       </div>

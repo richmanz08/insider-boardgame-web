@@ -8,7 +8,7 @@ export const usePlayHook = () => {
           name: "Insider",
           color: "text-red-500",
           bgColor: "from-red-600 to-red-800",
-          icon: "pi-eye",
+          icon: "pi-eye !text-gray-300",
           description: "บงการผู้เล่นไปสู่คำตอบโดยไม่ให้ถูกจับได้",
         };
       case RoleGame.MASTER:
@@ -16,7 +16,7 @@ export const usePlayHook = () => {
           name: "Master",
           color: "text-purple-500",
           bgColor: "from-purple-600 to-purple-800",
-          icon: "pi-crown",
+          icon: "pi-crown !text-gray-300",
           description: "ให้คำใบ้โดยไม่เปิดเผยคำตอบโดยตรง",
         };
       case RoleGame.CITIZEN:
@@ -24,7 +24,7 @@ export const usePlayHook = () => {
           name: "Player",
           color: "text-blue-500",
           bgColor: "from-blue-600 to-blue-800",
-          icon: "pi-user",
+          icon: "pi-user !text-gray-300",
           description: "ถามคำถามเพื่อหาคำตอบ",
         };
     }
