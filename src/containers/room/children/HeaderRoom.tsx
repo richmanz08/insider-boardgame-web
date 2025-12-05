@@ -1,17 +1,15 @@
 import { Tag } from "primereact/tag";
-import { useRoomHook } from "./hook";
+import { useRoomHook } from "../hook";
 import { RoomStatus } from "@/app/api/room/RoomInterface";
 import { Card } from "primereact/card";
 import { MINIMUM_PLAYERS } from "@/src/config/system";
-import { useContext, useState } from "react";
-import { RoomContext } from "./Room";
-import { EditRoomModal } from "./EditRoom";
+import { useContext } from "react";
+import { RoomContext } from "../Room";
 import { AmountPlayer } from "@/src/components/player/AmountPlayer";
 
 export const HeaderRoom: React.FC = () => {
   const { getStatusLabel, getStatusSeverity } = useRoomHook();
   const { allReady, room } = useContext(RoomContext);
-  const [showEditModal, setShowEditModal] = useState(false);
   const hasPassword = false; // Replace with actual password check if needed
 
   if (!room) return null;
@@ -67,18 +65,6 @@ export const HeaderRoom: React.FC = () => {
           </div>
         </Card>
       )}
-
-      {/* Edit Room Modal - แสดงเฉพาะหัวห้อง */}
-      <EditRoomModal
-        open={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onEditRoom={function () {}}
-        currentRoomData={{
-          roomName: room.roomName,
-          maxPlayers: room.maxPlayers,
-          hasPassword: false,
-        }}
-      />
     </div>
   );
 };

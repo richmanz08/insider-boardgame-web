@@ -3,7 +3,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CountdownPlayModal } from "./CountdownPlay";
+import { CountdownPlayModal } from "./children/CountdownPlay";
 import { PlayContainer } from "../play/Play";
 import { leaveRoomService } from "@/app/api/room/RoomService";
 import { useSelector } from "react-redux";
@@ -17,8 +17,8 @@ import {
   PlayerData,
   RoomUpdateMessage,
 } from "@/src/hooks/interface";
-import { HeaderRoom } from "./HeaderRoom";
-import { RoomPlayersList } from "./RoomPlayers";
+import { HeaderRoom } from "./children/HeaderRoom";
+import { RoomPlayersList } from "./children/RoomPlayers";
 import { MatchResult } from "../scoreboard/MatchResult";
 import { VotePlayer } from "../vote/VotePlayer";
 

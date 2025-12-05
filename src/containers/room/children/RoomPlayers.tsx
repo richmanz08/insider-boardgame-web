@@ -4,8 +4,8 @@ import { PlayerData, RoomUpdateMessage } from "@/src/hooks/interface";
 import { map } from "lodash";
 import { Button } from "primereact/button";
 import { useContext, useState } from "react";
-import { RoomContext } from "./Room";
-import { ModalTotalScore } from "../scoreboard/ModalTotalScore";
+import { RoomContext } from "../Room";
+import { ModalTotalScore } from "../../scoreboard/ModalTotalScore";
 interface RoomPlayersListProps {
   room: RoomUpdateMessage;
   me: PlayerData;
