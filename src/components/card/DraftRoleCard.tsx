@@ -1,10 +1,8 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { setSessionWithExpiry } from "@/src/common/function";
 import { usePlayHook } from "@/src/containers/play/hook";
 import { RoleAssignment } from "@/src/containers/play/Play";
 import { ActiveGame, RoleGame } from "@/src/hooks/interface";
 import { Card } from "primereact/card";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 
 interface DraftRoleCardProps {
   isCardFlipped: boolean;
@@ -24,7 +22,8 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
   const keySessionStartCountdown = `dcds_${activeGame.id}`;
   const keySessionEndCountdown = `dcde_${activeGame.id}`;
 
-  const delay = 15;
+  const DELAY = 15; // วินาที
+  const hasFlippedRef = useRef(false); // ⭐ ป้องกัน flip ซ้ำ
 
   // -----------------------------------------------------
   // INITIAL COUNTDOWN (อ่านจาก sessionStorage)
@@ -37,7 +36,7 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
       const now = Date.now();
       const diffSeconds = Math.ceil((endTime - now) / 1000);
 
-      if (diffSeconds > 0 && diffSeconds <= delay) {
+      if (diffSeconds > 0 && diffSeconds <= DELAY) {
         return diffSeconds;
       }
       if (diffSeconds <= 0) {
@@ -46,50 +45,85 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
     }
 
     // ไม่เจอใน sessionStorage → ตั้งใหม่
-    sessionStorage.setItem(
-      keySessionEndCountdown,
-      (Date.now() + delay * 1000).toString()
-    );
+    const newEndTime = Date.now() + DELAY * 1000;
+    sessionStorage.setItem(keySessionEndCountdown, newEndTime.toString());
 
-    return delay;
+    return DELAY;
   });
 
   // -----------------------------------------------------
-  // COUNTDOWN EFFECT
+  // ⭐ COUNTDOWN EFFECT (ใช้ timestamp แทน setTimeout)
   // -----------------------------------------------------
   useEffect(() => {
-    if (isCardFlipped) return;
+    if (isCardFlipped) {
+      hasFlippedRef.current = false; // Reset เมื่อการ์ดถูกเปิดแล้ว
+      return;
+    }
 
-    if (countdown > 0) {
-      // ถ้าเพิ่งเริ่มนับ (countdown = delay) → ตั้งเวลาลงใน sessionStorage
-      if (countdown === delay) {
-        const now = Date.now();
-        // Save start time for delay seconds
-        setSessionWithExpiry(keySessionStartCountdown, now, delay);
+    const storedEndTime = sessionStorage.getItem(keySessionEndCountdown);
+    if (!storedEndTime) return;
 
-        // Save end time for delay seconds
-        setSessionWithExpiry(keySessionEndCountdown, now + delay * 1000, delay);
+    const endTime = parseInt(storedEndTime, 10);
+    let isComponentMounted = true;
+    let flipTimeoutId: NodeJS.Timeout | null = null;
+
+    const triggerFlipCard = () => {
+      if (!hasFlippedRef.current && !isCardFlipped) {
+        hasFlippedRef.current = true;
+
+        sessionStorage.removeItem(keySessionStartCountdown);
+        sessionStorage.removeItem(keySessionEndCountdown);
+
+        // ⭐ เก็บ timeout ID เพื่อ cleanup
+        flipTimeoutId = setTimeout(() => {
+          if (isComponentMounted && !isCardFlipped) {
+            console.log("🎴 Auto-flipping card after countdown");
+            onFlipCard();
+          }
+        }, 1000);
       }
+    };
 
-      const timer = setTimeout(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
+    const updateCountdown = () => {
+      if (!isComponentMounted) return;
 
-      return () => clearTimeout(timer);
-    }
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
 
-    // หมดเวลา countdown = 0 → ลบ sessionStorage
-    if (countdown === 0) {
-      sessionStorage.removeItem(keySessionStartCountdown);
-      sessionStorage.removeItem(keySessionEndCountdown);
+      setCountdown(remaining);
 
-      const completeTimer = setTimeout(() => {
-        onFlipCard();
-      }, 1000);
+      // ⭐ เมื่อหมดเวลา
+      if (remaining <= 0) {
+        triggerFlipCard();
+      }
+    };
 
-      return () => clearTimeout(completeTimer);
-    }
-  }, [countdown, onFlipCard]);
+    // อัปเดททันทีและทุก 100ms (เพื่อความแม่นยำ)
+    updateCountdown();
+    const timerRef = setInterval(updateCountdown, 100);
+
+    // ⭐ Sync เวลาเมื่อ tab กลับมา active
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isComponentMounted) {
+        console.log("🔄 Card countdown synced after tab became visible");
+        updateCountdown(); // ⭐ จะเรียก triggerFlipCard() ถ้าเวลาหมดแล้ว
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isComponentMounted = false;
+      clearInterval(timerRef);
+      if (flipTimeoutId) clearTimeout(flipTimeoutId); // ⭐ Clear timeout
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    isCardFlipped,
+    onFlipCard,
+    keySessionStartCountdown,
+    keySessionEndCountdown,
+  ]);
 
   // -----------------------------------------------------
   // PROGRESS BAR (แก้บัคเริ่มที่ 100%)
@@ -97,7 +131,7 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
   const countdownProgressMemo = useMemo(() => {
     const progress = Math.max(
       0,
-      Math.min(100, ((delay - countdown) / delay) * 100)
+      Math.min(100, ((DELAY - countdown) / DELAY) * 100)
     );
 
     return (

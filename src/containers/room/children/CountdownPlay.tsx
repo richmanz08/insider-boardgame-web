@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface CountdownPlayModalProps {
   open: boolean;
@@ -10,39 +10,70 @@ export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
   open,
   onCountdownComplete,
 }) => {
-  const [countdown, setCountdown] = useState(5);
-  const [isFirstRender, setIsFirstRender] = useState(true);
+  const COUNTDOWN_DURATION = 5; // วินาที
+  const [countdown, setCountdown] = useState(COUNTDOWN_DURATION);
+  const endTimeRef = useRef<number | null>(null);
+  const hasCompletedRef = useRef(false);
 
-  // Reset countdown เมื่อ modal เปิดใหม่
+  // ⭐ ตั้งเวลาสิ้นสุดเมื่อ modal เปิด
   useEffect(() => {
-    if (open && !isFirstRender) {
-      queueMicrotask(() => setCountdown(5));
-    }
     if (open) {
-      queueMicrotask(() => setIsFirstRender(false));
+      endTimeRef.current = Date.now() + COUNTDOWN_DURATION * 1000;
+      hasCompletedRef.current = false;
+      queueMicrotask(() => setCountdown(COUNTDOWN_DURATION));
+    } else {
+      endTimeRef.current = null;
     }
-  }, [open, isFirstRender]);
+  }, [open]);
 
-  // นับถอยหลัง
+  // ⭐ คำนวณเวลาจาก timestamp แทน setTimeout
   useEffect(() => {
-    if (!open) return;
+    if (!open || !endTimeRef.current) return;
 
-    if (countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
+    let isComponentMounted = true;
 
-      return () => clearTimeout(timer);
-    } else if (countdown === 0) {
-      const completeTimer = setTimeout(() => {
-        if (onCountdownComplete) {
-          onCountdownComplete();
-        }
-      }, 500);
+    const updateCountdown = () => {
+      if (!isComponentMounted || !endTimeRef.current) return;
 
-      return () => clearTimeout(completeTimer);
-    }
-  }, [countdown, open, onCountdownComplete]);
+      const now = Date.now();
+      const remaining = Math.max(
+        0,
+        Math.ceil((endTimeRef.current - now) / 1000)
+      );
+
+      setCountdown(remaining);
+
+      // ⭐ เมื่อหมดเวลา
+      if (remaining <= 0 && !hasCompletedRef.current) {
+        hasCompletedRef.current = true;
+        setTimeout(() => {
+          if (onCountdownComplete) {
+            onCountdownComplete();
+          }
+        }, 500);
+      }
+    };
+
+    // อัปเดททันทีและทุก 100ms (เพื่อความแม่นยำ)
+    updateCountdown();
+    const timerRef = setInterval(updateCountdown, 100);
+
+    // ⭐ Sync เวลาเมื่อ tab กลับมา active
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isComponentMounted) {
+        updateCountdown();
+        console.log("🔄 Countdown synced after tab became visible");
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isComponentMounted = false;
+      clearInterval(timerRef);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [open, onCountdownComplete]);
 
   useEffect(() => {
     if (open) {

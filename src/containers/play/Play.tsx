@@ -57,7 +57,7 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   // const gameIsStarted = !isNull(activeGame.startedAt);
 
   // ⭐ คำนวณเวลาจาก endsAt (แม่นยำกว่า startedAt + duration)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!gameIsStarted || gameEnded) return;
     let isComponentMounted = true;
     const updateTimeRemaining = () => {
