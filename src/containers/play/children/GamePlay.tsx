@@ -1,6 +1,6 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Tip } from "./Tip";
@@ -20,6 +20,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
   onTimeUp,
 }) => {
   const { getRoleDisplay } = usePlayHook();
+  const localStorageKey = localStorage.getItem("showRole");
   const [showRole, setShowRole] = useState(true);
 
   useEffect(() => {
@@ -29,6 +30,13 @@ export const GamePlay: React.FC<GamePlayProps> = ({
   }, [timeRemaining, onTimeUp]);
 
   const roleDisplay = getRoleDisplay(myRole.role);
+
+  useLayoutEffect(() => {
+    if (localStorageKey) {
+      const isShow = localStorageKey === "yes";
+      setShowRole(isShow);
+    }
+  }, [localStorageKey]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-8">
@@ -56,7 +64,10 @@ export const GamePlay: React.FC<GamePlayProps> = ({
               icon={showRole ? "pi pi-eye-slash" : "pi pi-eye"}
               size="small"
               outlined
-              onClick={() => setShowRole(!showRole)}
+              onClick={() => {
+                localStorage.setItem("showRole", !showRole ? "yes" : "no");
+                setShowRole(!showRole);
+              }}
               className="text-sm"
             />
           </div>
