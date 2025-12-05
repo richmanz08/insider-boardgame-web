@@ -16,7 +16,7 @@ export const HeaderRoom: React.FC = () => {
   if (!room) return null;
   return (
     <div className="mb-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mt-4 mb-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <Typography type="bigheader">{room?.roomName ?? ""}</Typography>

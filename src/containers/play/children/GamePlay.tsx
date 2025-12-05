@@ -4,9 +4,9 @@ import Image from "next/image";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
 import { Tip } from "./Tip";
-import { RoleAssignment } from "./Play";
+import { RoleAssignment } from "../Play";
 import { RoleGame } from "@/src/hooks/interface";
-import { usePlayHook } from "./hook";
+import { usePlayHook } from "../hook";
 
 interface GamePlayProps {
   myRole: RoleAssignment;

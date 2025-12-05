@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import { GamePlay } from "./GamePlay";
+import { GamePlay } from "./children/GamePlay";
 // import { VotePlayer } from "./VotePlayer";
 import {
   ActiveGame,
   GamePrivateMessage,
   RoleGame,
 } from "@/src/hooks/interface";
-import { WaitingOpenCardBox } from "./WaitingOpenCardBox";
+import { WaitingOpenCardBox } from "./children/WaitingOpenCardBox";
 // import { isNull } from "lodash";
-import { BarGameTime } from "./BarGameTime";
+import { BarGameTime } from "./children/BarGameTime";
 import { DraftRoleCard } from "@/src/components/card/DraftRoleCard";
 // import { RoomContext } from "../room/Room";
 
@@ -110,8 +110,14 @@ export const PlayContainer: React.FC<PlayContainerProps> = ({
   ]); // ⭐ เพิ่ม dependencies
 
   useLayoutEffect(() => {
-    if (activeGame.startedAt) {
-      if (activeGame.durationSeconds - timeRemaining < 3) {
+    if (activeGame.endsAt) {
+      const now = new Date().getTime();
+      const gameEndTime = new Date(activeGame.endsAt).getTime();
+      const currentDuration = Math.max(
+        0,
+        Math.floor((gameEndTime - now) / 1000)
+      );
+      if (activeGame.durationSeconds - currentDuration < 5) {
         setTimeout(() => {
           setGameIsStarted(true);
         }, 2000);

@@ -1,5 +1,5 @@
 import { RoleGame } from "@/src/hooks/interface";
-import { RoleAssignment } from "./Play";
+import { RoleAssignment } from "../Play";
 import React from "react";
 import { MasterEndGameButton } from "@/src/components/button/MasterEndGameButton";
 
