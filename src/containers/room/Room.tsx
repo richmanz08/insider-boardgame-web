@@ -21,6 +21,7 @@ import { HeaderRoom } from "./children/HeaderRoom";
 import { RoomPlayersList } from "./children/RoomPlayers";
 import { MatchResult } from "../scoreboard/MatchResult";
 import { VotePlayer } from "../vote/VotePlayer";
+import { MasterEndGameButton } from "@/src/components/button/MasterEndGameButton";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -180,6 +181,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       }}
     >
       <div className="container mx-auto p-4 max-w-6xl">
+        {/* <MasterEndGameButton onEndGame={function () {}} /> */}
         {/* Room Header */}
         <HeaderRoom />
 
@@ -230,7 +232,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
             />
           </>
         ) : !activeGame && meIsPlaying && room.status === RoomStatus.PLAYING ? (
-          <div>Loding game data...</div>
+          <div>Loading game data...</div>
         ) : (
           <RoomPlayersList
             room={room}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Typography } from "../text/Typography";
 
 // ⭐ Component สำหรับปุ่มกดค้าง 2 วินาที
 interface MasterEndGameButtonProps {
@@ -13,7 +14,7 @@ export const MasterEndGameButton: React.FC<MasterEndGameButtonProps> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const HOLD_DURATION = 2000; // 2 วินาที
+  const HOLD_DURATION = 1000; // 1 วินาที
 
   const startProgress = () => {
     setIsPressed(true);
@@ -60,8 +61,8 @@ export const MasterEndGameButton: React.FC<MasterEndGameButtonProps> = ({
   return (
     <div className="mt-3 text-center">
       <div
-        className={`relative inline-block cursor-pointer select-none transition-transform duration-150 ${
-          isPressed ? "scale-95" : "scale-100"
+        className={`relative inline-block cursor-pointer select-none transition-transform duration-300 min-w-[295px] ${
+          isPressed ? "scale-120" : "scale-100"
         }`}
         onMouseDown={startProgress}
         onMouseUp={resetProgress}
@@ -91,7 +92,7 @@ export const MasterEndGameButton: React.FC<MasterEndGameButtonProps> = ({
           />
 
           {/* Button Content */}
-          <div className="relative flex items-center gap-2 text-white font-semibold">
+          <div className="relative flex items-center justify-center gap-2 text-white font-semibold">
             <i className="pi pi-check-circle text-lg" />
             <span className="text-sm">
               {isPressed
@@ -100,23 +101,13 @@ export const MasterEndGameButton: React.FC<MasterEndGameButtonProps> = ({
             </span>
           </div>
         </div>
-
-        {/* Progress Indicator */}
-        {isPressed && (
-          <div className="absolute -bottom-1 left-0 right-0 h-1 bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-green-300 transition-all duration-75 ease-linear rounded-full"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
       </div>
 
       {/* Instruction Text */}
       {!isPressed && (
-        <p className="text-xs text-gray-400 mt-2">
-          กดค้างไว้ 2 วินาที เพื่อจบเกม
-        </p>
+        <Typography type="small" className="text-gray-400">
+          กดค้างไว้ {HOLD_DURATION / 1000} วินาที เพื่อจบเกม
+        </Typography>
       )}
     </div>
   );

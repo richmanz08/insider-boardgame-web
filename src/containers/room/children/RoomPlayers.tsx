@@ -95,7 +95,7 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
             className="w-full my-8"
             label="ออกจากห้อง"
             icon="pi pi-sign-out"
-            severity="danger"
+            severity="secondary"
             // outlined
             onClick={() => onExitRoom()}
           />
