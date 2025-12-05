@@ -83,6 +83,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   // const [isLoadingShowBoard, setIsLoadingShowBoard] = useState(false);
   console.log(
     "RoomContainer log data:",
+    { showCountdown },
     { room },
     { activeGame },
     { gameSummary },
@@ -232,7 +233,9 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
             />
           </>
         ) : !activeGame && meIsPlaying && room.status === RoomStatus.PLAYING ? (
-          <div>Loading game data...</div>
+          <div className="flex justify-center items-center min-h-[30vh]">
+            Connecting load game data...
+          </div>
         ) : (
           <RoomPlayersList
             room={room}

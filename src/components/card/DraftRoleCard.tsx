@@ -3,7 +3,6 @@ import { setSessionWithExpiry } from "@/src/common/function";
 import { usePlayHook } from "@/src/containers/play/hook";
 import { RoleAssignment } from "@/src/containers/play/Play";
 import { ActiveGame, RoleGame } from "@/src/hooks/interface";
-import Image from "next/image";
 import { Card } from "primereact/card";
 import React, { useEffect, useMemo, useState } from "react";
 
