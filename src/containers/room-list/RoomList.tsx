@@ -1,7 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { Card } from "primereact/card";
-import { CreateRoomContainer } from "./children/CreateRoomModal";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -16,6 +14,8 @@ import { RootState } from "@/src/redux/store";
 import { HeaderListRoom } from "./children/HeaderListRoom";
 import { EnterPassword } from "./children/EnterPassword";
 import { useToast } from "@/src/contexts/ToastContext";
+import { CreateRoomContainer } from "./children/CreateRoomModal";
+import { EmptyRoomCard } from "@/src/components/card/EmptyRoomCard";
 
 export const RoomListContainer: React.FC = () => {
   const router = useRouter();
@@ -72,6 +72,7 @@ export const RoomListContainer: React.FC = () => {
         // Navigate to room page
         router.push(`/room/${roomCode}`);
       } else {
+        console.error("Failed to join room:", response?.message);
         setEnterPasswordDialog(null);
         showToast("error", response?.message || "ไม่สามารถเข้าร่วมห้องได้");
       }
@@ -90,15 +91,7 @@ export const RoomListContainer: React.FC = () => {
       />
 
       {data?.data.length === 0 ? (
-        <Card>
-          <div className="text-center py-8">
-            <i className="pi pi-inbox text-4xl text-gray-400 mb-4" />
-            <p className="text-gray-400">ยังไม่มีห้องในระบบ</p>
-            <p className="text-sm text-gray-500 mt-2">
-              คลิกปุ่ม &quot;สร้างห้อง&quot; เพื่อเริ่มเกมใหม่
-            </p>
-          </div>
-        </Card>
+        <EmptyRoomCard />
       ) : (
         <div>
           {map(data?.data, (room) => (

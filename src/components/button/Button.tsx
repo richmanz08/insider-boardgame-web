@@ -51,7 +51,7 @@ export const Button: React.FC<ButtonProps> = ({
         styleClass[severity ?? "primary"]
       } ${outlined ? "outlined !bg-inherit" : ""} ${
         disabled ? "disabled-button" : "cursor-pointer"
-      } ${className ?? ""}`}
+      } active:scale-95 transition-transform duration-200 ${className ?? ""}`}
     >
       {icon && <i className={`pi ${icon} ${label ? "mr-2" : ""}`} />}
       {label}

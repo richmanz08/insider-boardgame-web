@@ -1,6 +1,16 @@
 interface TypographyProps {
   children: React.ReactNode;
-  type?: "header" | "title" | "subtitle" | "subheader" | "body" | "description";
+  type?:
+    | "header"
+    | "title"
+    | "subtitle"
+    | "subheader"
+    | "label"
+    | "body"
+    | "description"
+    | "small"
+    | "";
+
   className?: string;
 }
 
@@ -14,8 +24,10 @@ export const Typography: React.FC<TypographyProps> = ({
     title: "text-2xl font-semibold tracking-widest",
     subtitle: "text-2xl font-semibold tracking-wider",
     subheader: "text-2xl font-medium",
+    label: "text-1xl font-medium",
     body: "text-base",
     description: "text-sm font-light",
+    small: "text-xs font-light",
   };
   //  normal: "tracking-normal",
   // wide: "tracking-wide",

@@ -16,9 +16,14 @@ export default function LayoutProvider({ children }: Props) {
   const me = useSelector((state: RootState) => state.me);
   return (
     <LayoutContext.Provider value={{}}>
-      <div className={`py-6 px-2`}>
-        {me.me && <Header />}
-        <div className="min-h-[80vh]">{children}</div>
+      <div
+        className={`pt-6 pb-2 px-2 min-h-screen flex flex-col justify-between`}
+      >
+        <div>
+          {me.me && <Header />}
+          <div>{children}</div>
+        </div>
+
         <FooterLayout />
       </div>
     </LayoutContext.Provider>
