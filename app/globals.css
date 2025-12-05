@@ -216,21 +216,18 @@ textarea {
 .btn-grad-danger {
   background-image: linear-gradient(
     to right,
-    #e43a15 0%,
+    #ef512e 0%,
     #e65245 51%,
     #e43a15 100%
   );
 }
 .btn-grad-danger {
-  margin: 10px;
-  padding: 15px 45px;
   text-align: center;
   text-transform: uppercase;
   transition: 0.5s;
-  background-size: 200% auto;
+  /* background-size: 200% auto; */
   color: white;
-  box-shadow: 0 0 20px #eee;
-  border-radius: 10px;
+  border-radius: 4px;
   display: block;
 }
 
@@ -337,4 +334,14 @@ textarea {
 .disabled-button {
   pointer-events: none;
   opacity: 0.2;
+}
+
+/* btn-text */
+.btn-text {
+  padding: 0px 4px 0px 4px !important;
+  height: fit-content !important;
+  background-color: inherit;
+  color: white;
+  border: none;
+  cursor: pointer;
 }

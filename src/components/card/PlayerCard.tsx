@@ -39,7 +39,7 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
           <div className="flex items-center gap-2 mb-1">
             <h3
               className={`text-lg font-bold ${
-                my?.uuid === player.uuid ? "text-blue-500" : "text-white"
+                my?.uuid === player.uuid ? "text-white" : "text-white"
               }`}
             >
               {player.playerName}

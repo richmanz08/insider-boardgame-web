@@ -1,6 +1,7 @@
 interface TypographyProps {
   children: React.ReactNode;
   type?:
+    | "bigheader"
     | "header"
     | "title"
     | "subtitle"
@@ -20,6 +21,7 @@ export const Typography: React.FC<TypographyProps> = ({
   className,
 }) => {
   const typeStyles: Record<string, string> = {
+    bigheader: "text-3xl font-bold",
     header: "text-2xl font-bold",
     title: "text-2xl font-semibold tracking-widest",
     subtitle: "text-2xl font-semibold tracking-wider",
@@ -29,10 +31,7 @@ export const Typography: React.FC<TypographyProps> = ({
     description: "text-sm font-light",
     small: "text-xs font-light",
   };
-  //  normal: "tracking-normal",
-  // wide: "tracking-wide",
-  // wider: "tracking-wider",
-  // widest: "tracking-widest",
+
   return (
     <div className={`${typeStyles[type || "body"]} ${className}`}>
       {children}

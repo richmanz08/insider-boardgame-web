@@ -34,12 +34,24 @@ export const RoomContext = React.createContext<{
   my: PlayerData | null;
   onExitRoom: () => void;
   onRevealingRole: (val: boolean) => void;
+  roomData: RoomData;
 }>({
   room: null,
   roomCode: "",
   isHost: false,
   allReady: false,
   my: null,
+  roomData: {
+    roomCode: "",
+    roomName: "",
+    maxPlayers: 0,
+    currentPlayers: 0,
+    hasPassword: false,
+    status: RoomStatus.WAITING,
+    hostUuid: "",
+    hostName: "",
+    createdAt: "",
+  },
   onExitRoom: () => {},
   onRevealingRole: () => {},
 });
@@ -150,13 +162,14 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
 
   if (!room || !currentPlayerMemorize) return null;
 
-  console.log({ gameEnded, isRevealingRole }, { gameSummary, activeGame });
+  // console.log({ gameEnded, isRevealingRole }, { gameSummary, activeGame });
 
   return (
     <RoomContext.Provider
       value={{
         room: room,
         roomCode: roomData.roomCode,
+        roomData: roomData,
         isHost: isHost,
         allReady: allPlayersReady,
         my: currentPlayerMemorize,

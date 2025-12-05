@@ -2,10 +2,10 @@ import { PlayerCard } from "@/src/components/card/PlayerCard";
 import { PlayerCardEmpty } from "@/src/components/card/PlayerCardEmpty";
 import { PlayerData, RoomUpdateMessage } from "@/src/hooks/interface";
 import { map } from "lodash";
-import { Button } from "primereact/button";
 import { useContext, useState } from "react";
 import { RoomContext } from "../Room";
 import { ModalTotalScore } from "../../scoreboard/ModalTotalScore";
+import { Button } from "@/src/components/button/Button";
 interface RoomPlayersListProps {
   room: RoomUpdateMessage;
   me: PlayerData;
@@ -28,11 +28,9 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
           <div className="flex items-end justify-between mb-4">
             <h2 className="text-xl font-bold">ผู้เล่นในห้อง</h2>
             <Button
-              text
               label="ประวัติการเล่น"
-              severity="secondary"
+              severity="btntext"
               icon="pi pi-chart-bar"
-              className="mb-2"
               onClick={() => {
                 setVisibleTotalScore(true);
               }}
@@ -64,7 +62,7 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
             <Button
               label={me?.ready ? "ยกเลิกพร้อม" : "พร้อม"}
               icon={me?.ready ? "pi pi-times" : "pi pi-check"}
-              severity={me?.ready ? "secondary" : "success"}
+              severity={me?.ready ? "secondary" : "indigo"}
               size="large"
               onClick={function () {
                 onToggleReady();
@@ -94,11 +92,11 @@ export const RoomPlayersList: React.FC<RoomPlayersListProps> = ({
         )}
         {!my?.playing && (
           <Button
-            className="w-full !mt-8 !mb-16"
+            className="w-full my-8"
             label="ออกจากห้อง"
             icon="pi pi-sign-out"
             severity="danger"
-            outlined
+            // outlined
             onClick={() => onExitRoom()}
           />
         )}

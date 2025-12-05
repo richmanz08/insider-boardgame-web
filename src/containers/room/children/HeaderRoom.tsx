@@ -6,11 +6,12 @@ import { MINIMUM_PLAYERS } from "@/src/config/system";
 import { useContext } from "react";
 import { RoomContext } from "../Room";
 import { AmountPlayer } from "@/src/components/player/AmountPlayer";
+import { Typography } from "@/src/components/text/Typography";
 
 export const HeaderRoom: React.FC = () => {
   const { getStatusLabel, getStatusSeverity } = useRoomHook();
-  const { allReady, room } = useContext(RoomContext);
-  const hasPassword = false; // Replace with actual password check if needed
+  const { allReady, room, roomData } = useContext(RoomContext);
+  const hasPassword = roomData.hasPassword;
 
   if (!room) return null;
   return (
@@ -18,10 +19,10 @@ export const HeaderRoom: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold">{room?.roomName ?? ""}</h1>
+            <Typography type="bigheader">{room?.roomName ?? ""}</Typography>
             {hasPassword && (
               <i
-                className="pi pi-lock text-yellow-400"
+                className="pi pi-lock text-yellow-400 mt-1"
                 title="ห้องมีพาสเวิร์ด"
               />
             )}
@@ -39,7 +40,7 @@ export const HeaderRoom: React.FC = () => {
                 max={room.maxPlayers}
               />{" "}
             </div>
-            {allReady && (
+            {allReady && room.status !== RoomStatus.PLAYING && (
               <Tag
                 value="ทุกคนพร้อมแล้ว!"
                 severity="success"

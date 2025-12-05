@@ -16,7 +16,8 @@ type ButtonSeverity =
   | "success"
   | "warning"
   | "danger"
-  | "indigo";
+  | "indigo"
+  | "btntext";
 
 export const Button: React.FC<ButtonProps> = ({
   label,
@@ -36,6 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
     warning: "btn-grad-warn",
     danger: "btn-grad-danger",
     indigo: "btn-grad-indigo",
+    btntext: "btn-text",
   };
   const sizeClass: Record<string, string> = {
     small: "h-[34px] px-4 py-2",
