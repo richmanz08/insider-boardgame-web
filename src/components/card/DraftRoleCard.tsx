@@ -190,20 +190,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                   {/* MASTER */}
                   {my.role === RoleGame.MASTER && (
                     <div className="space-y-3">
-                      {my.answer && (
-                        <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 overflow-hidden border border-gray-700">
-                          <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900 mb-3">
-                            <Image
-                              src="/images/disneyland.png"
-                              alt={my.answer || "Answer image"}
-                              fill
-                              className="object-cover rounded-lg"
-                              priority
-                            />
-                          </div>
-                        </div>
-                      )}
-
                       <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">
                         <p className="text-gray-300 text-xs mb-1">คำตอบ:</p>
                         <p className="text-white text-2xl font-bold">
@@ -223,20 +209,6 @@ export const DraftRoleCard: React.FC<DraftRoleCardProps> = ({
                   {/* INSIDER */}
                   {my.role === RoleGame.INSIDER && (
                     <div className="space-y-3">
-                      {my.answer && (
-                        <div className="bg-gray-800 bg-opacity-60 rounded-lg p-3 overflow-hidden border border-gray-700">
-                          <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900 mb-3">
-                            <Image
-                              src="/images/disneyland.png"
-                              alt={my.answer || "Answer image"}
-                              fill
-                              className="object-cover rounded-lg"
-                              priority
-                            />
-                          </div>
-                        </div>
-                      )}
-
                       <div className="bg-gray-700 bg-opacity-70 rounded-lg p-3 border border-gray-600">
                         <p className="text-gray-300 text-xs mb-1">คำตอบ:</p>
                         <p className="text-white text-2xl font-bold">
