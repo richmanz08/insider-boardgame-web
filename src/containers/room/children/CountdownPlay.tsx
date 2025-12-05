@@ -6,12 +6,27 @@ interface CountdownPlayModalProps {
   onCountdownComplete?: () => void;
 }
 
-const CountdownContent: React.FC<{
-  onCountdownComplete?: () => void;
-}> = ({ onCountdownComplete }) => {
+export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
+  open,
+  onCountdownComplete,
+}) => {
   const [countdown, setCountdown] = useState(5);
+  const [isFirstRender, setIsFirstRender] = useState(true);
 
+  // Reset countdown เมื่อ modal เปิดใหม่
   useEffect(() => {
+    if (open && !isFirstRender) {
+      queueMicrotask(() => setCountdown(5));
+    }
+    if (open) {
+      queueMicrotask(() => setIsFirstRender(false));
+    }
+  }, [open, isFirstRender]);
+
+  // นับถอยหลัง
+  useEffect(() => {
+    if (!open) return;
+
     if (countdown > 0) {
       const timer = setTimeout(() => {
         setCountdown((prev) => prev - 1);
@@ -19,7 +34,6 @@ const CountdownContent: React.FC<{
 
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // เมื่อนับถอยหลังเสร็จ
       const completeTimer = setTimeout(() => {
         if (onCountdownComplete) {
           onCountdownComplete();
@@ -28,23 +42,35 @@ const CountdownContent: React.FC<{
 
       return () => clearTimeout(completeTimer);
     }
-  }, [countdown, onCountdownComplete]);
+  }, [countdown, open, onCountdownComplete]);
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [open]);
+
+  if (!open) return null;
 
   return (
     <>
       {/* Backdrop - ไม่สามารถคลิกปิดได้ */}
       <div className="fixed inset-0 bg-black/90 z-[100]" />
-
       {/* Modal */}
       <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
         <div
-          className="bg-gradient-to-br from-purple-900 to-blue-900 rounded-2xl shadow-2xl p-12 text-center max-w-md w-full border-4 border-yellow-400"
+          className="rounded-2xl shadow-2xl p-12 text-center max-w-md w-full"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Icon */}
-          <div className="mb-6">
-            <div className="inline-block p-4 bg-yellow-400 rounded-full">
-              <i className="pi pi-clock text-6xl text-purple-900" />
+          <div className="mb-6 flex items-center justify-center">
+            <div className="bg-indigo-400 rounded-full h-[56px] w-[56px] flex items-center justify-center">
+              <i className="pi pi-clock !text-3xl text-white-400" />
             </div>
           </div>
 
@@ -55,7 +81,7 @@ const CountdownContent: React.FC<{
 
           {/* Countdown Number */}
           <div className="my-8">
-            <div className="text-9xl font-bold text-yellow-400 animate-pulse">
+            <div className="text-9xl font-bold text-indigo-500 animate-pulse">
               {countdown}
             </div>
           </div>
@@ -74,17 +100,4 @@ const CountdownContent: React.FC<{
       </div>
     </>
   );
-};
-
-export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
-  open,
-  onCountdownComplete,
-}) => {
-  console.log("CountdownPlayModal - open:", open);
-
-  if (!open) return null;
-
-  // ใช้ open เป็น key เพื่อ remount component เมื่อเปิด modal ใหม่
-  // จะทำให้ countdown รีเซ็ตเป็น 5 อัตโนมัติ
-  return <CountdownContent onCountdownComplete={onCountdownComplete} />;
 };

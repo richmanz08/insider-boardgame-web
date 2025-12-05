@@ -80,13 +80,13 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   const [isRevealingRole, setIsRevealingRole] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   // const [isLoadingShowBoard, setIsLoadingShowBoard] = useState(false);
-  // console.log(
-  //   "RoomContainer log data:",
-  //   { room },
-  //   { activeGame },
-  //   { gameSummary },
-  //   { showBoardTotalScore }
-  // );
+  console.log(
+    "RoomContainer log data:",
+    { room },
+    { activeGame },
+    { gameSummary },
+    { showBoardTotalScore }
+  );
   const allPlayersReady =
     (room?.players.every((p) => p.ready) ?? false) &&
     (room?.players?.length ?? 0) > 5;

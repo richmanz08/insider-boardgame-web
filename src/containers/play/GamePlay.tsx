@@ -33,7 +33,7 @@ export const GamePlay: React.FC<GamePlayProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pb-8">
       {/* Main Content */}
-      <div className="container mx-auto px-4 pt-32 max-w-6xl">
+      <div className="container mx-auto px-4 pt-8 max-w-6xl">
         {/* Game Instructions */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
