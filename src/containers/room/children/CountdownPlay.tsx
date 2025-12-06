@@ -12,6 +12,7 @@ export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
 }) => {
   const COUNTDOWN_DURATION = 5; // วินาที
   const [countdown, setCountdown] = useState(COUNTDOWN_DURATION);
+  const [progress, setProgress] = useState(0); // เพิ่ม state สำหรับ progress bar
   const endTimeRef = useRef<number | null>(null);
   const hasCompletedRef = useRef(false);
 
@@ -20,7 +21,10 @@ export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
     if (open) {
       endTimeRef.current = Date.now() + COUNTDOWN_DURATION * 1000;
       hasCompletedRef.current = false;
-      queueMicrotask(() => setCountdown(COUNTDOWN_DURATION));
+      queueMicrotask(() => {
+        setCountdown(COUNTDOWN_DURATION);
+        setProgress(0);
+      });
     } else {
       endTimeRef.current = null;
     }
@@ -36,12 +40,18 @@ export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
       if (!isComponentMounted || !endTimeRef.current) return;
 
       const now = Date.now();
-      const remaining = Math.max(
-        0,
-        Math.ceil((endTimeRef.current - now) / 1000)
-      );
+      const remainingMs = endTimeRef.current - now;
+      const remaining = Math.max(0, Math.ceil(remainingMs / 1000));
 
       setCountdown(remaining);
+
+      // คำนวณ progress แบบแม่นยำจาก milliseconds
+      const totalMs = COUNTDOWN_DURATION * 1000;
+      const progressPercent = Math.min(
+        100,
+        Math.max(0, ((totalMs - remainingMs) / totalMs) * 100)
+      );
+      setProgress(progressPercent);
 
       // ⭐ เมื่อหมดเวลา
       if (remaining <= 0 && !hasCompletedRef.current) {
@@ -123,8 +133,8 @@ export const CountdownPlayModal: React.FC<CountdownPlayModalProps> = ({
           {/* Loading Bar */}
           <div className="mt-8 w-full bg-gray-700 rounded-full h-3 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-1000 ease-linear"
-              style={{ width: `${((5 - countdown) / 5) * 100}%` }}
+              className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-100 ease-linear"
+              style={{ width: `${progress}%` }}
             />
           </div>
         </div>
