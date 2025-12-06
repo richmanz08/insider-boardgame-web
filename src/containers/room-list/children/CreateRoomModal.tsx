@@ -170,8 +170,8 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
                 {...register("maxPlayers", {
                   required: "กรุณากรอกจำนวนผู้เล่น",
                   min: {
-                    value: 4,
-                    message: "ต้องมีผู้เล่นอย่างน้อย 4 คน",
+                    value: 5,
+                    message: "ต้องมีผู้เล่นอย่างน้อย 5 คน",
                   },
                   max: {
                     value: 10,
@@ -213,11 +213,11 @@ export const CreateRoomContainer: React.FC<CreateRoomProps> = ({
                   />
                 )}
               />
-              {errors.password && (
+              {/* {errors.password && (
                 <small className="text-red-500">
                   {errors.password.message}
                 </small>
-              )}
+              )} */}
               <small className="text-gray-400">
                 ตั้งรหัสผ่านถ้าต้องการให้เฉพาะผู้ที่รู้รหัสเท่านั้นเข้าห้องได้
               </small>

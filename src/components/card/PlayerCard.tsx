@@ -4,6 +4,7 @@ import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
 import React, { useContext } from "react";
 import { Avatar } from "../avatar/Avatar";
+import { Typography } from "../text/Typography";
 
 interface PlayerCardProps {
   player: PlayerData;
@@ -37,13 +38,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = (props) => {
         {/* Player Info */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3
-              className={`text-lg font-bold ${
-                my?.uuid === player.uuid ? "text-white" : "text-white"
-              }`}
-            >
+            <Typography type="caption" maxLines={1} className={`text-white`}>
               {player.playerName}
-            </h3>
+            </Typography>
           </div>
           <div className="flex items-center gap-2">
             {player.ready ? (

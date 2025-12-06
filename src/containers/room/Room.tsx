@@ -72,7 +72,11 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
     masterRoleIsSetToVoteTime,
     playerVote,
     hostSummary,
-  } = useRoomWebSocket(roomData.roomCode, me ? me.uuid : "");
+  } = useRoomWebSocket(
+    roomData.roomCode,
+    me ? me.uuid : "",
+    me ? me.playerName : ""
+  );
 
   const [showCountdown, setShowCountdown] = useState(false);
   const [hostStartGame, setHostStartGame] = useState(false);

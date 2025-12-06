@@ -33,6 +33,8 @@ export enum RoomUpdateMessageType {
   VOTE_STARTED = "VOTE_STARTED",
   VOTE_CAST = "VOTE_CAST",
   ROOM_RESET_AFTER_GAME = "ROOM_RESET_AFTER_GAME",
+  GAME_CRASHED = "GAME_CRASHED",
+  AFK_PLAYER = "AFK_PLAYER",
 }
 
 export interface PlayerData {
@@ -90,4 +92,11 @@ export interface Summary {
 export interface PlayerInGame {
   uuid: string;
   playerName: string;
+}
+
+export interface GameCrashMessage {
+  type: "GAME_CRASHED";
+  roomCode: string;
+  reason: string;
+  timestamp: string;
 }

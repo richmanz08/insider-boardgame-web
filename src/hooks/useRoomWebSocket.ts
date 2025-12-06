@@ -1,16 +1,25 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import SockJS from "sockjs-client";
 import { Client, IMessage } from "@stomp/stompjs";
-import { RoomUpdateMessage, ActiveGame } from "./interface";
+import { RoomUpdateMessage, ActiveGame, GameCrashMessage } from "./interface";
 import { isUndefined } from "lodash";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8080/ws";
 
-export function useRoomWebSocket(roomCode: string, playerUuid: string) {
+export function useRoomWebSocket(
+  roomCode: string,
+  playerUuid: string,
+  playerName: string
+) {
   const clientRef = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [room, setRoom] = useState<RoomUpdateMessage | null>(null);
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
+  const [gameCrashed, setGameCrashed] = useState<{
+    crashed: boolean;
+    reason: string;
+    timestamp: string;
+  } | null>(null);
 
   useEffect(() => {
     const client = new Client({
@@ -33,6 +42,54 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
       client.subscribe(`/topic/room/${roomCode}`, (message: IMessage) => {
         const update: RoomUpdateMessage = JSON.parse(message.body);
         console.log("Room update received:", update);
+        // ========================================
+        // NEW: Handle game crash message
+        // ========================================
+        if (update.type === "GAME_CRASHED") {
+          const crashMessage = update as unknown as GameCrashMessage;
+          console.error("💥 Game crashed:", crashMessage.reason);
+
+          // client.subscribe("/user/queue/game_crash", (message: IMessage) => {
+          //   console.log("🎯 @@@ game_crash กฟะฟ received:", message.body);
+
+          //   try {
+          //     const payload = JSON.parse(message.body);
+          //     console.log("Crash payload:", payload);
+
+          //     // server might send either { game: {...} } or direct Game object
+          //     //  const crash = payload && payload.game ? payload.game : payload;
+          //     //  console.log("🎮 active_game (user queue) received:", game);
+          //     //  if (isUndefined(game?.game)) {
+          //     //    setActiveGame(game);
+          //     //  }
+          //   } catch (err) {
+          //     console.error("❌ Failed parse crash response:", err);
+          //   }
+          // });
+
+          // Set crash state
+          // setGameCrashed({
+          //   crashed: true,
+          //   reason: crashMessage.reason,
+          //   timestamp: crashMessage.timestamp,
+          // });
+
+          // Clear active game since it's been terminated
+          setActiveGame(null);
+
+          // Optional: Show browser alert (can be commented out if handled in UI)
+          // alert(
+          //   `⚠️ Game Crashed\n\n${crashMessage.reason}\n\nThe room has been reset to waiting state.`
+          // );
+
+          // Auto-clear crash state after 8 seconds
+          setTimeout(() => {
+            setGameCrashed(null);
+          }, 8000);
+
+          // Don't process further for crash messages
+          return;
+        }
 
         setRoom(update);
         // setPlayers(update.players);
@@ -50,6 +107,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
           update.type === "GAME_FINISHED" ||
           update.type === "GAME_FINISHED_WITH_SCORING" ||
           update.type === "ROOM_RESET_AFTER_GAME" ||
+          update.type === "AFK_PLAYER" ||
           (update.activeGame !== undefined && update.activeGame !== null)
         ) {
           if (update.type === "ROOM_RESET_AFTER_GAME") {
@@ -85,6 +143,7 @@ export function useRoomWebSocket(roomCode: string, playerUuid: string) {
         destination: `/app/room/${roomCode}/join`,
         body: JSON.stringify({
           playerUuid,
+          playerName, // name is not used in WS join, so just a placeholder
           active: true,
         }),
       });

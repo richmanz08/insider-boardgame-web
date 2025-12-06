@@ -7,6 +7,7 @@ interface TypographyProps {
     | "subtitle"
     | "subheader"
     | "label"
+    | "caption"
     | "body"
     | "strong-body"
     | "description"
@@ -30,6 +31,7 @@ export const Typography: React.FC<TypographyProps> = ({
     subtitle: "text-2xl font-semibold tracking-wider",
     subheader: "text-2xl font-medium",
     label: "text-1xl font-medium",
+    caption: "text-lg font-bold",
     body: "text-base",
     "strong-body": "text-base font-semibold",
     description: "text-sm font-light",
