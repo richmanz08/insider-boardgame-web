@@ -7,7 +7,7 @@ import Image from "next/image";
 export const Header = () => {
   const meState = useSelector((state: RootState) => state.me);
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between mb-4 px-4">
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 relative">
           <Image
@@ -25,7 +25,7 @@ export const Header = () => {
           Insider Online play!
         </Typography>
       </div>
-      <div className="flex items-center gap-3 pr-2">
+      <div className="flex items-center gap-3">
         {meState.me && <p>{meState.me.playerName}</p>}
         <Avatar name={meState.me?.playerName ?? ""} />
       </div>

@@ -18,12 +18,18 @@ export const HeaderRoom: React.FC = () => {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mt-4 mb-4">
-        <div>
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
-            <Typography type="bigheader">{room?.roomName ?? ""}</Typography>
+            <Typography
+              type="bigheader"
+              maxLines={1}
+              className="flex-1 min-w-0"
+            >
+              {room?.roomName ?? ""}
+            </Typography>
             {hasPassword && (
               <i
-                className="pi pi-lock text-yellow-400 mt-1"
+                className="pi pi-lock text-yellow-400 flex-shrink-0"
                 title="ห้องมีพาสเวิร์ด"
               />
             )}

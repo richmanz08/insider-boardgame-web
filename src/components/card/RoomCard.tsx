@@ -14,9 +14,11 @@ export const RoomCard: React.FC<RoomCardProps> = ({ room, onJoin }) => {
   return (
     <Card key={room.roomCode} className="mb-4">
       <div className="flex justify-between items-center">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Typography type="subtitle">{room.roomName}</Typography>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2 min-w-0">
+            <Typography type="subtitle" maxLines={1}>
+              {room.roomName}
+            </Typography>
             {room.hasPassword && <i className="pi pi-lock text-yellow-500" />}
           </div>
 
