@@ -22,6 +22,8 @@ import { RoomPlayersList } from "./children/RoomPlayers";
 import { MatchResult } from "../scoreboard/MatchResult";
 import { VotePlayer } from "../vote/VotePlayer";
 import { MasterEndGameButton } from "@/src/components/button/MasterEndGameButton";
+import { size } from "lodash";
+import { PlayerAfkModal } from "@/src/components/modal/PlayerAfk";
 
 interface RoomContainerProps {
   roomData: RoomData;
@@ -167,6 +169,21 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
   }, [showCountdown]);
 
   if (!room || !currentPlayerMemorize) return null;
+
+  // if (!currentPlayerMemorize && size(room.players) > 0) {
+  //   return (
+  //     <PlayerAfkModal
+  //       open={true}
+  //       playerName={""}
+  //       onMoveToLobby={() => {
+  //         router.push("/");
+  //       }}
+  //       onReconnect={() => {
+  //         router.refresh();
+  //       }}
+  //     />
+  //   );
+  // }
 
   // console.log({ gameEnded, isRevealingRole }, { gameSummary, activeGame });
 

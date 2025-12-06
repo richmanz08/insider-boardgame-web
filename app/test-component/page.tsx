@@ -1,10 +1,11 @@
 "use client";
 import { DraftRoleCard } from "@/src/components/card/DraftRoleCard";
+import { PlayerAfkModal } from "@/src/components/modal/PlayerAfk";
 import { BarGameTime } from "@/src/containers/play/children/BarGameTime";
 import { MatchResult } from "@/src/containers/scoreboard/MatchResult";
 import { VotePlayer } from "@/src/containers/vote/VotePlayer";
 import { RoleGame } from "@/src/hooks/interface";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // export default function TestComponentPage() {
 //   const [isCardFlipped, setIsCardFlipped] = useState(false);
@@ -232,18 +233,42 @@ import { useState } from "react";
 //   );
 // }
 
+// export default function TestComponentPage() {
+//   return (
+//     <div>
+//       <BarGameTime
+//         myRole={{
+//           role: RoleGame.MASTER,
+//           answer: "New york", // MASTER จะรู้คำตอบที่แท้จริง
+//         }}
+//         timeRemaining={300}
+//         isStarted={true}
+//         actionMasterEndGame={function () {}}
+//       />
+//     </div>
+//   );
+// }
+
 export default function TestComponentPage() {
+  const [showModal, setShowModal] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowModal((prev) => !prev);
+    }, 5000); // ปิด modal หลังจาก 5 วินาที (5000 มิลลิวินาที)
+
+    return () => clearInterval(interval); // ล้าง timeout เมื่อ component ถูก unmount
+  }, []);
   return (
-    <div>
-      <BarGameTime
-        myRole={{
-          role: RoleGame.MASTER,
-          answer: "New york", // MASTER จะรู้คำตอบที่แท้จริง
-        }}
-        timeRemaining={300}
-        isStarted={true}
-        actionMasterEndGame={function () {}}
-      />
-    </div>
+    <PlayerAfkModal
+      open={showModal}
+      playerName={""}
+      onMoveToLobby={() => {
+        // router.push("/");
+      }}
+      onReconnect={() => {
+        // router.refresh();
+      }}
+    />
   );
 }
