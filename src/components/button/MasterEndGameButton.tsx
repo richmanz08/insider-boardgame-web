@@ -11,58 +11,62 @@ export const MasterEndGameButton: React.FC<MasterEndGameButtonProps> = ({
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const [progress, setProgress] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const animationFrameRef = useRef<number | null>(null);
 
-  const HOLD_DURATION = 1000; // 1 วินาที
+  const HOLD_DURATION = 1500; // 1.5 วินาที
 
   const startProgress = () => {
     setIsPressed(true);
     setProgress(0);
 
-    // อัปเดต progress ทุก 50ms
-    intervalRef.current = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = prev + (50 / HOLD_DURATION) * 100;
-        return Math.min(newProgress, 100);
-      });
-    }, 50);
+    // ⭐ ใช้ callback เพื่อหลีกเลี่ยง linter warning
+    queueMicrotask(() => {
+      startTimeRef.current = performance.now();
+    });
 
-    // จบเกมหลัง 2 วินาที
-    timerRef.current = setTimeout(() => {
-      onEndGame();
-      resetProgress();
-    }, HOLD_DURATION);
+    // ⭐ ใช้ requestAnimationFrame แทน setInterval (smooth กว่า 60fps)
+    const animate = () => {
+      const elapsed = performance.now() - startTimeRef.current;
+      const newProgress = Math.min((elapsed / HOLD_DURATION) * 100, 100);
+
+      setProgress(newProgress);
+
+      if (elapsed < HOLD_DURATION) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        onEndGame();
+        resetProgress();
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
   };
 
   const resetProgress = () => {
     setIsPressed(false);
     setProgress(0);
 
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
   };
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, []);
 
   return (
     <div className="mt-3 text-center">
       <div
-        className={`relative inline-block cursor-pointer select-none transition-transform duration-300 min-w-[295px] ${
-          isPressed ? "scale-120" : "scale-100"
+        className={`relative inline-block cursor-pointer select-none transition-all duration-200 min-w-[295px] ${
+          isPressed ? "scale-105" : "scale-100 hover:scale-102"
         }`}
         onMouseDown={startProgress}
         onMouseUp={resetProgress}
@@ -74,29 +78,45 @@ export const MasterEndGameButton: React.FC<MasterEndGameButtonProps> = ({
         <div
           className={`
             relative overflow-hidden rounded-lg px-6 py-3 
-            border-2 transition-all duration-200
+            border-2 transition-all duration-150 ease-out
             ${
               isPressed
-                ? "border-green-400 bg-green-800 shadow-lg"
-                : "border-green-500 bg-green-600 hover:bg-green-700 shadow-md"
+                ? "border-green-300 bg-green-700 shadow-xl shadow-green-500/50"
+                : "border-green-500 bg-green-600 hover:bg-green-700 hover:border-green-400 shadow-lg hover:shadow-green-500/30"
             }
           `}
         >
-          {/* Progress Background */}
+          {/* Progress Background - ⭐ smooth transition */}
           <div
-            className="absolute inset-0 bg-green-400 transition-all duration-75 ease-linear"
+            className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-300"
             style={{
               width: `${progress}%`,
-              opacity: isPressed ? 0.6 : 0,
+              opacity: isPressed ? 0.7 : 0,
+              transition: "opacity 0.15s ease-out",
             }}
           />
 
+          {/* Pulse Effect when pressed */}
+          {isPressed && (
+            <div className="absolute inset-0 animate-pulse bg-green-300 opacity-20" />
+          )}
+
           {/* Button Content */}
           <div className="relative flex items-center justify-center gap-2 text-white font-semibold">
-            <i className="pi pi-check-circle text-lg" />
+            <i
+              className={`pi pi-check-circle text-lg transition-transform duration-150 ${
+                isPressed ? "scale-110" : ""
+              }`}
+            />
             <span className="text-sm">
               {isPressed
-                ? `จบเกม (${Math.ceil((100 - progress) / 50)}s)`
+                ? `กำลังจบเกม... ${
+                    Math.ceil(
+                      ((HOLD_DURATION - (progress * HOLD_DURATION) / 100) /
+                        1000) *
+                        10
+                    ) / 10
+                  }s`
                 : "กดค้างเพื่อจบเกม (มีคนตอบถูกแล้ว)"}
             </span>
           </div>
@@ -104,11 +124,10 @@ export const MasterEndGameButton: React.FC<MasterEndGameButtonProps> = ({
       </div>
 
       {/* Instruction Text */}
-      {!isPressed && (
-        <Typography type="small" className="text-gray-400">
-          กดค้างไว้ {HOLD_DURATION / 1000} วินาที เพื่อจบเกม
-        </Typography>
-      )}
+
+      <Typography type="small" className="text-gray-400 mt-2">
+        กดค้างไว้ {HOLD_DURATION / 1000} วินาที เพื่อจบเกม
+      </Typography>
     </div>
   );
 };
