@@ -2,9 +2,14 @@
 "use client";
 import React, { useState, useLayoutEffect, useContext, useEffect } from "react";
 import { Card } from "primereact/card";
-import { ActiveGame, PlayerInGame, RoleGame } from "@/src/hooks/interface";
+import {
+  ActiveGame,
+  PlayerInGame,
+  RoleGame,
+  Summary,
+} from "@/src/hooks/interface";
 import { usePlayHook } from "../play/hook";
-import { filter, isEmpty, map } from "lodash";
+import { filter, isEmpty, isEqual, map } from "lodash";
 import { Avatar } from "@/src/components/avatar/Avatar";
 import { RoomContext } from "../room/Room";
 import { Typography } from "@/src/components/text/Typography";
@@ -38,6 +43,7 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   const [uuidsVoted, setUuidsVoted] = useState<Record<string, number>>({});
   const [voteFinished, setVoteFinished] = useState(false);
   const [masterPlayer, setMasterPlayer] = useState<PlayerInGame | null>(null);
+  const [summary, setSummary] = useState<Summary | null>(null);
 
   const myUuid = activeGame.privateMessage?.playerUuid || "";
   const players = activeGame.playerInGame;
@@ -62,7 +68,8 @@ export const VotePlayer: React.FC<VotePlayerProps> = ({
   }, [activeGame.votes, myUuid]);
 
   useLayoutEffect(() => {
-    if (!activeGame.summary) return;
+    if (!activeGame.summary || isEqual(summary, activeGame.summary)) return;
+    setSummary(activeGame.summary);
     const sortedUuids = sortPlayersByVotes(
       players,
       activeGame.summary.voteTally

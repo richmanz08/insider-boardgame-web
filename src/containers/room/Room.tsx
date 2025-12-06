@@ -184,8 +184,7 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
       <div className="container mx-auto p-4 max-w-6xl">
         {/* <MasterEndGameButton onEndGame={function () {}} /> */}
         {/* Room Header */}
-        <HeaderRoom />
-
+        {!showBoardTotalScore && !gameSummary && <HeaderRoom />}
         {showBoardTotalScore && gameSummary ? (
           <>
             {gameSummary ? (
@@ -246,7 +245,6 @@ export const RoomContainer: React.FC<RoomContainerProps> = ({ roomData }) => {
             }}
           />
         )}
-
         {/* Countdown Modal */}
         {CountdownModalMemo}
       </div>
