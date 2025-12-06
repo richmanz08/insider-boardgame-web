@@ -42,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
   const sizeClass: Record<string, string> = {
     small: "h-[34px] px-4 py-2",
     medium: "h-[40px] px-5 py-2",
-    large: "h-[48px]",
+    large: "h-[48px] px-6 py-3 text-lg font-semibold",
   };
 
   return (

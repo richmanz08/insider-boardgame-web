@@ -23,6 +23,9 @@ export const metadata: Metadata = {
     description: "เกม Insider เกมสืบหาผู้บงการ เล่นกับเพื่อนได้ทุกที่ทุกเวลา",
     type: "website",
   },
+  icons: {
+    icon: [{ url: "/joker.png", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({

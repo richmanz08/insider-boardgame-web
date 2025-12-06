@@ -13,12 +13,14 @@ interface TypographyProps {
     | "";
 
   className?: string;
+  maxLines?: number;
 }
 
 export const Typography: React.FC<TypographyProps> = ({
   children,
   type,
   className,
+  maxLines,
 }) => {
   const typeStyles: Record<string, string> = {
     bigheader: "text-3xl font-bold",
@@ -32,8 +34,22 @@ export const Typography: React.FC<TypographyProps> = ({
     small: "text-xs font-light",
   };
 
+  // ⭐ CSS สำหรับจำกัดจำนวนบรรทัด
+  const maxLinesStyle = maxLines
+    ? {
+        display: "-webkit-box",
+        WebkitLineClamp: maxLines,
+        WebkitBoxOrient: "vertical" as const,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }
+    : {};
+
   return (
-    <div className={`${typeStyles[type || "body"]} ${className}`}>
+    <div
+      className={`${typeStyles[type || "body"]} ${className || ""}`}
+      style={maxLinesStyle}
+    >
       {children}
     </div>
   );

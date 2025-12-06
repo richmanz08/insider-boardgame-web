@@ -22,7 +22,7 @@ export const RegisterContainer: React.FC = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<PlayerFormData>({
     defaultValues: {
       playerName: "",
@@ -54,12 +54,18 @@ export const RegisterContainer: React.FC = () => {
       {/* Magician Icon with Animation */}
       <Logo />
 
-      <div className="card flex flex-col gap-4 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-4">
-          Welcome to Insider Game
-        </h1>
+      <div className="card flex flex-col w-full max-w-md">
+        <h1 className="text-1xl font-bold text-center">{`Let's play with us`}</h1>
+        <div className="">
+          <div className="melting-text-container flex justify-center">
+            <h1 className="melting-text">INSIDER</h1>
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-4 mt-8"
+        >
           <div className="flex flex-col gap-2">
             {/* <label htmlFor="playerName" className="font-semibold text-center">
               ชื่อผู้เล่น
@@ -126,15 +132,9 @@ export const RegisterContainer: React.FC = () => {
                 "0 8px 16px rgba(139, 92, 246, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)";
               e.currentTarget.style.transform = "translateY(0)";
             }}
-            disabled={!name}
+            disabled={!isValid}
           />
         </form>
-
-        {name && (
-          <p className="text-center mt-4">
-            สวัสดี, <strong>{name}</strong>!
-          </p>
-        )}
       </div>
     </div>
   );
