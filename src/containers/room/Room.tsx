@@ -3,7 +3,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CountdownPlayModal } from "./children/CountdownPlay";
+import { CountdownPlayModal } from "../../components/modal/CountdownPlay";
 import { PlayContainer } from "../play/Play";
 import { leaveRoomService } from "@/app/api/room/RoomService";
 import { useSelector } from "react-redux";
