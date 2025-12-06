@@ -1,39 +1,69 @@
 import { Card } from "primereact/card";
+import { Typography } from "../text/Typography";
 
 export const RuleUI = () => {
+  const rules = [
+    {
+      role: "Citizen",
+      icon: "pi-users",
+      color: "text-blue-400",
+      points: ["ตอบถูก +1", "โหวต Insider ถูก (>50%) +1"],
+    },
+    {
+      role: "Insider",
+      icon: "pi-eye",
+      color: "text-red-400",
+      points: ["ทีมตอบถูกภายในเวลา +1", "ไม่ถูกจับ +1"],
+      note: "* Citizen ต้องตอบถูกด้วย",
+    },
+    {
+      role: "Master",
+      icon: "pi-crown",
+      color: "text-purple-400",
+      points: ["เป็น Master +1", "จับ Insider ได้ +1"],
+    },
+  ];
+
   return (
-    <div className="mb-8">
-      <Card className="bg-gray-800 border-2 border-gray-700">
-        <div className="p-4">
-          <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-            <i className="pi pi-info-circle text-yellow-400" />
-            เกณฑ์การให้คะแนน
-          </h3>
-          <div className="space-y-2 text-gray-300">
-            <div className="flex items-start gap-2">
-              <i className="pi pi-user text-blue-400 mt-1" />
-              <p>
-                <span className="text-blue-400 font-semibold">CITIZEN:</span>{" "}
-                ถ้าสามารถตอบถูก จะได้ 1 คะแนน เมื่อผู้เล่นส่วนใหญ่โหวต Insider
-                ถูก (เกิน 50%) จะได้เพิ่มอีก 1 คะแนน
-              </p>
-            </div>
-            <div className="flex items-start gap-2">
-              <i className="pi pi-eye text-red-400 mt-1" />
-              <p>
-                <span className="text-red-400 font-semibold">Insider:</span> ได้
-                1 คะแนน เมื่อทีมตอบถูกภายในเวลา และ +1 คะแนนเพิ่ม หากไม่ถูกจับ
-                (แต่ CITIZEN ต้องตอบถูกด้วย)
-              </p>
-            </div>
-            <div className="flex items-start gap-2">
-              <i className="pi pi-crown text-purple-400 mt-1" />
-              <p>
-                <span className="text-purple-400 font-semibold">Master:</span>{" "}
-                ได้ 1 คะแนนทันทีเมื่อเป็น role นี้ และ +1 คะแนนเพิ่มหากสามารถจับ
-                INSIDER ได้ด้วยตัวเอง
-              </p>
-            </div>
+    <div className="mb-6">
+      <Card className="bg-gray-800 border border-gray-700">
+        <div>
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-4">
+            <i className="pi pi-info-circle text-yellow-400 text-xl" />
+            <Typography type="subheader" className="text-white">
+              เกณฑ์การให้คะแนน
+            </Typography>
+          </div>
+
+          {/* Rules */}
+          <div className="space-y-3">
+            {rules.map((rule) => (
+              <div key={rule.role} className="flex items-start gap-3">
+                <i className={`pi ${rule.icon} ${rule.color} text-lg mt-0.5`} />
+                <div className="flex-1">
+                  <Typography type="label" className={rule.color}>
+                    {rule.role}
+                  </Typography>
+                  <div className="space-y-1 mt-1">
+                    {rule.points.map((point, idx) => (
+                      <Typography
+                        key={idx}
+                        type="body"
+                        className="text-gray-300 text-sm"
+                      >
+                        • {point}
+                      </Typography>
+                    ))}
+                    {rule.note && (
+                      <Typography type="small" className="text-gray-500 italic">
+                        {rule.note}
+                      </Typography>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </Card>

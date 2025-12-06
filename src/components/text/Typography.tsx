@@ -8,6 +8,7 @@ interface TypographyProps {
     | "subheader"
     | "label"
     | "body"
+    | "strong-body"
     | "description"
     | "small"
     | "";
@@ -30,6 +31,7 @@ export const Typography: React.FC<TypographyProps> = ({
     subheader: "text-2xl font-medium",
     label: "text-1xl font-medium",
     body: "text-base",
+    "strong-body": "text-base font-semibold",
     description: "text-sm font-light",
     small: "text-xs font-light",
   };

@@ -1,6 +1,8 @@
+import { Avatar } from "@/src/components/avatar/Avatar";
+import { Button } from "@/src/components/button/Button";
 import { RuleUI } from "@/src/components/rules/RuleUI";
+import { Typography } from "@/src/components/text/Typography";
 import { ActiveGame, RoleGame } from "@/src/hooks/interface";
-import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import React from "react";
 
@@ -44,15 +46,16 @@ export const MatchResult: React.FC<MatchResultProps> = ({
       </div>
 
       <Card key={activeGame.id} className="bg-gray-700 border border-gray-600">
-        <div className="p-4">
+        <div>
           <div className="flex justify-between items-start mb-3">
             <div>
               <h4 className="text-lg font-bold text-white">
-                เกม {activeGame.id}
+                {/* เกม {activeGame.id} */}
+                {activeGame.word}
               </h4>
-              <p className="text-yellow-400 font-semibold">{activeGame.word}</p>
+              {/* <p className="text-yellow-400 font-semibold">{activeGame.word}</p> */}
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex gap-1">
               {activeGame.summary?.citizensAnsweredCorrectly && (
                 <span className="text-xs bg-green-600 px-2 py-0.5 rounded">
                   ✓ ตอบถูก
@@ -64,33 +67,41 @@ export const MatchResult: React.FC<MatchResultProps> = ({
                 </span>
               )} */}
               {activeGame.summary?.insiderCaught && (
-                <span className="text-xs bg-blue-600 px-2 py-0.5 rounded">
-                  🎯 จับได้
+                <span className="text-xs bg-amber-600 px-2 py-0.5 rounded">
+                  ✓ จับได้
                 </span>
               )}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             {activeGame.playerInGame.map((player) => {
               const role = activeGame.roles[player.uuid];
               const score = activeGame.summary?.scores[player.uuid] || 0;
               return (
                 <div
                   key={player.uuid}
-                  className="bg-gray-800 rounded p-2 flex items-center justify-between"
+                  className="bg-gray-800 rounded p-2 flex items-center justify-between overflow-hidden"
                 >
                   <div className="flex items-center gap-2">
+                    {/* <span className="text-white text-sm"></span>   */}
+                    <Avatar size="sm" name={player.playerName} />
+                    <Typography
+                      type="strong-body"
+                      maxLines={1}
+                      className="text-white !text-bold"
+                    >
+                      {player.playerName}
+                    </Typography>
                     <i
                       className={`pi ${getRoleIcon(role)} ${getRoleColor(
                         role
                       )}`}
                     />
-                    <span className="text-white text-sm">
-                      {player.playerName}
-                    </span>
                   </div>
                   {score > 0 && (
-                    <span className="text-yellow-400 font-bold">+{score}</span>
+                    <span className="text-yellow-400 font-bold animate-fade-from-right">
+                      +{score}
+                    </span>
                   )}
                 </div>
               );
@@ -102,8 +113,9 @@ export const MatchResult: React.FC<MatchResultProps> = ({
         <div className="container mx-auto max-w-7xl flex gap-3 justify-center">
           <Button
             label="กลับไปหน้าห้อง"
-            icon="pi pi-refresh"
+            icon="pi pi-list"
             size="large"
+            severity="secondary"
             className="flex-1 md:flex-none"
             onClick={onBackToRooms}
           />
@@ -111,7 +123,9 @@ export const MatchResult: React.FC<MatchResultProps> = ({
       </div>
 
       {/* Scoring Rules */}
-      <RuleUI />
+      {/* <div className="mt-8">
+        <RuleUI />
+      </div> */}
     </div>
   );
 };
